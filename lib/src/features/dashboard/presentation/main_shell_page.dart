@@ -27,15 +27,24 @@ class _MainShellPageState extends State<MainShellPage> {
         title: currentTab.label,
         actions: [
           IconButton(
+            onPressed: () {},
+            icon: const Icon(Icons.notifications_none),
+            tooltip: 'Thông báo',
+          ),
+          IconButton(
             onPressed: () => context.read<AuthService>().signOut(),
             icon: const Icon(Icons.logout),
-            tooltip: 'Dang xuat',
+            tooltip: 'Đăng xuất',
           ),
         ],
       ),
-      body: IndexedStack(
-        index: _currentIndex,
-        children: tabs.map((tab) => tab.page).toList(),
+      body: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 200),
+        child: IndexedStack(
+          key: ValueKey(_currentIndex),
+          index: _currentIndex,
+          children: tabs.map((tab) => tab.page).toList(),
+        ),
       ),
       bottomNavigationBar: NavigationBar(
         height: 72,
@@ -45,6 +54,7 @@ class _MainShellPageState extends State<MainShellPage> {
           for (final tab in tabs)
             NavigationDestination(
               icon: Icon(tab.icon),
+              selectedIcon: Icon(tab.icon, fill: 1),
               label: tab.label,
             ),
         ],

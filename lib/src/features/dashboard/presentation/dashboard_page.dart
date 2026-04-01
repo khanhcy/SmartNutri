@@ -16,7 +16,7 @@ class DashboardPage extends StatelessWidget {
           IconButton(
             onPressed: () => context.read<AuthService>().signOut(),
             icon: const Icon(Icons.logout),
-            tooltip: 'Dang xuat',
+            tooltip: 'Đăng xuất',
           ),
         ],
       ),

@@ -26,17 +26,17 @@ class AppRouter {
         page: HomePage(),
       ),
       const AppTabItem(
-        label: 'Tim mon',
+        label: 'Tìm món',
         icon: Icons.search,
         page: FoodSearchPage(),
       ),
       const AppTabItem(
-        label: 'Nhat ky',
+        label: 'Nhật ký',
         icon: Icons.restaurant_menu_outlined,
         page: MealLogPage(),
       ),
       AppTabItem(
-        label: 'Ho so',
+        label: 'Hồ sơ',
         icon: Icons.person_outline,
         page: ProfilePage(user: user),
       ),
