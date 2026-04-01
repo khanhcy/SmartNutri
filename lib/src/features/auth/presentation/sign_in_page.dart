@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:smartnutri/src/core/services/auth_service.dart';
+import 'package:smartnutri/src/core/ui/components/sn_button.dart';
+import 'package:smartnutri/src/core/ui/components/sn_text_field.dart';
+import 'package:smartnutri/src/core/ui/layout/sn_app_bar.dart';
+import 'package:smartnutri/src/core/ui/layout/sn_scaffold.dart';
+import 'package:smartnutri/src/core/ui/theme/app_colors.dart';
+import 'package:smartnutri/src/core/ui/theme/app_spacing.dart';
 import 'package:smartnutri/src/features/auth/presentation/sign_up_page.dart';
 
 class SignInPage extends StatefulWidget {
@@ -26,18 +32,18 @@ class _SignInPageState extends State<SignInPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('SmartNutri - Dang nhap')),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
+    return SNScaffold(
+      appBar: const SNAppBar(title: 'SmartNutri - Dang nhap'),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(AppSpacing.lg),
         child: Form(
           key: _formKey,
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              TextFormField(
+              const SizedBox(height: 80),
+              SNTextField(
                 controller: _emailController,
-                decoration: const InputDecoration(labelText: 'Email'),
+                label: 'Email',
                 validator: (value) {
                   if (value == null || value.isEmpty) {
                     return 'Nhap email';
@@ -48,10 +54,10 @@ class _SignInPageState extends State<SignInPage> {
                   return null;
                 },
               ),
-              const SizedBox(height: 12),
-              TextFormField(
+              const SizedBox(height: AppSpacing.md),
+              SNTextField(
                 controller: _passwordController,
-                decoration: const InputDecoration(labelText: 'Mat khau'),
+                label: 'Mat khau',
                 obscureText: true,
                 validator: (value) {
                   if (value == null || value.length < 6) {
@@ -60,30 +66,25 @@ class _SignInPageState extends State<SignInPage> {
                   return null;
                 },
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.lg),
               if (_error != null)
-                Text(_error!, style: const TextStyle(color: Colors.red)),
-              const SizedBox(height: 8),
-              FilledButton(
-                onPressed: _isLoading ? null : _signIn,
-                child: _isLoading
-                    ? const SizedBox.square(
-                        dimension: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Text('Dang nhap'),
+                Text(_error!, style: const TextStyle(color: AppColors.danger)),
+              const SizedBox(height: AppSpacing.sm),
+              SNButton(
+                label: 'Dang nhap',
+                onPressed: _signIn,
+                isLoading: _isLoading,
               ),
-              TextButton(
+              SNButton(
+                label: 'Chua co tai khoan? Dang ky',
+                variant: SNButtonVariant.ghost,
                 onPressed: _isLoading
                     ? null
-                    : () {
-                        Navigator.of(context).push(
+                    : () => Navigator.of(context).push(
                           MaterialPageRoute<void>(
                             builder: (_) => const SignUpPage(),
                           ),
-                        );
-                      },
-                child: const Text('Chua co tai khoan? Dang ky'),
+                        ),
               ),
             ],
           ),

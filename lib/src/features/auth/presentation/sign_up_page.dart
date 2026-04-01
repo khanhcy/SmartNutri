@@ -1,6 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:smartnutri/src/core/services/auth_service.dart';
+import 'package:smartnutri/src/core/ui/components/sn_button.dart';
+import 'package:smartnutri/src/core/ui/components/sn_text_field.dart';
+import 'package:smartnutri/src/core/ui/layout/sn_app_bar.dart';
+import 'package:smartnutri/src/core/ui/layout/sn_scaffold.dart';
+import 'package:smartnutri/src/core/ui/theme/app_colors.dart';
+import 'package:smartnutri/src/core/ui/theme/app_spacing.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -25,18 +31,18 @@ class _SignUpPageState extends State<SignUpPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Dang ky tai khoan')),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
+    return SNScaffold(
+      appBar: const SNAppBar(title: 'Dang ky tai khoan'),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(AppSpacing.lg),
         child: Form(
           key: _formKey,
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              TextFormField(
+              const SizedBox(height: 80),
+              SNTextField(
                 controller: _emailController,
-                decoration: const InputDecoration(labelText: 'Email'),
+                label: 'Email',
                 validator: (value) {
                   if (value == null || value.isEmpty || !value.contains('@')) {
                     return 'Nhap email hop le';
@@ -44,10 +50,10 @@ class _SignUpPageState extends State<SignUpPage> {
                   return null;
                 },
               ),
-              const SizedBox(height: 12),
-              TextFormField(
+              const SizedBox(height: AppSpacing.md),
+              SNTextField(
                 controller: _passwordController,
-                decoration: const InputDecoration(labelText: 'Mat khau'),
+                label: 'Mat khau',
                 obscureText: true,
                 validator: (value) {
                   if (value == null || value.length < 6) {
@@ -56,17 +62,14 @@ class _SignUpPageState extends State<SignUpPage> {
                   return null;
                 },
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: AppSpacing.lg),
               if (_error != null)
-                Text(_error!, style: const TextStyle(color: Colors.red)),
-              FilledButton(
-                onPressed: _isLoading ? null : _signUp,
-                child: _isLoading
-                    ? const SizedBox.square(
-                        dimension: 16,
-                        child: CircularProgressIndicator(strokeWidth: 2),
-                      )
-                    : const Text('Tao tai khoan'),
+                Text(_error!, style: const TextStyle(color: AppColors.danger)),
+              const SizedBox(height: AppSpacing.sm),
+              SNButton(
+                label: 'Tao tai khoan',
+                onPressed: _signUp,
+                isLoading: _isLoading,
               ),
             ],
           ),

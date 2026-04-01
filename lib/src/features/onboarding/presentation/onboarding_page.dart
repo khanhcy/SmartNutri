@@ -2,6 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:smartnutri/src/core/services/auth_service.dart';
 import 'package:smartnutri/src/core/services/profile_service.dart';
+import 'package:smartnutri/src/core/ui/components/sn_button.dart';
+import 'package:smartnutri/src/core/ui/components/sn_text_field.dart';
+import 'package:smartnutri/src/core/ui/layout/sn_app_bar.dart';
+import 'package:smartnutri/src/core/ui/layout/sn_scaffold.dart';
+import 'package:smartnutri/src/core/ui/theme/app_colors.dart';
+import 'package:smartnutri/src/core/ui/theme/app_spacing.dart';
+import 'package:smartnutri/src/features/dashboard/presentation/main_shell_page.dart';
 import 'package:smartnutri/src/features/profile/domain/user_profile.dart';
 
 class OnboardingPage extends StatefulWidget {
@@ -41,11 +48,10 @@ class _OnboardingPageState extends State<OnboardingPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Thiet lap ho so')),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
+    return SNScaffold(
+      appBar: const SNAppBar(title: 'Thiet lap ho so'),
+      body: SingleChildScrollView(
+          padding: const EdgeInsets.all(AppSpacing.lg),
           child: Form(
             key: _formKey,
             child: Column(
@@ -55,34 +61,34 @@ class _OnboardingPageState extends State<OnboardingPage> {
                   'Hoan tat onboarding de bat dau theo doi suc khoe',
                   style: Theme.of(context).textTheme.titleMedium,
                 ),
-                const SizedBox(height: 16),
-                TextFormField(
+                const SizedBox(height: AppSpacing.lg),
+                SNTextField(
                   controller: _nameController,
-                  decoration: const InputDecoration(labelText: 'Ten hien thi'),
+                  label: 'Ten hien thi',
                   validator: _requiredValidator,
                 ),
-                const SizedBox(height: 12),
-                TextFormField(
+                const SizedBox(height: AppSpacing.md),
+                SNTextField(
                   controller: _ageController,
                   keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(labelText: 'Tuoi'),
+                  label: 'Tuoi',
                   validator: _numberValidator,
                 ),
-                const SizedBox(height: 12),
-                TextFormField(
+                const SizedBox(height: AppSpacing.md),
+                SNTextField(
                   controller: _heightController,
                   keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(labelText: 'Chieu cao (cm)'),
+                  label: 'Chieu cao (cm)',
                   validator: _numberValidator,
                 ),
-                const SizedBox(height: 12),
-                TextFormField(
+                const SizedBox(height: AppSpacing.md),
+                SNTextField(
                   controller: _weightController,
                   keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(labelText: 'Can nang (kg)'),
+                  label: 'Can nang (kg)',
                   validator: _numberValidator,
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: AppSpacing.md),
                 DropdownButtonFormField<String>(
                   value: _gender,
                   decoration: const InputDecoration(labelText: 'Gioi tinh'),
@@ -93,7 +99,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
                   ],
                   onChanged: (value) => setState(() => _gender = value ?? 'male'),
                 ),
-                const SizedBox(height: 12),
+                const SizedBox(height: AppSpacing.md),
                 DropdownButtonFormField<String>(
                   value: _activityLevel,
                   decoration: const InputDecoration(labelText: 'Muc van dong'),
@@ -106,23 +112,18 @@ class _OnboardingPageState extends State<OnboardingPage> {
                   onChanged: (value) =>
                       setState(() => _activityLevel = value ?? 'light'),
                 ),
-                const SizedBox(height: 16),
+                const SizedBox(height: AppSpacing.lg),
                 if (_error != null)
-                  Text(_error!, style: const TextStyle(color: Colors.red)),
-                const SizedBox(height: 8),
-                FilledButton(
-                  onPressed: _isSaving ? null : _saveProfile,
-                  child: _isSaving
-                      ? const SizedBox.square(
-                          dimension: 16,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        )
-                      : const Text('Luu ho so'),
+                  Text(_error!, style: const TextStyle(color: AppColors.danger)),
+                const SizedBox(height: AppSpacing.sm),
+                SNButton(
+                  label: 'Luu ho so',
+                  onPressed: _saveProfile,
+                  isLoading: _isSaving,
                 ),
               ],
             ),
           ),
-        ),
       ),
     );
   }
@@ -168,6 +169,14 @@ class _OnboardingPageState extends State<OnboardingPage> {
 
     try {
       await context.read<ProfileService>().upsertProfile(profile);
+      if (!mounted) {
+        return;
+      }
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute<void>(
+          builder: (_) => MainShellPage(user: widget.user),
+        ),
+      );
     } catch (_) {
       setState(() {
         _error = 'Luu ho so that bai. Vui long thu lai.';
