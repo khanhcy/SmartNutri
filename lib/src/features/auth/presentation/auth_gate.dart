@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:smartnutri/src/core/services/auth_service.dart';
 import 'package:smartnutri/src/core/services/profile_service.dart';
+import 'package:smartnutri/src/core/ui/components/state_view.dart';
 import 'package:smartnutri/src/features/auth/presentation/sign_in_page.dart';
-import 'package:smartnutri/src/features/dashboard/presentation/dashboard_page.dart';
+import 'package:smartnutri/src/features/dashboard/presentation/main_shell_page.dart';
 import 'package:smartnutri/src/features/onboarding/presentation/onboarding_page.dart';
 
 class AuthGate extends StatelessWidget {
@@ -24,16 +25,14 @@ class AuthGate extends StatelessWidget {
           future: _shouldShowOnboarding(context, user.uid),
           builder: (context, profileSnapshot) {
             if (profileSnapshot.connectionState != ConnectionState.done) {
-              return const Scaffold(
-                body: Center(child: CircularProgressIndicator()),
-              );
+              return const LoadingView(message: 'Dang tai du lieu...');
             }
 
             final shouldShowOnboarding = profileSnapshot.data ?? true;
             if (shouldShowOnboarding) {
               return OnboardingPage(user: user);
             }
-            return DashboardPage(user: user);
+            return MainShellPage(user: user);
           },
         );
       },
