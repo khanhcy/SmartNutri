@@ -23,34 +23,63 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     return PageTemplate(
-      title: 'Ho so',
-      subtitle: 'Thong tin tai khoan va muc tieu dinh duong.',
+      title: 'Hồ sơ',
+      subtitle: 'Thông tin tài khoản và mục tiêu dinh dưỡng.',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          const SectionHeader(title: 'Muc tieu'),
+          const SectionHeader(title: 'Mục tiêu'),
           const SizedBox(height: AppSpacing.sm),
-          const Row(
-            children: [
-              Expanded(
-                child: StatCard(
-                  label: 'Can nang muc tieu',
-                  value: '68 kg',
-                  helper: 'Hien tai 72 kg',
-                ),
-              ),
-              SizedBox(width: AppSpacing.md),
-              Expanded(
-                child: StatCard(
-                  label: 'Muc tieu ngay',
-                  value: '2,100 kcal',
-                  helper: 'Protein 120g',
-                ),
-              ),
-            ],
+          LayoutBuilder(
+            builder: (context, constraints) {
+              if (constraints.maxWidth > 620) {
+                return const Row(
+                  children: [
+                    Expanded(
+                      child: StatCard(
+                        label: 'Cân nặng mục tiêu',
+                        value: '68 kg',
+                        helper: 'Hiện tại 72 kg',
+                      ),
+                    ),
+                    SizedBox(width: AppSpacing.md),
+                    Expanded(
+                      child: StatCard(
+                        label: 'Mục tiêu ngày',
+                        value: '2,100 kcal',
+                        helper: 'Protein 120g',
+                      ),
+                    ),
+                  ],
+                );
+              }
+              return const Column(
+                children: [
+                  StatCard(
+                    label: 'Cân nặng mục tiêu',
+                    value: '68 kg',
+                    helper: 'Hiện tại 72 kg',
+                  ),
+                  SizedBox(height: AppSpacing.md),
+                  StatCard(
+                    label: 'Mục tiêu ngày',
+                    value: '2,100 kcal',
+                    helper: 'Protein 120g',
+                  ),
+                ],
+              );
+            },
           ),
           const SizedBox(height: AppSpacing.lg),
-          const SectionHeader(title: 'Tai khoan'),
+          const SNCard(
+            child: SNInfoTile(
+              title: 'Gợi ý cá nhân hóa',
+              subtitle: 'Giảm 300 kcal buổi tối để đạt mục tiêu cân nặng nhanh hơn.',
+              leadingIcon: Icons.auto_awesome_outlined,
+            ),
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          const SectionHeader(title: 'Tài khoản'),
           const SizedBox(height: AppSpacing.sm),
           SNCard(
             child: Column(
@@ -62,8 +91,8 @@ class _ProfilePageState extends State<ProfilePage> {
                 ),
                 const Divider(),
                 const SNInfoTile(
-                  title: 'Ho so ca nhan',
-                  subtitle: 'Cap nhat tuoi, chieu cao, can nang',
+                  title: 'Hồ sơ cá nhân',
+                  subtitle: 'Cập nhật tuổi, chiều cao, cân nặng',
                   leadingIcon: Icons.person_outline,
                   trailing: Icon(Icons.chevron_right),
                 ),
@@ -71,16 +100,23 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
           ),
           const SizedBox(height: AppSpacing.lg),
-          const SectionHeader(title: 'Tuy chinh'),
+          const SectionHeader(title: 'Tùy chỉnh'),
           const SizedBox(height: AppSpacing.sm),
           SNCard(
             child: Column(
               children: [
+                const SNInfoTile(
+                  title: 'Ngôn ngữ ứng dụng',
+                  subtitle: 'Tiếng Việt',
+                  leadingIcon: Icons.language_outlined,
+                  trailing: Icon(Icons.chevron_right),
+                ),
+                const Divider(),
                 SwitchListTile(
                   value: _reminderEnabled,
                   contentPadding: EdgeInsets.zero,
-                  title: const Text('Nhac ghi bua an'),
-                  subtitle: const Text('Thong bao vao 07:00, 12:00, 18:00'),
+                  title: const Text('Nhắc ghi bữa ăn'),
+                  subtitle: const Text('Thông báo vào 07:00, 12:00, 18:00'),
                   onChanged: (value) => setState(() => _reminderEnabled = value),
                 ),
                 const Divider(),
@@ -88,7 +124,7 @@ class _ProfilePageState extends State<ProfilePage> {
                   value: _darkModeEnabled,
                   contentPadding: EdgeInsets.zero,
                   title: const Text('Dark mode'),
-                  subtitle: const Text('Bat giao dien toi'),
+                  subtitle: const Text('Bật giao diện tối'),
                   onChanged: (value) => setState(() => _darkModeEnabled = value),
                 ),
               ],

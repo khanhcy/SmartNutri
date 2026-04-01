@@ -21,11 +21,11 @@ class OnboardingPage extends StatefulWidget {
 }
 
 class _OnboardingPageState extends State<OnboardingPage> {
-  final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _ageController = TextEditingController();
   final _heightController = TextEditingController();
   final _weightController = TextEditingController();
+  int _currentStep = 0;
   String _gender = 'male';
   String _activityLevel = 'light';
   bool _isSaving = false;
@@ -49,106 +49,162 @@ class _OnboardingPageState extends State<OnboardingPage> {
   @override
   Widget build(BuildContext context) {
     return SNScaffold(
-      appBar: const SNAppBar(title: 'Thiet lap ho so'),
+      appBar: const SNAppBar(title: 'Thiết lập hồ sơ'),
       body: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppSpacing.lg),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+        padding: const EdgeInsets.all(AppSpacing.lg),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Trả lời từng câu hỏi để hoàn tất hồ sơ',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            LinearProgressIndicator(value: (_currentStep + 1) / 6),
+            const SizedBox(height: AppSpacing.xs),
+            Text('Câu hỏi ${_currentStep + 1}/6'),
+            const SizedBox(height: AppSpacing.lg),
+            _buildCurrentQuestion(),
+            const SizedBox(height: AppSpacing.lg),
+            if (_error != null)
+              Text(_error!, style: const TextStyle(color: AppColors.danger)),
+            const SizedBox(height: AppSpacing.sm),
+            Row(
               children: [
-                Text(
-                  'Hoan tat onboarding de bat dau theo doi suc khoe',
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                SNTextField(
-                  controller: _nameController,
-                  label: 'Ten hien thi',
-                  validator: _requiredValidator,
-                ),
-                const SizedBox(height: AppSpacing.md),
-                SNTextField(
-                  controller: _ageController,
-                  keyboardType: TextInputType.number,
-                  label: 'Tuoi',
-                  validator: _numberValidator,
-                ),
-                const SizedBox(height: AppSpacing.md),
-                SNTextField(
-                  controller: _heightController,
-                  keyboardType: TextInputType.number,
-                  label: 'Chieu cao (cm)',
-                  validator: _numberValidator,
-                ),
-                const SizedBox(height: AppSpacing.md),
-                SNTextField(
-                  controller: _weightController,
-                  keyboardType: TextInputType.number,
-                  label: 'Can nang (kg)',
-                  validator: _numberValidator,
-                ),
-                const SizedBox(height: AppSpacing.md),
-                DropdownButtonFormField<String>(
-                  value: _gender,
-                  decoration: const InputDecoration(labelText: 'Gioi tinh'),
-                  items: const [
-                    DropdownMenuItem(value: 'male', child: Text('Nam')),
-                    DropdownMenuItem(value: 'female', child: Text('Nu')),
-                    DropdownMenuItem(value: 'other', child: Text('Khac')),
-                  ],
-                  onChanged: (value) => setState(() => _gender = value ?? 'male'),
-                ),
-                const SizedBox(height: AppSpacing.md),
-                DropdownButtonFormField<String>(
-                  value: _activityLevel,
-                  decoration: const InputDecoration(labelText: 'Muc van dong'),
-                  items: const [
-                    DropdownMenuItem(value: 'sedentary', child: Text('It van dong')),
-                    DropdownMenuItem(value: 'light', child: Text('Van dong nhe')),
-                    DropdownMenuItem(value: 'moderate', child: Text('Van dong vua')),
-                    DropdownMenuItem(value: 'active', child: Text('Nang dong')),
-                  ],
-                  onChanged: (value) =>
-                      setState(() => _activityLevel = value ?? 'light'),
-                ),
-                const SizedBox(height: AppSpacing.lg),
-                if (_error != null)
-                  Text(_error!, style: const TextStyle(color: AppColors.danger)),
-                const SizedBox(height: AppSpacing.sm),
-                SNButton(
-                  label: 'Luu ho so',
-                  onPressed: _saveProfile,
-                  isLoading: _isSaving,
+                if (_currentStep > 0)
+                  Expanded(
+                    child: SNButton(
+                      label: 'Quay lại',
+                      onPressed: _isSaving
+                          ? null
+                          : () => setState(() {
+                                _error = null;
+                                _currentStep -= 1;
+                              }),
+                      variant: SNButtonVariant.secondary,
+                    ),
+                  ),
+                if (_currentStep > 0) const SizedBox(width: AppSpacing.sm),
+                Expanded(
+                  child: SNButton(
+                    label: _currentStep == 5 ? 'Hoàn tất' : 'Tiếp theo',
+                    onPressed: _isSaving ? null : _onNextPressed,
+                    isLoading: _isSaving,
+                  ),
                 ),
               ],
             ),
-          ),
+          ],
+        ),
       ),
     );
   }
 
+  Widget _buildCurrentQuestion() {
+    switch (_currentStep) {
+      case 0:
+        return SNTextField(
+          controller: _nameController,
+          label: 'Bạn muốn chúng tôi gọi bạn là gì?',
+          hint: 'Ví dụ: An',
+        );
+      case 1:
+        return SNTextField(
+          controller: _ageController,
+          keyboardType: TextInputType.number,
+          label: 'Bạn bao nhiêu tuổi?',
+        );
+      case 2:
+        return SNTextField(
+          controller: _heightController,
+          keyboardType: TextInputType.number,
+          label: 'Chiều cao của bạn (cm)?',
+        );
+      case 3:
+        return SNTextField(
+          controller: _weightController,
+          keyboardType: TextInputType.number,
+          label: 'Cân nặng hiện tại (kg)?',
+        );
+      case 4:
+        return DropdownButtonFormField<String>(
+          value: _gender,
+          decoration: const InputDecoration(labelText: 'Giới tính của bạn?'),
+          items: const [
+            DropdownMenuItem(value: 'male', child: Text('Nam')),
+            DropdownMenuItem(value: 'female', child: Text('Nữ')),
+            DropdownMenuItem(value: 'other', child: Text('Khác')),
+          ],
+          onChanged: (value) => setState(() => _gender = value ?? 'male'),
+        );
+      default:
+        return DropdownButtonFormField<String>(
+          value: _activityLevel,
+          decoration: const InputDecoration(labelText: 'Mức vận động hằng ngày?'),
+          items: const [
+            DropdownMenuItem(value: 'sedentary', child: Text('Ít vận động')),
+            DropdownMenuItem(value: 'light', child: Text('Vận động nhẹ')),
+            DropdownMenuItem(value: 'moderate', child: Text('Vận động vừa')),
+            DropdownMenuItem(value: 'active', child: Text('Năng động')),
+          ],
+          onChanged: (value) => setState(() => _activityLevel = value ?? 'light'),
+        );
+    }
+  }
+
+  void _onNextPressed() {
+    final validationError = _validateCurrentStep();
+    if (validationError != null) {
+      setState(() {
+        _error = validationError;
+      });
+      return;
+    }
+
+    if (_currentStep < 5) {
+      setState(() {
+        _error = null;
+        _currentStep += 1;
+      });
+      return;
+    }
+
+    _saveProfile();
+  }
+
+  String? _validateCurrentStep() {
+    switch (_currentStep) {
+      case 0:
+        return _requiredValidator(_nameController.text);
+      case 1:
+        return _numberValidator(_ageController.text);
+      case 2:
+        return _numberValidator(_heightController.text);
+      case 3:
+        return _numberValidator(_weightController.text);
+      default:
+        return null;
+    }
+  }
+
   String? _requiredValidator(String? value) {
     if (value == null || value.trim().isEmpty) {
-      return 'Khong duoc de trong';
+      return 'Không được để trống';
     }
     return null;
   }
 
   String? _numberValidator(String? value) {
     if (value == null || value.trim().isEmpty) {
-      return 'Khong duoc de trong';
+      return 'Không được để trống';
     }
     if (num.tryParse(value) == null) {
-      return 'Can nhap so hop le';
+      return 'Cần nhập số hợp lệ';
     }
     return null;
   }
 
   Future<void> _saveProfile() async {
-    if (!_formKey.currentState!.validate()) {
-      return;
-    }
     setState(() {
       _isSaving = true;
       _error = null;
@@ -179,7 +235,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
       );
     } catch (_) {
       setState(() {
-        _error = 'Luu ho so that bai. Vui long thu lai.';
+        _error = 'Lưu hồ sơ thất bại. Vui lòng thử lại.';
       });
     } finally {
       if (mounted) {

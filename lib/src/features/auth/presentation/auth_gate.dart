@@ -25,7 +25,7 @@ class AuthGate extends StatelessWidget {
           future: _shouldShowOnboarding(context, user.uid),
           builder: (context, profileSnapshot) {
             if (profileSnapshot.connectionState != ConnectionState.done) {
-              return const LoadingView(message: 'Dang tai du lieu...');
+              return const LoadingView(message: 'Đang tải dữ liệu...');
             }
 
             final shouldShowOnboarding = profileSnapshot.data ?? true;

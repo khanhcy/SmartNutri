@@ -31,10 +31,10 @@ class AuthService {
     final normalizedEmail = email.trim();
     final normalizedPassword = password.trim();
     if (normalizedEmail.isEmpty || !normalizedEmail.contains('@')) {
-      throw Exception('Email khong hop le');
+      throw Exception('Email không hợp lệ');
     }
     if (normalizedPassword.length < 6) {
-      throw Exception('Mat khau toi thieu 6 ky tu');
+      throw Exception('Mật khẩu tối thiểu 6 ký tự');
     }
 
     _currentUser = AuthUser(
@@ -49,6 +49,24 @@ class AuthService {
     required String password,
   }) async {
     await signIn(email: email, password: password);
+  }
+
+  Future<void> signInWithGoogle() async {
+    final email = 'google.user@smartnutri.app';
+    _currentUser = AuthUser(
+      uid: 'google_${_uidFromEmail(email)}',
+      email: email,
+    );
+    _authStateController.add(_currentUser);
+  }
+
+  Future<void> signInWithFacebook() async {
+    final email = 'facebook.user@smartnutri.app';
+    _currentUser = AuthUser(
+      uid: 'facebook_${_uidFromEmail(email)}',
+      email: email,
+    );
+    _authStateController.add(_currentUser);
   }
 
   Future<void> signOut() async {

@@ -32,7 +32,7 @@ class _SignUpPageState extends State<SignUpPage> {
   @override
   Widget build(BuildContext context) {
     return SNScaffold(
-      appBar: const SNAppBar(title: 'Dang ky tai khoan'),
+      appBar: const SNAppBar(title: 'Đăng ký tài khoản'),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSpacing.lg),
         child: Form(
@@ -45,7 +45,7 @@ class _SignUpPageState extends State<SignUpPage> {
                 label: 'Email',
                 validator: (value) {
                   if (value == null || value.isEmpty || !value.contains('@')) {
-                    return 'Nhap email hop le';
+                    return 'Nhập email hợp lệ';
                   }
                   return null;
                 },
@@ -53,11 +53,11 @@ class _SignUpPageState extends State<SignUpPage> {
               const SizedBox(height: AppSpacing.md),
               SNTextField(
                 controller: _passwordController,
-                label: 'Mat khau',
+                label: 'Mật khẩu',
                 obscureText: true,
                 validator: (value) {
                   if (value == null || value.length < 6) {
-                    return 'Mat khau toi thieu 6 ky tu';
+                    return 'Mật khẩu tối thiểu 6 ký tự';
                   }
                   return null;
                 },
@@ -67,7 +67,7 @@ class _SignUpPageState extends State<SignUpPage> {
                 Text(_error!, style: const TextStyle(color: AppColors.danger)),
               const SizedBox(height: AppSpacing.sm),
               SNButton(
-                label: 'Tao tai khoan',
+                label: 'Tạo tài khoản',
                 onPressed: _signUp,
                 isLoading: _isLoading,
               ),
