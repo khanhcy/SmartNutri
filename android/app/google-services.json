@@ -12,7 +12,20 @@
           "package_name": "com.example.smartnutri"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "317078492765-t4jt8rd3l59kpa9p5egkpola69e0rfse.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.smartnutri",
+            "certificate_hash": "dd3b36d0ecb5dd420a976240ab8d885adcb6469a"
+          }
+        },
+        {
+          "client_id": "317078492765-o242c9jiqm7qmcmjlg8vgl4diap6l3i7.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyClHaF4gipOQZQudctuNwT0rGuY2LwwDS4"
@@ -20,7 +33,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "317078492765-o242c9jiqm7qmcmjlg8vgl4diap6l3i7.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "317078492765-eb07678gfbf4ldphenqmja2j9j50k1v0.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.smartnutri"
+              }
+            }
+          ]
         }
       }
     }
