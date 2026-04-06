@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "317078492765",
+    "project_id": "smartnutri-dev-2e67b",
+    "storage_bucket": "smartnutri-dev-2e67b.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:317078492765:android:5a4147644e4aaf535f9fb4",
+        "android_client_info": {
+          "package_name": "com.example.smartnutri"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyClHaF4gipOQZQudctuNwT0rGuY2LwwDS4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
