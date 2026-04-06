@@ -22,7 +22,8 @@ SmartNutri is structured as a 3-part MVP foundation:
    - `flutter pub get`
 2. Configure Firebase options:
    - `flutterfire configure`
-   - then replace placeholder values in `lib/src/core/firebase/firebase_options.dart`
+   - generated config is in `lib/firebase_options.dart`
+   - `lib/src/core/firebase/firebase_options.dart` re-exports the generated file
 3. Run:
    - `flutter run`
 
@@ -57,7 +58,50 @@ Run:
 
 ## Notes
 
-- Firebase credentials in both mobile and admin are placeholders and must be replaced.
+- Firebase has been connected to project ID: `smartnutri-dev-2e67b`.
+- Firestore rules and indexes have been deployed successfully.
+- Mobile app now initializes Firebase in `lib/src/app/bootstrap.dart`.
+- `AuthService` uses `FirebaseAuth` and `ProfileService` uses `Cloud Firestore`.
 - This repository now contains baseline architecture for:
   - Foundation setup (`foundation-setup`)
   - Auth + onboarding + profile flow (`core-auth-onboarding`)
+
+## Quick return checklist (when reopening this project)
+
+### 1) First 60 seconds
+- Confirm current Firebase project:
+  - `firebase projects:list`
+  - `cat .firebaserc` (or open file in editor)
+- Confirm generated Firebase config exists:
+  - `lib/firebase_options.dart`
+- Confirm Android Firebase file exists:
+  - `android/app/google-services.json`
+
+### 2) Start Android emulator from terminal (Windows)
+- List AVDs:
+  - `& "$env:LOCALAPPDATA\Android\Sdk\emulator\emulator.exe" -list-avds`
+- Start AVD (current known name):
+  - `& "$env:LOCALAPPDATA\Android\Sdk\emulator\emulator.exe" -avd pixel_6_api34`
+- Run app:
+  - `flutter devices`
+  - `flutter run`
+
+### 3) Common gotchas
+- PowerShell script block for Firebase CLI:
+  - If `firebase.ps1` is blocked, run:
+    - `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser`
+- `emulator` command not found:
+  - Use full path command above, or add SDK paths to `$env:Path`.
+- AVD not found:
+  - Use exact output from `-list-avds` (case-sensitive naming matters).
+
+### 4) What "deploy firestore" does and does not do
+- `firebase deploy --only firestore:rules,firestore:indexes` updates:
+  - Security rules
+  - Index definitions
+- It does **not** create user data in Firestore `Data` tab.
+
+### 5) Quick verification after login/onboarding
+- Create account in app -> complete onboarding.
+- In Firebase Console -> Firestore -> `profiles` collection:
+  - expect a document with id = authenticated `uid`.

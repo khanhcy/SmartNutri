@@ -1,4 +1,4 @@
-import 'dart:async';
+import 'package:firebase_auth/firebase_auth.dart' as fb;
 
 class AuthUser {
   AuthUser({
@@ -11,71 +11,83 @@ class AuthUser {
 }
 
 class AuthService {
-  AuthService() {
-    _authStateController = StreamController<AuthUser?>.broadcast(
-      onListen: () => _authStateController.add(_currentUser),
-    );
+  AuthService({fb.FirebaseAuth? auth}) : _auth = auth ?? fb.FirebaseAuth.instance;
+
+  final fb.FirebaseAuth _auth;
+
+  Stream<AuthUser?> authStateChanges() {
+    return _auth.authStateChanges().map(_mapFirebaseUser);
   }
 
-  late final StreamController<AuthUser?> _authStateController;
-  AuthUser? _currentUser;
-
-  Stream<AuthUser?> authStateChanges() => _authStateController.stream;
-
-  AuthUser? get currentUser => _currentUser;
+  AuthUser? get currentUser => _mapFirebaseUser(_auth.currentUser);
 
   Future<void> signIn({
     required String email,
     required String password,
   }) async {
-    final normalizedEmail = email.trim();
-    final normalizedPassword = password.trim();
-    if (normalizedEmail.isEmpty || !normalizedEmail.contains('@')) {
-      throw Exception('Email không hợp lệ');
+    try {
+      await _auth.signInWithEmailAndPassword(
+        email: email.trim(),
+        password: password.trim(),
+      );
+    } on fb.FirebaseAuthException catch (e) {
+      throw Exception(_friendlyAuthError(e));
     }
-    if (normalizedPassword.length < 6) {
-      throw Exception('Mật khẩu tối thiểu 6 ký tự');
-    }
-
-    _currentUser = AuthUser(
-      uid: _uidFromEmail(normalizedEmail),
-      email: normalizedEmail,
-    );
-    _authStateController.add(_currentUser);
   }
 
   Future<void> signUp({
     required String email,
     required String password,
   }) async {
-    await signIn(email: email, password: password);
+    try {
+      await _auth.createUserWithEmailAndPassword(
+        email: email.trim(),
+        password: password.trim(),
+      );
+    } on fb.FirebaseAuthException catch (e) {
+      throw Exception(_friendlyAuthError(e));
+    }
   }
 
   Future<void> signInWithGoogle() async {
-    final email = 'google.user@smartnutri.app';
-    _currentUser = AuthUser(
-      uid: 'google_${_uidFromEmail(email)}',
-      email: email,
-    );
-    _authStateController.add(_currentUser);
+    throw Exception('Google Sign-In chưa được cấu hình trong bản này.');
   }
 
   Future<void> signInWithFacebook() async {
-    final email = 'facebook.user@smartnutri.app';
-    _currentUser = AuthUser(
-      uid: 'facebook_${_uidFromEmail(email)}',
-      email: email,
-    );
-    _authStateController.add(_currentUser);
+    throw Exception('Facebook Sign-In chưa được cấu hình trong bản này.');
   }
 
   Future<void> signOut() async {
-    _currentUser = null;
-    _authStateController.add(null);
+    await _auth.signOut();
   }
 
-  String _uidFromEmail(String email) {
-    final sanitized = email.replaceAll(RegExp(r'[^a-zA-Z0-9]'), '');
-    return sanitized.isEmpty ? DateTime.now().millisecondsSinceEpoch.toString() : sanitized;
+  AuthUser? _mapFirebaseUser(fb.User? user) {
+    if (user == null) {
+      return null;
+    }
+    return AuthUser(
+      uid: user.uid,
+      email: user.email ?? '',
+    );
+  }
+
+  String _friendlyAuthError(fb.FirebaseAuthException error) {
+    switch (error.code) {
+      case 'invalid-email':
+        return 'Email không hợp lệ';
+      case 'user-not-found':
+        return 'Không tìm thấy tài khoản';
+      case 'wrong-password':
+      case 'invalid-credential':
+        return 'Sai email hoặc mật khẩu';
+      case 'email-already-in-use':
+        return 'Email đã được sử dụng';
+      case 'weak-password':
+        return 'Mật khẩu quá yếu (tối thiểu 6 ký tự)';
+      case 'too-many-requests':
+        return 'Bạn thử quá nhiều lần. Vui lòng thử lại sau';
+      default:
+        return error.message ?? 'Đăng nhập thất bại';
+    }
   }
 }
