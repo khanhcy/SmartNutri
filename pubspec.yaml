@@ -1,5 +1,5 @@
 name: smartnutri
-description: "A new Flutter project."
+description: "SmartNutri - Ứng dụng theo dõi dinh dưỡng thông minh."
 # The following line prevents the package from being accidentally published to
 # pub.dev using `flutter pub publish`. This is preferred for private packages.
 publish_to: 'none' # Remove this line if you wish to publish to pub.dev
@@ -35,6 +35,8 @@ dependencies:
   firebase_auth: ^5.6.3
   cloud_firestore: ^5.6.12
   provider: ^6.1.5
+  intl: ^0.19.0
+  uuid: ^4.5.1
 
 dev_dependencies:
   flutter_test:

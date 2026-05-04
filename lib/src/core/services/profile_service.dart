@@ -7,12 +7,19 @@ class ProfileService {
 
   final FirebaseFirestore _firestore;
 
+  Stream<UserProfile?> watchProfile(String uid) {
+    return _firestore
+        .collection('profiles')
+        .doc(uid)
+        .snapshots()
+        .map((doc) =>
+            doc.exists ? UserProfile.fromMap(uid, doc.data()!) : null);
+  }
+
   Future<UserProfile?> getProfile(String uid) async {
     final doc = await _firestore.collection('profiles').doc(uid).get();
     final data = doc.data();
-    if (data == null) {
-      return null;
-    }
+    if (data == null) return null;
     return UserProfile.fromMap(uid, data);
   }
 
