@@ -4,6 +4,7 @@ import 'package:smartnutri/src/core/services/auth_service.dart';
 import 'package:smartnutri/src/core/services/meal_service.dart';
 import 'package:smartnutri/src/core/ui/components/sn_card.dart';
 import 'package:smartnutri/src/core/ui/theme/app_spacing.dart';
+import 'package:smartnutri/src/core/utils/date_utils.dart';
 import 'package:smartnutri/src/features/nutrition/domain/nutrition_goal.dart';
 
 class WeeklySummaryCard extends StatefulWidget {
@@ -17,6 +18,7 @@ class WeeklySummaryCard extends StatefulWidget {
 class _WeeklySummaryCardState extends State<WeeklySummaryCard> {
   List<_DayCalorie> _days = [];
   bool _loading = true;
+  bool _tickerWasActive = false;
 
   @override
   void initState() {
@@ -24,10 +26,18 @@ class _WeeklySummaryCardState extends State<WeeklySummaryCard> {
     _loadWeek();
   }
 
-  static String _fmt(DateTime d) =>
-      '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final tickerActive = TickerMode.valuesOf(context).enabled;
+    if (tickerActive && !_tickerWasActive && !_loading) {
+      _loadWeek();
+    }
+    _tickerWasActive = tickerActive;
+  }
 
   Future<void> _loadWeek() async {
+    if (!_loading) setState(() => _loading = true);
     final uid = context.read<AuthService>().currentUser!.uid;
     final service = context.read<MealService>();
     final today = DateTime.now();
@@ -35,7 +45,7 @@ class _WeeklySummaryCardState extends State<WeeklySummaryCard> {
 
     for (int i = 6; i >= 0; i--) {
       final date = today.subtract(Duration(days: i));
-      final entries = await service.getEntriesForDate(uid, _fmt(date));
+      final entries = await service.getEntriesForDate(uid, AppDateUtils.toDateStr(date));
       final total = entries.fold(0.0, (s, e) => s + e.calorieKcal);
       results.add(_DayCalorie(date: date, kcal: total));
     }
@@ -80,6 +90,17 @@ class _WeeklySummaryCardState extends State<WeeklySummaryCard> {
               Text(
                 'TB: ${avgDay.round()} kcal/ngày',
                 style: Theme.of(context).textTheme.bodySmall,
+              ),
+              const SizedBox(width: 4),
+              InkWell(
+                borderRadius: BorderRadius.circular(16),
+                onTap: _loading ? null : _loadWeek,
+                child: Padding(
+                  padding: const EdgeInsets.all(4),
+                  child: Icon(Icons.refresh,
+                      size: 16,
+                      color: Theme.of(context).colorScheme.onSurfaceVariant),
+                ),
               ),
             ],
           ),
@@ -172,13 +193,8 @@ class _WeeklySummaryCardState extends State<WeeklySummaryCard> {
     );
   }
 
-  bool _isSameDay(DateTime a, DateTime b) =>
-      a.year == b.year && a.month == b.month && a.day == b.day;
-
-  String _shortDay(DateTime d) {
-    const days = ['CN', 'T2', 'T3', 'T4', 'T5', 'T6', 'T7'];
-    return days[d.weekday % 7];
-  }
+  bool _isSameDay(DateTime a, DateTime b) => AppDateUtils.isSameDay(a, b);
+  String _shortDay(DateTime d) => AppDateUtils.shortDayVi(d);
 }
 
 class _DayCalorie {

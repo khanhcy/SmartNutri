@@ -34,6 +34,11 @@ class FoodService {
     FoodItem(id: 'che_dau_xanh', name: 'Chè đậu xanh', calorieKcal: 110, proteinG: 4.5, carbG: 22.0, fatG: 0.5, category: 'Tráng miệng', defaultPortionG: 200),
   ];
 
+  /// Cached sorted list of unique categories (computed once).
+  static final List<String> categories = List.unmodifiable(
+    (_foods.map((f) => f.category).toSet().toList()..sort()),
+  );
+
   List<FoodItem> search(String query) {
     if (query.trim().isEmpty) return [];
     final q = _removeDiacritics(query.toLowerCase().trim());

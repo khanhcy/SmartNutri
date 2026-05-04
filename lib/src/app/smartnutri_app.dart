@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:smartnutri/src/core/providers/app_settings_provider.dart';
+import 'package:smartnutri/src/core/ui/components/offline_banner.dart';
 import 'package:smartnutri/src/core/ui/theme/app_theme.dart';
 import 'package:smartnutri/src/features/auth/presentation/auth_gate.dart';
 
@@ -17,6 +18,7 @@ class SmartNutriApp extends StatelessWidget {
       darkTheme: AppTheme.dark(),
       themeMode: settings.themeMode,
       home: const AuthGate(),
+      builder: (context, child) => OfflineBanner(child: child ?? const SizedBox.shrink()),
     );
   }
 }

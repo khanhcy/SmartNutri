@@ -7,6 +7,8 @@ import 'package:smartnutri/src/core/services/water_service.dart';
 import 'package:smartnutri/src/core/ui/components/sn_card.dart';
 import 'package:smartnutri/src/core/ui/layout/page_template.dart';
 import 'package:smartnutri/src/core/ui/theme/app_spacing.dart';
+import 'package:smartnutri/src/core/utils/date_utils.dart';
+import 'package:smartnutri/src/features/home/presentation/macro_trend_card.dart';
 import 'package:smartnutri/src/features/meal_log/domain/meal_entry.dart';
 import 'package:smartnutri/src/features/meal_log/presentation/add_meal_bottom_sheet.dart';
 import 'package:smartnutri/src/features/nutrition/domain/nutrition_goal.dart';
@@ -14,13 +16,10 @@ import 'package:smartnutri/src/features/nutrition/domain/nutrition_goal.dart';
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
 
-  static String _dateStr(DateTime d) =>
-      '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
-
   @override
   Widget build(BuildContext context) {
     final uid = context.read<AuthService>().currentUser!.uid;
-    final today = _dateStr(DateTime.now());
+    final today = AppDateUtils.todayStr();
 
     return StreamBuilder<NutritionGoal?>(
       stream: context.read<GoalService>().watchGoal(uid),
@@ -93,6 +92,8 @@ class HomePage extends StatelessWidget {
                           ],
                         ),
                       ),
+                      const SizedBox(height: AppSpacing.md),
+                      const RepaintBoundary(child: MacroTrendCard()),
                       const SizedBox(height: AppSpacing.md),
                       _TodayMealsSection(entries: entries, uid: uid),
                       const SizedBox(height: AppSpacing.md),
