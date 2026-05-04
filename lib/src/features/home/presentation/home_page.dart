@@ -37,7 +37,7 @@ class HomePage extends StatelessWidget {
             final carbConsumed = entries.fold(0.0, (s, e) => s + e.carbG);
             final fatConsumed = entries.fold(0.0, (s, e) => s + e.fatG);
 
-            return StreamBuilder<double>(
+              return StreamBuilder<double>(
               stream: context.read<WaterService>().watchWaterMl(uid, today),
               builder: (context, waterSnap) {
                 final waterMl = waterSnap.data ?? 0.0;
@@ -56,7 +56,7 @@ class HomePage extends StatelessWidget {
                       const SizedBox(height: AppSpacing.md),
                       _WaterCard(
                         waterMl: waterMl,
-                        targetMl: 2500,
+                        targetMl: goal.waterTargetMl,
                         uid: uid,
                         date: today,
                       ),

@@ -27,9 +27,18 @@ class MealService {
         });
   }
 
+  Future<List<MealEntry>> getEntriesForDate(String uid, String date) async {
+    final q = await _col(uid).where('date', isEqualTo: date).get();
+    return q.docs.map((d) => MealEntry.fromMap(d.id, d.data())).toList();
+  }
+
   Future<void> addEntry(String uid, MealEntry entry) async {
     final id = _uuid.v4();
     await _col(uid).doc(id).set(entry.toMap());
+  }
+
+  Future<void> updateEntry(String uid, MealEntry entry) async {
+    await _col(uid).doc(entry.id).set(entry.toMap(), SetOptions(merge: true));
   }
 
   Future<void> deleteEntry(String uid, String entryId) async {
