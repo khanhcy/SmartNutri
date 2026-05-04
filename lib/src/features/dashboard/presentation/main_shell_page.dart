@@ -6,9 +6,7 @@ import 'package:smartnutri/src/core/ui/layout/sn_app_bar.dart';
 import 'package:smartnutri/src/core/ui/layout/sn_scaffold.dart';
 
 class MainShellPage extends StatefulWidget {
-  const MainShellPage({super.key, required this.user});
-
-  final AuthUser user;
+  const MainShellPage({super.key});
 
   @override
   State<MainShellPage> createState() => _MainShellPageState();
@@ -19,7 +17,7 @@ class _MainShellPageState extends State<MainShellPage> {
 
   @override
   Widget build(BuildContext context) {
-    final tabs = AppRouter.mainTabs(widget.user);
+    final tabs = AppRouter.mainTabs;
     final currentTab = tabs[_currentIndex];
 
     return SNScaffold(
@@ -38,18 +36,15 @@ class _MainShellPageState extends State<MainShellPage> {
           ),
         ],
       ),
-      body: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 200),
-        child: IndexedStack(
-          key: ValueKey(_currentIndex),
-          index: _currentIndex,
-          children: tabs.map((tab) => tab.page).toList(),
-        ),
+      body: IndexedStack(
+        index: _currentIndex,
+        children: tabs.map((tab) => tab.page).toList(),
       ),
       bottomNavigationBar: NavigationBar(
         height: 72,
         selectedIndex: _currentIndex,
-        onDestinationSelected: (index) => setState(() => _currentIndex = index),
+        onDestinationSelected: (index) =>
+            setState(() => _currentIndex = index),
         destinations: [
           for (final tab in tabs)
             NavigationDestination(

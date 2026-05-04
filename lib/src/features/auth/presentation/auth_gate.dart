@@ -6,6 +6,7 @@ import 'package:smartnutri/src/core/ui/components/state_view.dart';
 import 'package:smartnutri/src/features/auth/presentation/sign_in_page.dart';
 import 'package:smartnutri/src/features/dashboard/presentation/main_shell_page.dart';
 import 'package:smartnutri/src/features/onboarding/presentation/onboarding_page.dart';
+import 'package:smartnutri/src/features/profile/domain/user_profile.dart';
 
 class AuthGate extends StatelessWidget {
   const AuthGate({super.key});
@@ -15,33 +16,33 @@ class AuthGate extends StatelessWidget {
     final auth = context.read<AuthService>();
     return StreamBuilder<AuthUser?>(
       stream: auth.authStateChanges(),
-      builder: (context, snapshot) {
-        if (!snapshot.hasData) {
+      builder: (context, authSnap) {
+        if (authSnap.connectionState == ConnectionState.waiting) {
+          return const LoadingView(message: 'Đang khởi động...');
+        }
+
+        if (!authSnap.hasData) {
           return const SignInPage();
         }
 
-        final user = snapshot.data!;
-        return FutureBuilder<bool>(
-          future: _shouldShowOnboarding(context, user.uid),
-          builder: (context, profileSnapshot) {
-            if (profileSnapshot.connectionState != ConnectionState.done) {
+        final user = authSnap.data!;
+
+        return StreamBuilder<UserProfile?>(
+          stream: context.read<ProfileService>().watchProfile(user.uid),
+          builder: (context, profileSnap) {
+            if (profileSnap.connectionState == ConnectionState.waiting) {
               return const LoadingView(message: 'Đang tải dữ liệu...');
             }
 
-            final shouldShowOnboarding = profileSnapshot.data ?? true;
-            if (shouldShowOnboarding) {
+            final profile = profileSnap.data;
+            if (profile == null || !profile.onboardingCompleted) {
               return OnboardingPage(user: user);
             }
-            return MainShellPage(user: user);
+
+            return const MainShellPage();
           },
         );
       },
     );
-  }
-
-  Future<bool> _shouldShowOnboarding(BuildContext context, String uid) async {
-    final profileService = context.read<ProfileService>();
-    final profile = await profileService.getProfile(uid);
-    return profile == null || !profile.onboardingCompleted;
   }
 }

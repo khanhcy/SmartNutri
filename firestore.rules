@@ -5,6 +5,14 @@ service cloud.firestore {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
 
+    match /goals/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
+    match /users/{userId}/meal_entries/{entryId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+
     match /foods/{foodId} {
       allow read: if request.auth != null;
       allow write: if false;

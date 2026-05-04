@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:smartnutri/src/core/services/auth_service.dart';
+import 'package:smartnutri/src/core/services/goal_service.dart';
 import 'package:smartnutri/src/core/services/profile_service.dart';
 import 'package:smartnutri/src/core/ui/components/sn_button.dart';
 import 'package:smartnutri/src/core/ui/components/sn_text_field.dart';
@@ -8,7 +9,7 @@ import 'package:smartnutri/src/core/ui/layout/sn_app_bar.dart';
 import 'package:smartnutri/src/core/ui/layout/sn_scaffold.dart';
 import 'package:smartnutri/src/core/ui/theme/app_colors.dart';
 import 'package:smartnutri/src/core/ui/theme/app_spacing.dart';
-import 'package:smartnutri/src/features/dashboard/presentation/main_shell_page.dart';
+import 'package:smartnutri/src/features/nutrition/domain/nutrition_goal.dart';
 import 'package:smartnutri/src/features/profile/domain/user_profile.dart';
 
 class OnboardingPage extends StatefulWidget {
@@ -67,8 +68,13 @@ class _OnboardingPageState extends State<OnboardingPage> {
             _buildCurrentQuestion(),
             const SizedBox(height: AppSpacing.lg),
             if (_error != null)
-              Text(_error!, style: const TextStyle(color: AppColors.danger)),
-            const SizedBox(height: AppSpacing.sm),
+              Padding(
+                padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                child: Text(
+                  _error!,
+                  style: const TextStyle(color: AppColors.danger),
+                ),
+              ),
             Row(
               children: [
                 if (_currentStep > 0)
@@ -128,7 +134,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
         );
       case 4:
         return DropdownButtonFormField<String>(
-          value: _gender,
+          initialValue: _gender,
           decoration: const InputDecoration(labelText: 'Giới tính của bạn?'),
           items: const [
             DropdownMenuItem(value: 'male', child: Text('Nam')),
@@ -139,15 +145,17 @@ class _OnboardingPageState extends State<OnboardingPage> {
         );
       default:
         return DropdownButtonFormField<String>(
-          value: _activityLevel,
-          decoration: const InputDecoration(labelText: 'Mức vận động hằng ngày?'),
+          initialValue: _activityLevel,
+          decoration:
+              const InputDecoration(labelText: 'Mức vận động hằng ngày?'),
           items: const [
-            DropdownMenuItem(value: 'sedentary', child: Text('Ít vận động')),
-            DropdownMenuItem(value: 'light', child: Text('Vận động nhẹ')),
-            DropdownMenuItem(value: 'moderate', child: Text('Vận động vừa')),
-            DropdownMenuItem(value: 'active', child: Text('Năng động')),
+            DropdownMenuItem(value: 'sedentary', child: Text('Ít vận động (ngồi nhiều)')),
+            DropdownMenuItem(value: 'light', child: Text('Vận động nhẹ (1-3 ngày/tuần)')),
+            DropdownMenuItem(value: 'moderate', child: Text('Vận động vừa (3-5 ngày/tuần)')),
+            DropdownMenuItem(value: 'active', child: Text('Năng động (6-7 ngày/tuần)')),
           ],
-          onChanged: (value) => setState(() => _activityLevel = value ?? 'light'),
+          onChanged: (value) =>
+              setState(() => _activityLevel = value ?? 'light'),
         );
     }
   }
@@ -155,9 +163,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
   void _onNextPressed() {
     final validationError = _validateCurrentStep();
     if (validationError != null) {
-      setState(() {
-        _error = validationError;
-      });
+      setState(() => _error = validationError);
       return;
     }
 
@@ -188,19 +194,13 @@ class _OnboardingPageState extends State<OnboardingPage> {
   }
 
   String? _requiredValidator(String? value) {
-    if (value == null || value.trim().isEmpty) {
-      return 'Không được để trống';
-    }
+    if (value == null || value.trim().isEmpty) return 'Không được để trống';
     return null;
   }
 
   String? _numberValidator(String? value) {
-    if (value == null || value.trim().isEmpty) {
-      return 'Không được để trống';
-    }
-    if (num.tryParse(value) == null) {
-      return 'Cần nhập số hợp lệ';
-    }
+    if (value == null || value.trim().isEmpty) return 'Không được để trống';
+    if (num.tryParse(value) == null) return 'Cần nhập số hợp lệ';
     return null;
   }
 
@@ -210,38 +210,45 @@ class _OnboardingPageState extends State<OnboardingPage> {
       _error = null;
     });
 
+    final weight = double.parse(_weightController.text.trim());
+    final height = double.parse(_heightController.text.trim());
+    final age = int.parse(_ageController.text.trim());
+
     final profile = UserProfile(
       uid: widget.user.uid,
       email: widget.user.email,
       displayName: _nameController.text.trim(),
-      age: int.parse(_ageController.text.trim()),
-      heightCm: double.parse(_heightController.text.trim()),
-      weightKg: double.parse(_weightController.text.trim()),
+      age: age,
+      heightCm: height,
+      weightKg: weight,
       gender: _gender,
       activityLevel: _activityLevel,
       onboardingCompleted: true,
       updatedAt: DateTime.now(),
     );
 
+    final goal = NutritionGoal.fromProfile(
+      uid: widget.user.uid,
+      weightKg: weight,
+      heightCm: height,
+      age: age,
+      gender: _gender,
+      activityLevel: _activityLevel,
+    );
+
     try {
-      await context.read<ProfileService>().upsertProfile(profile);
-      if (!mounted) {
-        return;
-      }
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute<void>(
-          builder: (_) => MainShellPage(user: widget.user),
-        ),
-      );
+      await Future.wait([
+        context.read<ProfileService>().upsertProfile(profile),
+        context.read<GoalService>().upsertGoal(goal),
+      ]);
+      // AuthGate's StreamBuilder detects onboardingCompleted=true and navigates automatically.
     } catch (_) {
-      setState(() {
-        _error = 'Lưu hồ sơ thất bại. Vui lòng thử lại.';
-      });
+      if (mounted) {
+        setState(() => _error = 'Lưu hồ sơ thất bại. Vui lòng thử lại.');
+      }
     } finally {
       if (mounted) {
-        setState(() {
-          _isSaving = false;
-        });
+        setState(() => _isSaving = false);
       }
     }
   }
