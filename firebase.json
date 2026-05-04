@@ -1,1 +1,68 @@
-{"functions":{"source":"functions"},"firestore":{"rules":"firestore.rules","indexes":"firestore.indexes.json"},"hosting":{"site":"smartnutri-admin","public":"admin-web/dist","ignore":["firebase.json","**/.*","**/node_modules/**"],"rewrites":[{"source":"**","destination":"/index.html"}]},"flutter":{"platforms":{"android":{"default":{"projectId":"smartnutri-dev-2e67b","appId":"1:317078492765:android:5a4147644e4aaf535f9fb4","fileOutput":"android/app/google-services.json"}},"dart":{"lib/firebase_options.dart":{"projectId":"smartnutri-dev-2e67b","configurations":{"android":"1:317078492765:android:5a4147644e4aaf535f9fb4","ios":"1:317078492765:ios:f3a6082f4ef8d83c5f9fb4","web":"1:317078492765:web:3602b9942f6cb4bc5f9fb4"}}}}}}
+{
+  "functions": {
+    "source": "functions"
+  },
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "storage": {
+    "rules": "storage.rules"
+  },
+  "hosting": {
+    "site": "smartnutri-admin",
+    "public": "admin-web/dist",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  },
+  "emulators": {
+    "auth": {
+      "host": "127.0.0.1",
+      "port": 9099
+    },
+    "firestore": {
+      "host": "127.0.0.1",
+      "port": 8080
+    },
+    "storage": {
+      "host": "127.0.0.1",
+      "port": 9199
+    },
+    "ui": {
+      "enabled": true,
+      "host": "127.0.0.1",
+      "port": 4000
+    },
+    "singleProjectMode": true
+  },
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "smartnutri-dev-2e67b",
+          "appId": "1:317078492765:android:5a4147644e4aaf535f9fb4",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "smartnutri-dev-2e67b",
+          "configurations": {
+            "android": "1:317078492765:android:5a4147644e4aaf535f9fb4",
+            "ios": "1:317078492765:ios:f3a6082f4ef8d83c5f9fb4",
+            "web": "1:317078492765:web:3602b9942f6cb4bc5f9fb4"
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:smartnutri/src/core/services/auth_service.dart';
 import 'package:smartnutri/src/core/services/food_service.dart';
@@ -322,7 +323,10 @@ class _AddMealSheetState extends State<_AddMealSheet> {
 
     try {
       await context.read<MealService>().addEntry(uid, entry);
-      if (mounted) Navigator.of(context).pop();
+      if (mounted) {
+        HapticFeedback.lightImpact();
+        Navigator.of(context).pop();
+      }
     } catch (e) {
       if (mounted) {
         setState(() {
