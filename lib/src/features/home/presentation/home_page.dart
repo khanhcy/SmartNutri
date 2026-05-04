@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
 import 'package:smartnutri/src/core/services/auth_service.dart';
 import 'package:smartnutri/src/core/services/goal_service.dart';
@@ -11,6 +13,7 @@ import 'package:smartnutri/src/core/utils/date_utils.dart';
 import 'package:smartnutri/src/features/home/presentation/macro_trend_card.dart';
 import 'package:smartnutri/src/features/meal_log/domain/meal_entry.dart';
 import 'package:smartnutri/src/features/meal_log/presentation/add_meal_bottom_sheet.dart';
+import 'package:smartnutri/src/features/meal_log/presentation/custom_meal_sheet.dart';
 import 'package:smartnutri/src/features/nutrition/domain/nutrition_goal.dart';
 
 class HomePage extends StatelessWidget {
@@ -97,15 +100,26 @@ class HomePage extends StatelessWidget {
                       const SizedBox(height: AppSpacing.md),
                       _TodayMealsSection(entries: entries, uid: uid),
                       const SizedBox(height: AppSpacing.md),
-                      SizedBox(
-                        width: double.infinity,
-                        child: FilledButton.icon(
-                          onPressed: () => showAddMealSheet(
-                              context,
-                              initialMealType: _suggestMealType()),
-                          icon: const Icon(Icons.add),
-                          label: const Text('Thêm bữa ăn'),
-                        ),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: FilledButton.icon(
+                              onPressed: () => showAddMealSheet(context,
+                                  initialMealType: _suggestMealType()),
+                              icon: const Icon(Icons.search),
+                              label: const Text('Tìm món'),
+                            ),
+                          ),
+                          const SizedBox(width: AppSpacing.sm),
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: () => showCustomMealSheet(context,
+                                  initialMealType: _suggestMealType()),
+                              icon: const Icon(Icons.edit_note),
+                              label: const Text('Nhập thủ công'),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
@@ -223,9 +237,10 @@ class _WaterCard extends StatelessWidget {
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8)),
                       ),
-                      onPressed: () => context
-                          .read<WaterService>()
-                          .addWaterMl(uid, date, ml),
+                      onPressed: () {
+                        HapticFeedback.selectionClick();
+                        _addWater(context, ml);
+                      },
                       child: Text(
                         ml >= 1000
                             ? '${(ml / 1000).toStringAsFixed(1)}L'
@@ -240,6 +255,33 @@ class _WaterCard extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  Future<void> _addWater(BuildContext context, double ml) async {
+    try {
+      await context.read<WaterService>().addWaterMl(uid, date, ml);
+    } on FirebaseException catch (e) {
+      if (!context.mounted) return;
+      final messenger = ScaffoldMessenger.of(context);
+      final message = e.code == 'permission-denied'
+          ? 'Không thể cập nhật nước uống. Kiểm tra quyền Firestore Rules trên Firebase.'
+          : 'Không thể cập nhật nước uống lúc này. Vui lòng thử lại.';
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(message)));
+    } catch (_) {
+      if (!context.mounted) return;
+      final messenger = ScaffoldMessenger.of(context);
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Không thể cập nhật nước uống lúc này. Vui lòng thử lại.',
+            ),
+          ),
+        );
+    }
   }
 }
 
@@ -469,7 +511,8 @@ class _EntryTile extends StatelessWidget {
         child: const Icon(Icons.delete_outline, color: Colors.white),
       ),
       confirmDismiss: (_) async {
-        return await showDialog<bool>(
+        final mealService = context.read<MealService>();
+        final confirmed = await showDialog<bool>(
           context: context,
           builder: (ctx) => AlertDialog(
             title: const Text('Xóa bữa ăn?'),
@@ -486,9 +529,33 @@ class _EntryTile extends StatelessWidget {
             ],
           ),
         );
+        if (!context.mounted) return false;
+        if (confirmed != true) return false;
+        try {
+          await mealService.deleteEntry(uid, entry.id);
+          return true;
+        } on FirebaseException catch (e) {
+          if (!context.mounted) return false;
+          final messenger = ScaffoldMessenger.of(context);
+          final message = e.code == 'permission-denied'
+              ? 'Không thể xóa món. Kiểm tra quyền Firestore Rules trên Firebase.'
+              : 'Không thể xóa món lúc này. Vui lòng thử lại.';
+          messenger
+            ..hideCurrentSnackBar()
+            ..showSnackBar(SnackBar(content: Text(message)));
+          return false;
+        } catch (_) {
+          if (!context.mounted) return false;
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              const SnackBar(
+                content: Text('Không thể xóa món lúc này. Vui lòng thử lại.'),
+              ),
+            );
+          return false;
+        }
       },
-      onDismissed: (_) =>
-          context.read<MealService>().deleteEntry(uid, entry.id),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 4),
         child: Row(

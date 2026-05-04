@@ -9,6 +9,7 @@ import 'package:smartnutri/src/core/ui/theme/app_spacing.dart';
 import 'package:smartnutri/src/core/utils/date_utils.dart';
 import 'package:smartnutri/src/features/meal_log/domain/meal_entry.dart';
 import 'package:smartnutri/src/features/meal_log/presentation/add_meal_bottom_sheet.dart';
+import 'package:smartnutri/src/features/meal_log/presentation/custom_meal_sheet.dart';
 import 'package:smartnutri/src/features/meal_log/presentation/weekly_summary_card.dart';
 import 'package:smartnutri/src/features/nutrition/domain/nutrition_goal.dart';
 
@@ -93,13 +94,24 @@ class _MealLogPageState extends State<MealLogPage> {
                   const SizedBox(height: AppSpacing.md),
                   RepaintBoundary(child: WeeklySummaryCard(goal: goal)),
                   const SizedBox(height: AppSpacing.md),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton.icon(
-                      onPressed: () => showAddMealSheet(context),
-                      icon: const Icon(Icons.add),
-                      label: const Text('Thêm bữa ăn'),
-                    ),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: FilledButton.icon(
+                          onPressed: () => showAddMealSheet(context),
+                          icon: const Icon(Icons.search),
+                          label: const Text('Tìm món'),
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: () => showCustomMealSheet(context),
+                          icon: const Icon(Icons.edit_note),
+                          label: const Text('Nhập thủ công'),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),

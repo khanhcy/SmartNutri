@@ -1,14 +1,17 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:smartnutri/src/core/services/auth_service.dart';
 import 'package:smartnutri/src/core/services/food_service.dart';
 import 'package:smartnutri/src/core/services/meal_service.dart';
+import 'package:smartnutri/src/core/services/recent_foods_service.dart';
 import 'package:smartnutri/src/core/ui/components/sn_card.dart';
 import 'package:smartnutri/src/core/ui/layout/page_template.dart';
 import 'package:smartnutri/src/core/ui/theme/app_spacing.dart';
 import 'package:smartnutri/src/features/meal_log/domain/meal_entry.dart';
+import 'package:smartnutri/src/features/meal_log/presentation/custom_meal_sheet.dart';
 import 'package:smartnutri/src/features/search/domain/food_item.dart';
 
 class FoodSearchPage extends StatefulWidget {
@@ -77,8 +80,11 @@ class _FoodSearchPageState extends State<FoodSearchPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // ── Search bar ─────────────────────────────────────────────────
-          TextField(
+          // ── Header: search + nhập thủ công ────────────────────────────
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
             controller: _queryController,
             decoration: InputDecoration(
               hintText: 'Tìm tên món ăn... (vd: phở bò, cơm gà)',
@@ -93,7 +99,22 @@ class _FoodSearchPageState extends State<FoodSearchPage> {
                       },
                     )
                   : null,
-            ),
+                ),
+              ),
+              ),
+              const SizedBox(width: AppSpacing.xs),
+              Tooltip(
+                message: 'Nhập thủ công',
+                child: OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    minimumSize: const Size(0, 48),
+                  ),
+                  onPressed: () => showCustomMealSheet(context),
+                  child: const Icon(Icons.edit_note),
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: AppSpacing.sm),
 
@@ -120,8 +141,53 @@ class _FoodSearchPageState extends State<FoodSearchPage> {
           ),
           const SizedBox(height: AppSpacing.sm),
 
+          // ── Recent foods (shown only when search bar is empty & no filter) ──
+          if (_queryController.text.isEmpty &&
+              _selectedCategory == 'Tất cả') ...[
+            Consumer<RecentFoodsService>(
+              builder: (context, recents, _) {
+                if (recents.recents.isEmpty) return const SizedBox.shrink();
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Đã dùng gần đây',
+                      style: Theme.of(context)
+                          .textTheme
+                          .labelLarge
+                          ?.copyWith(color: colorScheme.primary),
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    SNCard(
+                      child: Column(
+                        children: [
+                          for (int i = 0; i < recents.recents.length; i++) ...[
+                            _FoodTile(food: recents.recents[i]),
+                            if (i < recents.recents.length - 1)
+                              const Divider(height: 1),
+                          ],
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    Text(
+                      'Tất cả món (${_results.length})',
+                      style: Theme.of(context)
+                          .textTheme
+                          .labelLarge
+                          ?.copyWith(color: colorScheme.primary),
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                  ],
+                );
+              },
+            ),
+          ],
+
           // ── Results count hint ─────────────────────────────────────────
-          if (_results.isNotEmpty)
+          if (_results.isNotEmpty &&
+              (_queryController.text.isNotEmpty ||
+                  _selectedCategory != 'Tất cả'))
             Padding(
               padding: const EdgeInsets.only(bottom: AppSpacing.xs),
               child: Text(
@@ -205,6 +271,7 @@ class _FoodTile extends StatelessWidget {
         food: food,
         authService: context.read<AuthService>(),
         mealService: context.read<MealService>(),
+        recentFoods: context.read<RecentFoodsService>(),
       ),
     );
   }
@@ -215,10 +282,12 @@ class _FoodDetailSheet extends StatefulWidget {
     required this.food,
     required this.authService,
     required this.mealService,
+    required this.recentFoods,
   });
   final FoodItem food;
   final AuthService authService;
   final MealService mealService;
+  final RecentFoodsService recentFoods;
 
   @override
   State<_FoodDetailSheet> createState() => _FoodDetailSheetState();
@@ -401,9 +470,12 @@ class _FoodDetailSheetState extends State<_FoodDetailSheet> {
 
     try {
       await widget.mealService.addEntry(uid, entry);
+      await widget.recentFoods.add(widget.food);
       if (mounted) {
+        HapticFeedback.lightImpact();
+        final messenger = ScaffoldMessenger.of(context);
         Navigator.of(context).pop();
-        ScaffoldMessenger.of(context).showSnackBar(
+        messenger.showSnackBar(
           SnackBar(
             content: Text('Đã thêm ${widget.food.name} vào nhật ký'),
             duration: const Duration(seconds: 2),

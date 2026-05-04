@@ -3,6 +3,11 @@ import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
+@pragma('vm:entry-point')
+void _onBackgroundTap(NotificationResponse response) {
+  // Background tap handler – navigation happens after app resumes.
+}
+
 /// Manages local notifications for water reminders and meal reminders.
 class NotificationService {
   static const _channelId = 'smartnutri_reminders';
@@ -13,6 +18,9 @@ class NotificationService {
   static const int _mealBaseId = 200;
 
   final _plugin = FlutterLocalNotificationsPlugin();
+
+  /// Called when the user taps a notification. Receives the route payload.
+  void Function(String payload)? onNotificationTap;
 
   Future<void> init() async {
     tz.initializeTimeZones();
@@ -29,7 +37,18 @@ class NotificationService {
       requestSoundPermission: true,
     );
     const settings = InitializationSettings(android: android, iOS: darwin);
-    await _plugin.initialize(settings: settings);
+    await _plugin.initialize(
+      settings: settings,
+      onDidReceiveNotificationResponse: _onTap,
+      onDidReceiveBackgroundNotificationResponse: _onBackgroundTap,
+    );
+  }
+
+  void _onTap(NotificationResponse response) {
+    final payload = response.payload;
+    if (payload != null && payload.isNotEmpty) {
+      onNotificationTap?.call(payload);
+    }
   }
 
   Future<bool> requestPermission() async {
@@ -67,6 +86,7 @@ class NotificationService {
   Future<void> scheduleMealReminders() async {
     await cancelMealReminders();
 
+    const logPayload = '/app/log';
     final meals = [
       (
         id: _mealBaseId,
@@ -74,6 +94,7 @@ class NotificationService {
         body: 'Đừng bỏ bữa sáng! Hãy ghi lại bữa ăn của bạn.',
         hour: 7,
         minute: 30,
+        payload: logPayload,
       ),
       (
         id: _mealBaseId + 1,
@@ -81,6 +102,7 @@ class NotificationService {
         body: 'Đã đến giờ ăn trưa! Đừng quên ghi lại nhé.',
         hour: 12,
         minute: 0,
+        payload: logPayload,
       ),
       (
         id: _mealBaseId + 2,
@@ -88,6 +110,7 @@ class NotificationService {
         body: 'Bữa tối đây! Ghi lại để theo dõi dinh dưỡng.',
         hour: 18,
         minute: 30,
+        payload: logPayload,
       ),
     ];
 
@@ -98,6 +121,7 @@ class NotificationService {
         body: meal.body,
         hour: meal.hour,
         minute: meal.minute,
+        payload: meal.payload,
       );
     }
     debugPrint('NotificationService: Đã lên lịch nhắc nhở bữa ăn.');
@@ -125,6 +149,7 @@ class NotificationService {
     required String body,
     required int hour,
     required int minute,
+    String? payload,
   }) async {
     final details = NotificationDetails(
       android: AndroidNotificationDetails(
@@ -160,6 +185,7 @@ class NotificationService {
       notificationDetails: details,
       androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
       matchDateTimeComponents: DateTimeComponents.time,
+      payload: payload,
     );
   }
 }

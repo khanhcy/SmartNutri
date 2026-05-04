@@ -10,6 +10,7 @@ import 'package:smartnutri/src/core/ui/layout/page_template.dart';
 import 'package:smartnutri/src/core/ui/theme/app_spacing.dart';
 import 'package:smartnutri/src/features/nutrition/domain/nutrition_goal.dart';
 import 'package:smartnutri/src/features/profile/domain/user_profile.dart';
+import 'package:smartnutri/src/features/profile/presentation/about_page.dart';
 import 'package:smartnutri/src/features/profile/presentation/edit_profile_page.dart';
 
 class ProfilePage extends StatelessWidget {
@@ -335,6 +336,17 @@ class _AccountCard extends StatelessWidget {
             subtitle: const Text('Cập nhật thông tin cá nhân & mục tiêu'),
             trailing: const Icon(Icons.chevron_right),
             onTap: onEditProfile,
+          ),
+          const Divider(height: 1),
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.info_outline),
+            title: const Text('Giới thiệu'),
+            subtitle: const Text('Phiên bản và mô tả ứng dụng'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(builder: (_) => const AboutPage()),
+                ),
           ),
         ],
       ),
