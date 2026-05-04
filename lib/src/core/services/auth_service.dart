@@ -4,10 +4,12 @@ class AuthUser {
   AuthUser({
     required this.uid,
     required this.email,
+    this.displayName,
   });
 
   final String uid;
   final String email;
+  final String? displayName;
 }
 
 class AuthService {
@@ -38,12 +40,16 @@ class AuthService {
   Future<void> signUp({
     required String email,
     required String password,
+    String? displayName,
   }) async {
     try {
-      await _auth.createUserWithEmailAndPassword(
+      final credential = await _auth.createUserWithEmailAndPassword(
         email: email.trim(),
         password: password.trim(),
       );
+      if (displayName != null && displayName.isNotEmpty) {
+        await credential.user?.updateDisplayName(displayName);
+      }
     } on fb.FirebaseAuthException catch (e) {
       throw Exception(_friendlyAuthError(e));
     }
@@ -70,12 +76,11 @@ class AuthService {
   }
 
   AuthUser? _mapFirebaseUser(fb.User? user) {
-    if (user == null) {
-      return null;
-    }
+    if (user == null) return null;
     return AuthUser(
       uid: user.uid,
       email: user.email ?? '',
+      displayName: user.displayName,
     );
   }
 

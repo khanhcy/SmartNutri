@@ -8,6 +8,7 @@ import 'package:smartnutri/src/core/ui/layout/page_template.dart';
 import 'package:smartnutri/src/core/ui/theme/app_spacing.dart';
 import 'package:smartnutri/src/features/meal_log/domain/meal_entry.dart';
 import 'package:smartnutri/src/features/meal_log/presentation/add_meal_bottom_sheet.dart';
+import 'package:smartnutri/src/features/meal_log/presentation/weekly_summary_card.dart';
 import 'package:smartnutri/src/features/nutrition/domain/nutrition_goal.dart';
 
 class MealLogPage extends StatefulWidget {
@@ -94,6 +95,8 @@ class _MealLogPageState extends State<MealLogPage> {
                     _EmptyDay(date: _displayDate)
                   else
                     _MealGroups(entries: entries, uid: uid),
+                  const SizedBox(height: AppSpacing.md),
+                  WeeklySummaryCard(goal: goal),
                   const SizedBox(height: AppSpacing.md),
                   SizedBox(
                     width: double.infinity,
@@ -286,6 +289,58 @@ class _EntryRow extends StatelessWidget {
   final MealEntry entry;
   final String uid;
 
+  Future<void> _editPortion(BuildContext context) async {
+    final controller =
+        TextEditingController(text: entry.portionG.round().toString());
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text('Sửa khẩu phần — ${entry.foodName}'),
+        content: TextField(
+          controller: controller,
+          keyboardType: TextInputType.number,
+          autofocus: true,
+          decoration: const InputDecoration(
+            labelText: 'Khẩu phần (g)',
+            suffixText: 'g',
+          ),
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx, false),
+              child: const Text('Hủy')),
+          FilledButton(
+              onPressed: () => Navigator.pop(ctx, true),
+              child: const Text('Lưu')),
+        ],
+      ),
+    );
+
+    if (confirmed != true) return;
+    final newPortion = double.tryParse(controller.text);
+    if (newPortion == null || newPortion <= 0) return;
+
+    // Scale macros proportionally
+    final scale = newPortion / entry.portionG;
+    final updated = MealEntry(
+      id: entry.id,
+      uid: entry.uid,
+      date: entry.date,
+      mealType: entry.mealType,
+      foodName: entry.foodName,
+      portionG: newPortion,
+      calorieKcal: entry.calorieKcal * scale,
+      proteinG: entry.proteinG * scale,
+      carbG: entry.carbG * scale,
+      fatG: entry.fatG * scale,
+      loggedAt: entry.loggedAt,
+    );
+
+    if (context.mounted) {
+      await context.read<MealService>().updateEntry(uid, updated);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Dismissible(
@@ -319,33 +374,52 @@ class _EntryRow extends StatelessWidget {
       },
       onDismissed: (_) =>
           context.read<MealService>().deleteEntry(uid, entry.id),
-      child: Row(
-        children: [
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(entry.foodName,
-                    style: Theme.of(context).textTheme.bodyMedium),
-                Text(
-                  '${entry.portionG.round()}g  •  '
-                  'P:${entry.proteinG.toStringAsFixed(1)}g  '
-                  'C:${entry.carbG.toStringAsFixed(1)}g  '
-                  'F:${entry.fatG.toStringAsFixed(1)}g',
-                  style: Theme.of(context).textTheme.bodySmall,
+      child: InkWell(
+        onLongPress: () => _editPortion(context),
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 2),
+          child: Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Expanded(
+                          child: Text(entry.foodName,
+                              style: Theme.of(context).textTheme.bodyMedium),
+                        ),
+                        Icon(Icons.edit_outlined,
+                            size: 12,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurfaceVariant
+                                .withValues(alpha: 0.5)),
+                      ],
+                    ),
+                    Text(
+                      '${entry.portionG.round()}g  •  '
+                      'P:${entry.proteinG.toStringAsFixed(1)}g  '
+                      'C:${entry.carbG.toStringAsFixed(1)}g  '
+                      'F:${entry.fatG.toStringAsFixed(1)}g',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Text(
+                '${entry.calorieKcal.round()} kcal',
+                style: Theme.of(context)
+                    .textTheme
+                    .bodySmall
+                    ?.copyWith(fontWeight: FontWeight.w600),
+              ),
+            ],
           ),
-          const SizedBox(width: AppSpacing.sm),
-          Text(
-            '${entry.calorieKcal.round()} kcal',
-            style: Theme.of(context)
-                .textTheme
-                .bodySmall
-                ?.copyWith(fontWeight: FontWeight.w600),
-          ),
-        ],
+        ),
       ),
     );
   }

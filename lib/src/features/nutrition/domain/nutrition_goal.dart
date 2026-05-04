@@ -6,6 +6,7 @@ class NutritionGoal {
     required this.carbG,
     required this.fatG,
     this.targetWeightKg,
+    this.waterTargetMl = 2500,
     required this.updatedAt,
   });
 
@@ -15,6 +16,7 @@ class NutritionGoal {
   final int carbG;
   final int fatG;
   final double? targetWeightKg;
+  final double waterTargetMl;
   final DateTime updatedAt;
 
   /// Auto-calculate TDEE using Mifflin-St Jeor equation.
@@ -70,6 +72,7 @@ class NutritionGoal {
     int? carbG,
     int? fatG,
     double? targetWeightKg,
+    double? waterTargetMl,
   }) {
     return NutritionGoal(
       uid: uid,
@@ -78,6 +81,7 @@ class NutritionGoal {
       carbG: carbG ?? this.carbG,
       fatG: fatG ?? this.fatG,
       targetWeightKg: targetWeightKg ?? this.targetWeightKg,
+      waterTargetMl: waterTargetMl ?? this.waterTargetMl,
       updatedAt: DateTime.now(),
     );
   }
@@ -90,6 +94,7 @@ class NutritionGoal {
       carbG: (map['carbG'] as num?)?.toInt() ?? 250,
       fatG: (map['fatG'] as num?)?.toInt() ?? 65,
       targetWeightKg: (map['targetWeightKg'] as num?)?.toDouble(),
+      waterTargetMl: (map['waterTargetMl'] as num?)?.toDouble() ?? 2500,
       updatedAt:
           DateTime.tryParse(map['updatedAt'] as String? ?? '') ?? DateTime.now(),
     );
@@ -102,6 +107,7 @@ class NutritionGoal {
       'carbG': carbG,
       'fatG': fatG,
       if (targetWeightKg != null) 'targetWeightKg': targetWeightKg,
+      'waterTargetMl': waterTargetMl,
       'updatedAt': updatedAt.toIso8601String(),
     };
   }

@@ -35,7 +35,11 @@ class _OnboardingPageState extends State<OnboardingPage> {
   @override
   void initState() {
     super.initState();
-    _nameController.text = widget.user.email.split('@').first;
+    // Ưu tiên displayName từ Firebase Auth (đăng ký có nhập tên), fallback phần email
+    final fbName = widget.user.displayName;
+    _nameController.text = (fbName != null && fbName.isNotEmpty)
+        ? fbName
+        : widget.user.email.split('@').first;
   }
 
   @override

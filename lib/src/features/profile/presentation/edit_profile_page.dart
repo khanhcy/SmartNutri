@@ -35,6 +35,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
   late final TextEditingController _proteinController;
   late final TextEditingController _carbController;
   late final TextEditingController _fatController;
+  late final TextEditingController _waterController;
 
   late String _gender;
   late String _activityLevel;
@@ -54,6 +55,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
     _proteinController = TextEditingController(text: g.proteinG.toString());
     _carbController = TextEditingController(text: g.carbG.toString());
     _fatController = TextEditingController(text: g.fatG.toString());
+    _waterController = TextEditingController(text: g.waterTargetMl.round().toString());
     _gender = p.gender;
     _activityLevel = p.activityLevel;
   }
@@ -68,6 +70,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
     _proteinController.dispose();
     _carbController.dispose();
     _fatController.dispose();
+    _waterController.dispose();
     super.dispose();
   }
 
@@ -235,6 +238,15 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   ),
                 ],
               ),
+              const SizedBox(height: AppSpacing.sm),
+              SNTextField(
+                controller: _waterController,
+                label: 'Mục tiêu nước / ngày (ml)',
+                keyboardType: TextInputType.number,
+                validator: (v) => int.tryParse(v ?? '') == null
+                    ? 'Nhập số hợp lệ'
+                    : null,
+              ),
               const SizedBox(height: AppSpacing.lg),
               if (_error != null)
                 Padding(
@@ -285,6 +297,7 @@ class _EditProfilePageState extends State<EditProfilePage> {
       carbG: int.parse(_carbController.text.trim()),
       fatG: int.parse(_fatController.text.trim()),
       targetWeightKg: widget.goal.targetWeightKg,
+      waterTargetMl: double.parse(_waterController.text.trim()),
       updatedAt: DateTime.now(),
     );
 
