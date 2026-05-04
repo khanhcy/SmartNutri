@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:smartnutri/src/core/navigation/app_router.dart';
-import 'package:smartnutri/src/core/services/auth_service.dart';
 import 'package:smartnutri/src/core/ui/layout/sn_app_bar.dart';
 import 'package:smartnutri/src/core/ui/layout/sn_scaffold.dart';
 
@@ -28,11 +26,6 @@ class _MainShellPageState extends State<MainShellPage> {
             onPressed: () {},
             icon: const Icon(Icons.notifications_none),
             tooltip: 'Thông báo',
-          ),
-          IconButton(
-            onPressed: () => context.read<AuthService>().signOut(),
-            icon: const Icon(Icons.logout),
-            tooltip: 'Đăng xuất',
           ),
         ],
       ),

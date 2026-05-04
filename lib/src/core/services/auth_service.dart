@@ -49,6 +49,14 @@ class AuthService {
     }
   }
 
+  Future<void> sendPasswordReset({required String email}) async {
+    try {
+      await _auth.sendPasswordResetEmail(email: email.trim());
+    } on fb.FirebaseAuthException catch (e) {
+      throw Exception(_friendlyAuthError(e));
+    }
+  }
+
   Future<void> signInWithGoogle() async {
     throw Exception('Google Sign-In chưa được cấu hình trong bản này.');
   }

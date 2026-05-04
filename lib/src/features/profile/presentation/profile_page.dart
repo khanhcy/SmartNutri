@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:smartnutri/src/core/providers/app_settings_provider.dart';
 import 'package:smartnutri/src/core/services/auth_service.dart';
 import 'package:smartnutri/src/core/services/goal_service.dart';
 import 'package:smartnutri/src/core/services/profile_service.dart';
@@ -54,6 +55,10 @@ class ProfilePage extends StatelessWidget {
                               ),
                             ),
                   ),
+                  const SizedBox(height: AppSpacing.md),
+                  const _SettingsCard(),
+                  const SizedBox(height: AppSpacing.md),
+                  _SignOutButton(authService: context.read<AuthService>()),
                 ],
               ),
             );
@@ -333,5 +338,88 @@ class _AccountCard extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class _SettingsCard extends StatelessWidget {
+  const _SettingsCard();
+
+  @override
+  Widget build(BuildContext context) {
+    final settings = context.watch<AppSettingsProvider>();
+    return SNCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(
+                left: AppSpacing.sm, top: AppSpacing.xs, bottom: AppSpacing.xs),
+            child: Text(
+              'Tùy chỉnh',
+              style: Theme.of(context)
+                  .textTheme
+                  .titleSmall
+                  ?.copyWith(fontWeight: FontWeight.bold),
+            ),
+          ),
+          const Divider(height: 1),
+          SwitchListTile(
+            contentPadding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+            secondary: Icon(
+              settings.isDarkMode ? Icons.dark_mode : Icons.light_mode_outlined,
+            ),
+            title: const Text('Dark mode'),
+            subtitle: Text(settings.isDarkMode ? 'Giao diện tối' : 'Giao diện sáng'),
+            value: settings.isDarkMode,
+            onChanged: settings.setDarkMode,
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SignOutButton extends StatelessWidget {
+  const _SignOutButton({required this.authService});
+  final AuthService authService;
+
+  @override
+  Widget build(BuildContext context) {
+    return OutlinedButton.icon(
+      style: OutlinedButton.styleFrom(
+        foregroundColor: Theme.of(context).colorScheme.error,
+        side: BorderSide(color: Theme.of(context).colorScheme.error),
+        minimumSize: const Size(double.infinity, 48),
+      ),
+      onPressed: () => _confirmSignOut(context),
+      icon: const Icon(Icons.logout),
+      label: const Text('Đăng xuất'),
+    );
+  }
+
+  Future<void> _confirmSignOut(BuildContext context) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Đăng xuất?'),
+        content: const Text('Bạn có chắc muốn đăng xuất khỏi SmartNutri không?'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Hủy'),
+          ),
+          FilledButton(
+            style: FilledButton.styleFrom(
+              backgroundColor: Theme.of(ctx).colorScheme.error,
+            ),
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Đăng xuất'),
+          ),
+        ],
+      ),
+    );
+    if (confirmed == true) {
+      await authService.signOut();
+    }
   }
 }
