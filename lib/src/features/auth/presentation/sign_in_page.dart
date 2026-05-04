@@ -36,7 +36,7 @@ class _SignInPageState extends State<SignInPage> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return SNScaffold(
-      appBar: const SNAppBar(title: 'SmartNutri - Đăng nhập'),
+      appBar: const SNAppBar(title: 'SmartNutri'),
       body: Container(
         width: double.infinity,
         decoration: BoxDecoration(
@@ -61,7 +61,7 @@ class _SignInPageState extends State<SignInPage> {
                   children: [
                     Icon(
                       Icons.local_dining_outlined,
-                      size: 56,
+                      size: 64,
                       color: colorScheme.primary,
                     ),
                     const SizedBox(height: AppSpacing.sm),
@@ -72,7 +72,7 @@ class _SignInPageState extends State<SignInPage> {
                     ),
                     const SizedBox(height: AppSpacing.xs),
                     Text(
-                      'Đăng nhập để tiếp tục theo dõi dinh dưỡng mỗi ngày.',
+                      'Đăng nhập để tiếp tục theo dõi dinh dưỡng.',
                       textAlign: TextAlign.center,
                       style: Theme.of(context).textTheme.bodyMedium,
                     ),
@@ -108,34 +108,31 @@ class _SignInPageState extends State<SignInPage> {
                               return null;
                             },
                           ),
-                          const SizedBox(height: AppSpacing.sm),
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: SNButton(
-                              label: 'Quên mật khẩu?',
-                              variant: SNButtonVariant.ghost,
-                              onPressed: () {},
-                            ),
-                          ),
                           if (_error != null)
                             Padding(
-                              padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+                              padding: const EdgeInsets.only(top: AppSpacing.sm),
                               child: Text(
                                 _error!,
                                 style: const TextStyle(color: AppColors.danger),
                               ),
                             ),
+                          const SizedBox(height: AppSpacing.md),
                           SNButton(
                             label: 'Đăng nhập',
                             onPressed: _signIn,
                             isLoading: _isLoading,
+                          ),
+                          const SizedBox(height: AppSpacing.xs),
+                          TextButton(
+                            onPressed: _isLoading ? null : _showForgotPassword,
+                            child: const Text('Quên mật khẩu?'),
                           ),
                         ],
                       ),
                     ),
                     const SizedBox(height: AppSpacing.sm),
                     SNButton(
-                      label: 'Chưa có tài khoản? Đăng ký',
+                      label: 'Chưa có tài khoản? Đăng ký ngay',
                       variant: SNButtonVariant.ghost,
                       onPressed: _isLoading
                           ? null
@@ -144,32 +141,6 @@ class _SignInPageState extends State<SignInPage> {
                                   builder: (_) => const SignUpPage(),
                                 ),
                               ),
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    Row(
-                      children: [
-                        const Expanded(child: Divider()),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
-                          child: Text(
-                            'hoặc đăng nhập với',
-                            style: Theme.of(context).textTheme.bodySmall,
-                          ),
-                        ),
-                        const Expanded(child: Divider()),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    OutlinedButton.icon(
-                      onPressed: _isLoading ? null : _signInWithGoogle,
-                      icon: const Icon(Icons.g_mobiledata, size: 22),
-                      label: const Text('Tiếp tục với Google'),
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    OutlinedButton.icon(
-                      onPressed: _isLoading ? null : _signInWithFacebook,
-                      icon: const Icon(Icons.facebook),
-                      label: const Text('Tiếp tục với Facebook'),
                     ),
                   ],
                 ),
@@ -181,10 +152,75 @@ class _SignInPageState extends State<SignInPage> {
     );
   }
 
-  Future<void> _signIn() async {
-    if (!_formKey.currentState!.validate()) {
+  Future<void> _showForgotPassword() async {
+    final emailController = TextEditingController(text: _emailController.text);
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Đặt lại mật khẩu'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('Nhập email để nhận liên kết đặt lại mật khẩu.'),
+            const SizedBox(height: 16),
+            TextField(
+              controller: emailController,
+              keyboardType: TextInputType.emailAddress,
+              autofocus: true,
+              decoration: const InputDecoration(
+                labelText: 'Email',
+                prefixIcon: Icon(Icons.email_outlined),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Hủy'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Gửi'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed != true || !mounted) return;
+
+    final email = emailController.text.trim();
+    if (email.isEmpty || !email.contains('@')) {
+      setState(() => _error = 'Nhập email hợp lệ để đặt lại mật khẩu');
       return;
     }
+
+    setState(() {
+      _isLoading = true;
+      _error = null;
+    });
+
+    try {
+      await context.read<AuthService>().sendPasswordReset(email: email);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Đã gửi email đặt lại mật khẩu tới $email'),
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _error = e.toString().replaceFirst('Exception: ', ''));
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _signIn() async {
+    if (!_formKey.currentState!.validate()) return;
     setState(() {
       _isLoading = true;
       _error = null;
@@ -196,56 +232,14 @@ class _SignInPageState extends State<SignInPage> {
             password: _passwordController.text,
           );
     } catch (error) {
-      setState(() {
-        _error = error.toString().replaceFirst('Exception: ', '');
-      });
-    } finally {
       if (mounted) {
         setState(() {
-          _isLoading = false;
+          _error = error.toString().replaceFirst('Exception: ', '');
         });
       }
-    }
-  }
-
-  Future<void> _signInWithGoogle() async {
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
-
-    try {
-      await context.read<AuthService>().signInWithGoogle();
-    } catch (error) {
-      setState(() {
-        _error = error.toString().replaceFirst('Exception: ', '');
-      });
     } finally {
       if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
-      }
-    }
-  }
-
-  Future<void> _signInWithFacebook() async {
-    setState(() {
-      _isLoading = true;
-      _error = null;
-    });
-
-    try {
-      await context.read<AuthService>().signInWithFacebook();
-    } catch (error) {
-      setState(() {
-        _error = error.toString().replaceFirst('Exception: ', '');
-      });
-    } finally {
-      if (mounted) {
-        setState(() {
-          _isLoading = false;
-        });
+        setState(() => _isLoading = false);
       }
     }
   }

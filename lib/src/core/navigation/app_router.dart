@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:smartnutri/src/core/services/auth_service.dart';
 import 'package:smartnutri/src/features/home/presentation/home_page.dart';
 import 'package:smartnutri/src/features/meal_log/presentation/meal_log_page.dart';
 import 'package:smartnutri/src/features/profile/presentation/profile_page.dart';
@@ -18,28 +17,26 @@ class AppTabItem {
 }
 
 class AppRouter {
-  static List<AppTabItem> mainTabs(AuthUser user) {
-    return [
-      const AppTabItem(
-        label: 'Home',
-        icon: Icons.home_outlined,
-        page: HomePage(),
-      ),
-      const AppTabItem(
-        label: 'Tìm món',
-        icon: Icons.search,
-        page: FoodSearchPage(),
-      ),
-      const AppTabItem(
-        label: 'Nhật ký',
-        icon: Icons.restaurant_menu_outlined,
-        page: MealLogPage(),
-      ),
-      AppTabItem(
-        label: 'Hồ sơ',
-        icon: Icons.person_outline,
-        page: ProfilePage(user: user),
-      ),
-    ];
-  }
+  static const List<AppTabItem> mainTabs = [
+    AppTabItem(
+      label: 'Tổng quan',
+      icon: Icons.home_outlined,
+      page: HomePage(),
+    ),
+    AppTabItem(
+      label: 'Tìm món',
+      icon: Icons.search,
+      page: FoodSearchPage(),
+    ),
+    AppTabItem(
+      label: 'Nhật ký',
+      icon: Icons.restaurant_menu_outlined,
+      page: MealLogPage(),
+    ),
+    AppTabItem(
+      label: 'Hồ sơ',
+      icon: Icons.person_outline,
+      page: ProfilePage(),
+    ),
+  ];
 }

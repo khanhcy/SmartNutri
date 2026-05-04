@@ -1,12 +1,18 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
-import 'package:smartnutri/src/core/ui/components/screen_section.dart';
-import 'package:smartnutri/src/core/ui/components/sn_button.dart';
+import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
+import 'package:smartnutri/src/core/services/auth_service.dart';
+import 'package:smartnutri/src/core/services/food_service.dart';
+import 'package:smartnutri/src/core/services/meal_service.dart';
+import 'package:smartnutri/src/core/services/recent_foods_service.dart';
 import 'package:smartnutri/src/core/ui/components/sn_card.dart';
-import 'package:smartnutri/src/core/ui/components/sn_info_tile.dart';
-import 'package:smartnutri/src/core/ui/components/sn_text_field.dart';
-import 'package:smartnutri/src/core/ui/components/state_view.dart';
 import 'package:smartnutri/src/core/ui/layout/page_template.dart';
 import 'package:smartnutri/src/core/ui/theme/app_spacing.dart';
+import 'package:smartnutri/src/features/meal_log/domain/meal_entry.dart';
+import 'package:smartnutri/src/features/meal_log/presentation/custom_meal_sheet.dart';
+import 'package:smartnutri/src/features/search/domain/food_item.dart';
 
 class FoodSearchPage extends StatefulWidget {
   const FoodSearchPage({super.key});
@@ -16,139 +22,493 @@ class FoodSearchPage extends StatefulWidget {
 }
 
 class _FoodSearchPageState extends State<FoodSearchPage> {
-  final TextEditingController _queryController = TextEditingController();
-  final Set<String> _selectedFilters = {'High protein'};
-  bool _isSearching = false;
-
-  static const List<String> _filters = [
-    'High protein',
-    'Low carb',
-    'Quick meal',
-    'Vietnamese',
-  ];
+  final _queryController = TextEditingController();
+  Timer? _debounce;
+  List<FoodItem> _results = [];
+  late final List<String> _categories;
+  String _selectedCategory = 'Tất cả';
 
   @override
   void initState() {
     super.initState();
+    // Use pre-computed cached category list from FoodService
+    _categories = ['Tất cả', ...FoodService.categories];
+    _results = context.read<FoodService>().getAll();
     _queryController.addListener(_onQueryChanged);
   }
 
   @override
   void dispose() {
+    _debounce?.cancel();
     _queryController.removeListener(_onQueryChanged);
     _queryController.dispose();
     super.dispose();
   }
 
+  void _onQueryChanged() {
+    _debounce?.cancel();
+    _debounce = Timer(const Duration(milliseconds: 280), () {
+      if (!mounted) return;
+      final q = _queryController.text.trim();
+      setState(() {
+        _results = q.isEmpty
+            ? _filterByCategory(context.read<FoodService>().getAll())
+            : _filterByCategory(context.read<FoodService>().search(q));
+      });
+    });
+  }
+
+  List<FoodItem> _filterByCategory(List<FoodItem> items) {
+    if (_selectedCategory == 'Tất cả') return items;
+    return items.where((f) => f.category == _selectedCategory).toList();
+  }
+
+  void _selectCategory(String cat) {
+    setState(() {
+      _selectedCategory = cat;
+      _onQueryChanged();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
     return PageTemplate(
       title: 'Tìm món ăn',
-      subtitle: 'Tìm nhanh để thêm vào nhật ký bữa ăn.',
+      subtitle: 'Tra cứu dinh dưỡng và thêm vào nhật ký.',
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          SNTextField(
+          // ── Header: search + nhập thủ công ────────────────────────────
+          Row(
+            children: [
+              Expanded(
+                child: TextField(
             controller: _queryController,
-            label: 'Tên món ăn',
-            hint: 'Ví dụ: cơm gà, phở bò',
-            prefixIcon: const Icon(Icons.search),
+            decoration: InputDecoration(
+              hintText: 'Tìm tên món ăn... (vd: phở bò, cơm gà)',
+              prefixIcon: const Icon(Icons.search),
+              suffixIcon: _queryController.text.isNotEmpty
+                  ? IconButton(
+                      icon: const Icon(Icons.clear),
+                      tooltip: 'Xoá tìm kiếm',
+                      onPressed: () {
+                        _queryController.clear();
+                        setState(() {});
+                      },
+                    )
+                  : null,
+                ),
+              ),
+              ),
+              const SizedBox(width: AppSpacing.xs),
+              Tooltip(
+                message: 'Nhập thủ công',
+                child: OutlinedButton(
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    minimumSize: const Size(0, 48),
+                  ),
+                  onPressed: () => showCustomMealSheet(context),
+                  child: const Icon(Icons.edit_note),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.sm),
+
+          // ── Category filter chips (derived from data) ──────────────────
+          SizedBox(
+            height: 36,
+            child: ListView.separated(
+              scrollDirection: Axis.horizontal,
+              itemCount: _categories.length,
+              separatorBuilder: (context, index) =>
+                  const SizedBox(width: AppSpacing.xs),
+              itemBuilder: (_, i) {
+                final cat = _categories[i];
+                final isSelected = _selectedCategory == cat;
+                return FilterChip(
+                  label: Text(cat),
+                  selected: isSelected,
+                  onSelected: (_) => _selectCategory(cat),
+                  materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  visualDensity: VisualDensity.compact,
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+
+          // ── Recent foods (shown only when search bar is empty & no filter) ──
+          if (_queryController.text.isEmpty &&
+              _selectedCategory == 'Tất cả') ...[
+            Consumer<RecentFoodsService>(
+              builder: (context, recents, _) {
+                if (recents.recents.isEmpty) return const SizedBox.shrink();
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Đã dùng gần đây',
+                      style: Theme.of(context)
+                          .textTheme
+                          .labelLarge
+                          ?.copyWith(color: colorScheme.primary),
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    SNCard(
+                      child: Column(
+                        children: [
+                          for (int i = 0; i < recents.recents.length; i++) ...[
+                            _FoodTile(food: recents.recents[i]),
+                            if (i < recents.recents.length - 1)
+                              const Divider(height: 1),
+                          ],
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                    Text(
+                      'Tất cả món (${_results.length})',
+                      style: Theme.of(context)
+                          .textTheme
+                          .labelLarge
+                          ?.copyWith(color: colorScheme.primary),
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                  ],
+                );
+              },
+            ),
+          ],
+
+          // ── Results count hint ─────────────────────────────────────────
+          if (_results.isNotEmpty &&
+              (_queryController.text.isNotEmpty ||
+                  _selectedCategory != 'Tất cả'))
+            Padding(
+              padding: const EdgeInsets.only(bottom: AppSpacing.xs),
+              child: Text(
+                '${_results.length} món',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+              ),
+            ),
+
+          // ── Results list ───────────────────────────────────────────────
+          if (_results.isEmpty)
+            SNCard(
+              child: Column(
+                children: [
+                  Icon(Icons.search_off,
+                      size: 40, color: colorScheme.onSurfaceVariant),
+                  const SizedBox(height: AppSpacing.sm),
+                  const Text('Không tìm thấy món phù hợp'),
+                ],
+              ),
+            )
+          else
+            SNCard(
+              child: Column(
+                children: [
+                  for (int i = 0; i < _results.length; i++) ...[
+                    _FoodTile(food: _results[i]),
+                    if (i < _results.length - 1) const Divider(height: 1),
+                  ],
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FoodTile extends StatelessWidget {
+  const _FoodTile({required this.food});
+  final FoodItem food;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return ListTile(
+      contentPadding: const EdgeInsets.symmetric(
+          vertical: AppSpacing.xs, horizontal: AppSpacing.sm),
+      leading: CircleAvatar(
+        backgroundColor: colorScheme.primaryContainer,
+        child: Icon(Icons.restaurant_outlined,
+            color: colorScheme.primary, size: 20),
+      ),
+      title: Text(food.name),
+      subtitle: Text(
+        '${food.calorieKcal.round()} kcal / 100g  •  '
+        'P:${food.proteinG.round()}g  '
+        'C:${food.carbG.round()}g  '
+        'F:${food.fatG.round()}g',
+        style: Theme.of(context).textTheme.bodySmall,
+      ),
+      trailing: IconButton(
+        onPressed: () => _showDetailSheet(context),
+        icon: Icon(Icons.add_circle_outline, color: colorScheme.primary),
+        tooltip: 'Thêm vào nhật ký',
+      ),
+      onTap: () => _showDetailSheet(context),
+    );
+  }
+
+  void _showDetailSheet(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (_) => _FoodDetailSheet(
+        food: food,
+        authService: context.read<AuthService>(),
+        mealService: context.read<MealService>(),
+        recentFoods: context.read<RecentFoodsService>(),
+      ),
+    );
+  }
+}
+
+class _FoodDetailSheet extends StatefulWidget {
+  const _FoodDetailSheet({
+    required this.food,
+    required this.authService,
+    required this.mealService,
+    required this.recentFoods,
+  });
+  final FoodItem food;
+  final AuthService authService;
+  final MealService mealService;
+  final RecentFoodsService recentFoods;
+
+  @override
+  State<_FoodDetailSheet> createState() => _FoodDetailSheetState();
+}
+
+class _FoodDetailSheetState extends State<_FoodDetailSheet> {
+  final _portionController = TextEditingController();
+  MealType _mealType = MealType.lunch;
+  bool _isSaving = false;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _portionController.text = widget.food.defaultPortionG.round().toString();
+    final hour = DateTime.now().hour;
+    _mealType = hour < 10
+        ? MealType.breakfast
+        : hour < 14
+            ? MealType.lunch
+            : hour < 19
+                ? MealType.dinner
+                : MealType.snack;
+  }
+
+  @override
+  void dispose() {
+    _portionController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final food = widget.food;
+    final portion =
+        double.tryParse(_portionController.text) ?? food.defaultPortionG;
+    final kcal = food.calorieForPortion(portion);
+    final protein = food.proteinForPortion(portion);
+    final carb = food.carbForPortion(portion);
+    final fat = food.fatForPortion(portion);
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Padding(
+      padding: EdgeInsets.only(
+        bottom: MediaQuery.of(context).viewInsets.bottom + 16,
+        left: AppSpacing.lg,
+        right: AppSpacing.lg,
+        top: AppSpacing.lg,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // Handle
+          Center(
+            child: Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: colorScheme.outlineVariant,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
           ),
           const SizedBox(height: AppSpacing.md),
-          Wrap(
-            spacing: AppSpacing.sm,
-            runSpacing: AppSpacing.sm,
-            children: _filters.map((filter) {
-              final selected = _selectedFilters.contains(filter);
-              return FilterChip(
-                label: Text(filter),
-                selected: selected,
-                onSelected: (value) {
-                  setState(() {
-                    if (value) {
-                      _selectedFilters.add(filter);
-                    } else {
-                      _selectedFilters.remove(filter);
-                    }
-                    _simulateSearch();
-                  });
-                },
-              );
-            }).toList(),
+          Text(food.name, style: Theme.of(context).textTheme.titleLarge),
+          Text(food.category, style: Theme.of(context).textTheme.bodySmall),
+          const SizedBox(height: AppSpacing.md),
+
+          // Portion input
+          TextField(
+            controller: _portionController,
+            keyboardType: TextInputType.number,
+            onChanged: (_) => setState(() {}),
+            decoration: InputDecoration(
+              labelText: 'Khẩu phần',
+              suffixText: 'g',
+              errorText: _portionError(),
+            ),
           ),
-          ScreenSection(
-            title: 'Kết quả gợi ý',
-            actionLabel: 'Sắp xếp',
-            child: _buildSearchState(),
+          const SizedBox(height: AppSpacing.sm),
+
+          // Macro preview
+          Container(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            decoration: BoxDecoration(
+              color: colorScheme.surfaceContainerHighest,
+              borderRadius: BorderRadius.circular(12),
+            ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                _Badge('${kcal.round()} kcal', 'Calo'),
+                _Badge('${protein.toStringAsFixed(1)}g', 'Protein'),
+                _Badge('${carb.toStringAsFixed(1)}g', 'Carb'),
+                _Badge('${fat.toStringAsFixed(1)}g', 'Fat'),
+              ],
+            ),
           ),
-          const SizedBox(height: AppSpacing.lg),
-          SNButton(
-            label: 'Thêm món đã chọn vào bữa trưa',
-            onPressed: () {},
+          const SizedBox(height: AppSpacing.sm),
+
+          // Meal type selector
+          DropdownButtonFormField<MealType>(
+            initialValue: _mealType,
+            decoration: InputDecoration(
+              labelText: 'Loại bữa ăn',
+              border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12)),
+              isDense: true,
+            ),
+            items: MealType.values
+                .map((t) =>
+                    DropdownMenuItem(value: t, child: Text(t.label)))
+                .toList(),
+            onChanged: (v) =>
+                setState(() => _mealType = v ?? MealType.lunch),
+          ),
+
+          // Error message
+          if (_error != null) ...[
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              _error!,
+              style: TextStyle(
+                  color: colorScheme.error, fontSize: 13),
+            ),
+          ],
+
+          const SizedBox(height: AppSpacing.md),
+          SizedBox(
+            width: double.infinity,
+            child: FilledButton(
+              onPressed: _isSaving || _portionError() != null ? null : _save,
+              child: _isSaving
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2))
+                  : const Text('Thêm vào nhật ký'),
+            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _buildSearchState() {
-    if (_isSearching) {
-      return const SizedBox(
-        height: 180,
-        child: LoadingView(message: 'Đang tìm món phù hợp...'),
-      );
-    }
+  String? _portionError() {
+    final v = double.tryParse(_portionController.text);
+    if (v == null || v <= 0) return 'Khẩu phần phải lớn hơn 0';
+    return null;
+  }
 
-    if (_queryController.text.trim().isEmpty) {
-      return const SizedBox(
-        height: 180,
-        child: EmptyView(
-          title: 'Nhập tên món để bắt đầu',
-          description: 'Ví dụ: phở bò, cơm gà, salad.',
-        ),
-      );
-    }
+  Future<void> _save() async {
+    final portion = double.tryParse(_portionController.text);
+    if (portion == null || portion <= 0) return;
 
-    return const SNCard(
-      child: Column(
-        children: [
-          SNInfoTile(
-            title: 'Phở bò',
-            subtitle: '350 kcal - 20g protein',
-            leadingIcon: Icons.ramen_dining_outlined,
-            trailing: Icon(Icons.chevron_right),
-          ),
-          Divider(),
-          SNInfoTile(
-            title: 'Cơm gà nướng',
-            subtitle: '520 kcal - 32g protein',
-            leadingIcon: Icons.rice_bowl_outlined,
-            trailing: Icon(Icons.chevron_right),
-          ),
-          Divider(),
-          SNInfoTile(
-            title: 'Salad ức gà',
-            subtitle: '290 kcal - 28g protein',
-            leadingIcon: Icons.eco_outlined,
-            trailing: Icon(Icons.chevron_right),
-          ),
-        ],
-      ),
+    setState(() {
+      _isSaving = true;
+      _error = null;
+    });
+
+    final uid = widget.authService.currentUser!.uid;
+    final now = DateTime.now();
+    final dateStr =
+        '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+
+    final entry = MealEntry(
+      id: '',
+      uid: uid,
+      date: dateStr,
+      mealType: _mealType,
+      foodName: widget.food.name,
+      portionG: portion,
+      calorieKcal: widget.food.calorieForPortion(portion),
+      proteinG: widget.food.proteinForPortion(portion),
+      carbG: widget.food.carbForPortion(portion),
+      fatG: widget.food.fatForPortion(portion),
+      loggedAt: now,
     );
-  }
 
-  Future<void> _simulateSearch() async {
-    setState(() => _isSearching = true);
-    await Future<void>.delayed(const Duration(milliseconds: 450));
-    if (mounted) {
-      setState(() => _isSearching = false);
+    try {
+      await widget.mealService.addEntry(uid, entry);
+      await widget.recentFoods.add(widget.food);
+      if (mounted) {
+        HapticFeedback.lightImpact();
+        final messenger = ScaffoldMessenger.of(context);
+        Navigator.of(context).pop();
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text('Đã thêm ${widget.food.name} vào nhật ký'),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() {
+          _isSaving = false;
+          _error = 'Không thể lưu: ${e.toString()}';
+        });
+      }
     }
   }
+}
 
-  void _onQueryChanged() {
-    setState(() {});
-    if (_queryController.text.trim().isNotEmpty) {
-      _simulateSearch();
-    }
+class _Badge extends StatelessWidget {
+  const _Badge(this.value, this.label);
+  final String value;
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        Text(value,
+            style: Theme.of(context)
+                .textTheme
+                .titleSmall
+                ?.copyWith(fontWeight: FontWeight.bold)),
+        Text(label, style: Theme.of(context).textTheme.bodySmall),
+      ],
+    );
   }
 }
