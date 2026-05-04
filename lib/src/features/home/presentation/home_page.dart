@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:smartnutri/src/core/services/auth_service.dart';
 import 'package:smartnutri/src/core/services/goal_service.dart';
 import 'package:smartnutri/src/core/services/meal_service.dart';
+import 'package:smartnutri/src/core/services/water_service.dart';
 import 'package:smartnutri/src/core/ui/components/sn_card.dart';
 import 'package:smartnutri/src/core/ui/layout/page_template.dart';
 import 'package:smartnutri/src/core/ui/theme/app_spacing.dart';
@@ -36,64 +37,79 @@ class HomePage extends StatelessWidget {
             final carbConsumed = entries.fold(0.0, (s, e) => s + e.carbG);
             final fatConsumed = entries.fold(0.0, (s, e) => s + e.fatG);
 
-            return PageTemplate(
-              title: 'Tổng quan hôm nay',
-              subtitle: _greetingSubtitle(uid, context),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _CalorieSummaryCard(
-                    consumed: consumed,
-                    goal: goal.calorieTarget.toDouble(),
-                    remaining: remaining,
+            return StreamBuilder<double>(
+              stream: context.read<WaterService>().watchWaterMl(uid, today),
+              builder: (context, waterSnap) {
+                final waterMl = waterSnap.data ?? 0.0;
+
+                return PageTemplate(
+                  title: 'Tổng quan hôm nay',
+                  subtitle: _greetingSubtitle(uid, context),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _CalorieSummaryCard(
+                        consumed: consumed,
+                        goal: goal.calorieTarget.toDouble(),
+                        remaining: remaining,
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      _WaterCard(
+                        waterMl: waterMl,
+                        targetMl: 2500,
+                        uid: uid,
+                        date: today,
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      SNCard(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Tiến độ macro',
+                              style: Theme.of(context).textTheme.titleSmall,
+                            ),
+                            const SizedBox(height: AppSpacing.md),
+                            _MacroRow(
+                              label: 'Protein',
+                              consumed: proteinConsumed,
+                              goal: goal.proteinG.toDouble(),
+                              color: Colors.blue,
+                            ),
+                            const SizedBox(height: AppSpacing.sm),
+                            _MacroRow(
+                              label: 'Carb',
+                              consumed: carbConsumed,
+                              goal: goal.carbG.toDouble(),
+                              color: Colors.orange,
+                            ),
+                            const SizedBox(height: AppSpacing.sm),
+                            _MacroRow(
+                              label: 'Fat',
+                              consumed: fatConsumed,
+                              goal: goal.fatG.toDouble(),
+                              color: Colors.pink,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.md),
+                      _TodayMealsSection(entries: entries, uid: uid),
+                      const SizedBox(height: AppSpacing.md),
+                      SizedBox(
+                        width: double.infinity,
+                        child: FilledButton.icon(
+                          onPressed: () => showAddMealSheet(
+                              context,
+                              initialMealType: _suggestMealType()),
+                          icon: const Icon(Icons.add),
+                          label: const Text('Thêm bữa ăn'),
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: AppSpacing.md),
-                  SNCard(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Tiến độ macro',
-                          style: Theme.of(context).textTheme.titleSmall,
-                        ),
-                        const SizedBox(height: AppSpacing.md),
-                        _MacroRow(
-                          label: 'Protein',
-                          consumed: proteinConsumed,
-                          goal: goal.proteinG.toDouble(),
-                          color: Colors.blue,
-                        ),
-                        const SizedBox(height: AppSpacing.sm),
-                        _MacroRow(
-                          label: 'Carb',
-                          consumed: carbConsumed,
-                          goal: goal.carbG.toDouble(),
-                          color: Colors.orange,
-                        ),
-                        const SizedBox(height: AppSpacing.sm),
-                        _MacroRow(
-                          label: 'Fat',
-                          consumed: fatConsumed,
-                          goal: goal.fatG.toDouble(),
-                          color: Colors.pink,
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                  _TodayMealsSection(entries: entries, uid: uid),
-                  const SizedBox(height: AppSpacing.md),
-                  SizedBox(
-                    width: double.infinity,
-                    child: FilledButton.icon(
-                      onPressed: () =>
-                          showAddMealSheet(context, initialMealType: _suggestMealType()),
-                      icon: const Icon(Icons.add),
-                      label: const Text('Thêm bữa ăn'),
-                    ),
-                  ),
-                ],
-              ),
+                );
+              },
             );
           },
         );
@@ -117,6 +133,112 @@ class HomePage extends StatelessWidget {
     if (hour < 14) return MealType.lunch;
     if (hour < 19) return MealType.dinner;
     return MealType.snack;
+  }
+}
+
+class _WaterCard extends StatelessWidget {
+  const _WaterCard({
+    required this.waterMl,
+    required this.targetMl,
+    required this.uid,
+    required this.date,
+  });
+
+  final double waterMl;
+  final double targetMl;
+  final String uid;
+  final String date;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final progress = (waterMl / targetMl).clamp(0.0, 1.0);
+    final remaining = (targetMl - waterMl).clamp(0.0, targetMl);
+
+    return SNCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.water_drop_outlined, color: Colors.blue.shade400),
+              const SizedBox(width: 8),
+              Text('Nước uống hôm nay',
+                  style: Theme.of(context).textTheme.titleSmall),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Row(
+            children: [
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      '${(waterMl / 1000).toStringAsFixed(1)} / ${(targetMl / 1000).toStringAsFixed(1)} L',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.bold,
+                            color: Colors.blue.shade600,
+                          ),
+                    ),
+                    Text(
+                      remaining > 0
+                          ? 'Còn thiếu ${(remaining / 1000).toStringAsFixed(1)} L'
+                          : 'Đã đủ nước hôm nay!',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
+                ),
+              ),
+              Text(
+                '${(progress * 100).round()}%',
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      color: Colors.blue.shade600,
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          LinearProgressIndicator(
+            value: progress,
+            color: Colors.blue.shade400,
+            backgroundColor: Colors.blue.shade50,
+            minHeight: 8,
+            borderRadius: BorderRadius.circular(4),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Row(
+            children: [
+              for (final ml in [150.0, 200.0, 250.0, 330.0])
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 3),
+                    child: OutlinedButton(
+                      style: OutlinedButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        minimumSize: const Size(0, 36),
+                        side: BorderSide(color: colorScheme.outline),
+                        shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8)),
+                      ),
+                      onPressed: () => context
+                          .read<WaterService>()
+                          .addWaterMl(uid, date, ml),
+                      child: Text(
+                        ml >= 1000
+                            ? '${(ml / 1000).toStringAsFixed(1)}L'
+                            : '${ml.round()}ml',
+                        style: const TextStyle(fontSize: 12),
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 }
 
