@@ -1,64 +1,87 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
-import 'package:smartnutri/src/core/navigation/app_router.dart';
-import 'package:smartnutri/src/core/services/auth_service.dart';
+import 'package:smartnutri/src/core/providers/app_settings_provider.dart';
 import 'package:smartnutri/src/core/ui/layout/sn_app_bar.dart';
 import 'package:smartnutri/src/core/ui/layout/sn_scaffold.dart';
+import 'package:smartnutri/src/features/dashboard/presentation/notifications_sheet.dart';
 
-class MainShellPage extends StatefulWidget {
-  const MainShellPage({super.key, required this.user});
+class MainShellPage extends StatelessWidget {
+  const MainShellPage({super.key, required this.shell});
 
-  final AuthUser user;
+  final StatefulNavigationShell shell;
 
-  @override
-  State<MainShellPage> createState() => _MainShellPageState();
-}
-
-class _MainShellPageState extends State<MainShellPage> {
-  int _currentIndex = 0;
+  static const _labels = ['Tổng quan', 'Tìm món', 'Nhật ký', 'Hồ sơ'];
+  static const _icons = [
+    Icons.home_outlined,
+    Icons.search,
+    Icons.restaurant_menu_outlined,
+    Icons.person_outline,
+  ];
 
   @override
   Widget build(BuildContext context) {
-    final tabs = AppRouter.mainTabs(widget.user);
-    final currentTab = tabs[_currentIndex];
+    final label = _labels[shell.currentIndex];
 
     return SNScaffold(
       appBar: SNAppBar(
-        title: currentTab.label,
-        actions: [
-          IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.notifications_none),
-            tooltip: 'Thông báo',
-          ),
-          IconButton(
-            onPressed: () => context.read<AuthService>().signOut(),
-            icon: const Icon(Icons.logout),
-            tooltip: 'Đăng xuất',
-          ),
-        ],
+        title: label,
+        actions: [const _NotificationBell()],
       ),
-      body: AnimatedSwitcher(
-        duration: const Duration(milliseconds: 200),
-        child: IndexedStack(
-          key: ValueKey(_currentIndex),
-          index: _currentIndex,
-          children: tabs.map((tab) => tab.page).toList(),
-        ),
-      ),
+      body: shell,
       bottomNavigationBar: NavigationBar(
         height: 72,
-        selectedIndex: _currentIndex,
-        onDestinationSelected: (index) => setState(() => _currentIndex = index),
+        selectedIndex: shell.currentIndex,
+        onDestinationSelected: (i) => shell.goBranch(
+          i,
+          initialLocation: i == shell.currentIndex,
+        ),
         destinations: [
-          for (final tab in tabs)
+          for (int i = 0; i < _labels.length; i++)
             NavigationDestination(
-              icon: Icon(tab.icon),
-              selectedIcon: Icon(tab.icon, fill: 1),
-              label: tab.label,
+              icon: Icon(_icons[i]),
+              selectedIcon: Icon(_icons[i], fill: 1),
+              label: _labels[i],
             ),
         ],
       ),
+    );
+  }
+}
+
+class _NotificationBell extends StatelessWidget {
+  const _NotificationBell();
+
+  @override
+  Widget build(BuildContext context) {
+    final hasActive = context.select<AppSettingsProvider, bool>(
+      (s) => s.waterRemindersEnabled || s.mealRemindersEnabled,
+    );
+
+    return Stack(
+      clipBehavior: Clip.none,
+      children: [
+        IconButton(
+          icon: Icon(
+            hasActive ? Icons.notifications : Icons.notifications_none,
+          ),
+          tooltip: 'Nhắc nhở',
+          onPressed: () => NotificationsSheet.show(context),
+        ),
+        if (hasActive)
+          Positioned(
+            right: 8,
+            top: 8,
+            child: Container(
+              width: 8,
+              height: 8,
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primary,
+                shape: BoxShape.circle,
+              ),
+            ),
+          ),
+      ],
     );
   }
 }

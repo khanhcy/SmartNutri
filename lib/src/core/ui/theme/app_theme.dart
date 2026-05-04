@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:smartnutri/src/core/ui/theme/app_colors.dart';
 import 'package:smartnutri/src/core/ui/theme/app_radius.dart';
 import 'package:smartnutri/src/core/ui/theme/app_text_styles.dart';
@@ -24,8 +25,9 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       colorScheme: colorScheme,
-      fontFamily: 'Roboto',
-      textTheme: AppTextStyles.textTheme(colorScheme),
+      textTheme: GoogleFonts.beVietnamProTextTheme(
+        AppTextStyles.textTheme(colorScheme),
+      ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.35),
