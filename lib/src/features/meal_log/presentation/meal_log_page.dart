@@ -6,6 +6,7 @@ import 'package:smartnutri/src/core/services/meal_service.dart';
 import 'package:smartnutri/src/core/ui/components/sn_card.dart';
 import 'package:smartnutri/src/core/ui/layout/page_template.dart';
 import 'package:smartnutri/src/core/ui/theme/app_spacing.dart';
+import 'package:smartnutri/src/core/utils/date_utils.dart';
 import 'package:smartnutri/src/features/meal_log/domain/meal_entry.dart';
 import 'package:smartnutri/src/features/meal_log/presentation/add_meal_bottom_sheet.dart';
 import 'package:smartnutri/src/features/meal_log/presentation/weekly_summary_card.dart';
@@ -21,21 +22,15 @@ class MealLogPage extends StatefulWidget {
 class _MealLogPageState extends State<MealLogPage> {
   DateTime _selectedDate = DateTime.now();
 
-  String get _dateStr {
-    final d = _selectedDate;
-    return '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
-  }
+  String get _dateStr => AppDateUtils.toDateStr(_selectedDate);
 
   String get _displayDate {
     final now = DateTime.now();
     final d = _selectedDate;
-    if (_isSameDay(d, now)) return 'Hôm nay';
-    if (_isSameDay(d, now.subtract(const Duration(days: 1)))) return 'Hôm qua';
+    if (AppDateUtils.isSameDay(d, now)) return 'Hôm nay';
+    if (AppDateUtils.isSameDay(d, now.subtract(const Duration(days: 1)))) return 'Hôm qua';
     return '${d.day.toString().padLeft(2, '0')}/${d.month.toString().padLeft(2, '0')}/${d.year}';
   }
-
-  bool _isSameDay(DateTime a, DateTime b) =>
-      a.year == b.year && a.month == b.month && a.day == b.day;
 
   @override
   Widget build(BuildContext context) {
@@ -65,7 +60,7 @@ class _MealLogPageState extends State<MealLogPage> {
                     label: _displayDate,
                     onPrevious: () => setState(() => _selectedDate =
                         _selectedDate.subtract(const Duration(days: 1))),
-                    onNext: _isSameDay(_selectedDate, DateTime.now())
+                    onNext: AppDateUtils.isSameDay(_selectedDate, DateTime.now())
                         ? null
                         : () => setState(() => _selectedDate =
                             _selectedDate.add(const Duration(days: 1))),
@@ -96,7 +91,7 @@ class _MealLogPageState extends State<MealLogPage> {
                   else
                     _MealGroups(entries: entries, uid: uid),
                   const SizedBox(height: AppSpacing.md),
-                  WeeklySummaryCard(goal: goal),
+                  RepaintBoundary(child: WeeklySummaryCard(goal: goal)),
                   const SizedBox(height: AppSpacing.md),
                   SizedBox(
                     width: double.infinity,
@@ -374,51 +369,44 @@ class _EntryRow extends StatelessWidget {
       },
       onDismissed: (_) =>
           context.read<MealService>().deleteEntry(uid, entry.id),
-      child: InkWell(
-        onLongPress: () => _editPortion(context),
-        borderRadius: BorderRadius.circular(8),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 2),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(entry.foodName,
-                              style: Theme.of(context).textTheme.bodyMedium),
-                        ),
-                        Icon(Icons.edit_outlined,
-                            size: 12,
-                            color: Theme.of(context)
-                                .colorScheme
-                                .onSurfaceVariant
-                                .withValues(alpha: 0.5)),
-                      ],
-                    ),
-                    Text(
-                      '${entry.portionG.round()}g  •  '
-                      'P:${entry.proteinG.toStringAsFixed(1)}g  '
-                      'C:${entry.carbG.toStringAsFixed(1)}g  '
-                      'F:${entry.fatG.toStringAsFixed(1)}g',
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                  ],
-                ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 2),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(entry.foodName,
+                      style: Theme.of(context).textTheme.bodyMedium),
+                  Text(
+                    '${entry.portionG.round()}g  •  '
+                    'P:${entry.proteinG.toStringAsFixed(1)}g  '
+                    'C:${entry.carbG.toStringAsFixed(1)}g  '
+                    'F:${entry.fatG.toStringAsFixed(1)}g',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
+                ],
               ),
-              const SizedBox(width: AppSpacing.sm),
-              Text(
-                '${entry.calorieKcal.round()} kcal',
-                style: Theme.of(context)
-                    .textTheme
-                    .bodySmall
-                    ?.copyWith(fontWeight: FontWeight.w600),
+            ),
+            Text(
+              '${entry.calorieKcal.round()} kcal',
+              style: Theme.of(context)
+                  .textTheme
+                  .bodySmall
+                  ?.copyWith(fontWeight: FontWeight.w600),
+            ),
+            IconButton(
+              icon: Icon(
+                Icons.edit_outlined,
+                size: 18,
+                color: Theme.of(context).colorScheme.primary,
               ),
-            ],
-          ),
+              tooltip: 'Chỉnh sửa khẩu phần',
+              visualDensity: VisualDensity.compact,
+              onPressed: () => _editPortion(context),
+            ),
+          ],
         ),
       ),
     );

@@ -246,9 +246,9 @@ class _OnboardingPageState extends State<OnboardingPage> {
         context.read<GoalService>().upsertGoal(goal),
       ]);
       // AuthGate's StreamBuilder detects onboardingCompleted=true and navigates automatically.
-    } catch (_) {
+    } catch (e) {
       if (mounted) {
-        setState(() => _error = 'Lưu hồ sơ thất bại. Vui lòng thử lại.');
+        setState(() => _error = 'Lưu hồ sơ thất bại. Vui lòng thử lại.\n${e.toString()}');
       }
     } finally {
       if (mounted) {
