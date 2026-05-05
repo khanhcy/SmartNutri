@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
+import 'package:smartnutri/src/app/go_router_config.dart';
 import 'package:smartnutri/src/core/providers/app_settings_provider.dart';
 import 'package:smartnutri/src/core/services/auth_service.dart';
 import 'package:smartnutri/src/core/services/notification_service.dart';
@@ -15,7 +17,6 @@ import 'package:smartnutri/src/features/nutrition/domain/nutrition_goal.dart';
 import 'package:smartnutri/src/features/profile/domain/user_profile.dart';
 import 'package:smartnutri/src/features/profile/presentation/about_page.dart';
 import 'package:smartnutri/src/features/profile/presentation/edit_profile_page.dart';
-import 'package:smartnutri/src/features/stats/presentation/statistics_page.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -57,11 +58,7 @@ class ProfilePage extends StatelessWidget {
                         'Trung bình calo, macro, nước và chuỗi ngày đạt mục tiêu',
                       ),
                       trailing: const Icon(Icons.chevron_right),
-                      onTap: () => Navigator.of(context).push(
-                            MaterialPageRoute<void>(
-                              builder: (_) => const StatisticsPage(),
-                            ),
-                          ),
+                      onTap: () => context.push(AppPaths.stats),
                     ),
                   ),
                   if (profile != null) ...[
@@ -490,6 +487,8 @@ class _WeightTrackerCard extends StatelessWidget {
                       'Đã ghi hôm nay: ${logged.toStringAsFixed(1)} kg',
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
+                  const SizedBox(height: AppSpacing.sm),
+                  _WeightTrendMini(uid: uid),
                 ],
               );
             },
@@ -568,6 +567,86 @@ class _WeightTrackerCard extends StatelessWidget {
         SnackBar(content: Text(firestoreWriteErrorMessage(e))),
       );
     }
+  }
+}
+
+class _WeightTrendMini extends StatelessWidget {
+  const _WeightTrendMini({required this.uid});
+  final String uid;
+
+  @override
+  Widget build(BuildContext context) {
+    return FutureBuilder<Map<String, double>>(
+      future: context.read<WeightService>().getWeightsLastDays(uid: uid, days: 7),
+      builder: (context, snap) {
+        final data = snap.data ?? const <String, double>{};
+        if (data.isEmpty) {
+          return Text(
+            'Chưa có dữ liệu cân nặng 7 ngày gần đây.',
+            style: Theme.of(context).textTheme.bodySmall,
+          );
+        }
+        final now = DateTime.now();
+        final base = DateTime(now.year, now.month, now.day);
+        final points = <({DateTime d, double? kg})>[];
+        for (var i = 6; i >= 0; i--) {
+          final d = base.subtract(Duration(days: i));
+          final key = AppDateUtils.toDateStr(d);
+          points.add((d: d, kg: data[key]));
+        }
+        final values = points.map((e) => e.kg).whereType<double>().toList();
+        final min = values.reduce((a, b) => a < b ? a : b);
+        final max = values.reduce((a, b) => a > b ? a : b);
+        final range = (max - min).abs() < 0.0001 ? 1.0 : (max - min);
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Xu hướng 7 ngày', style: Theme.of(context).textTheme.bodySmall),
+            const SizedBox(height: AppSpacing.xs),
+            SizedBox(
+              height: 72,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  for (final p in points)
+                    Expanded(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 2),
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            if (p.kg != null)
+                              Text(
+                                p.kg!.toStringAsFixed(1),
+                                style: const TextStyle(fontSize: 9),
+                              ),
+                            const SizedBox(height: 2),
+                            Container(
+                              height: p.kg == null ? 4 : 12 + ((p.kg! - min) / range) * 36,
+                              decoration: BoxDecoration(
+                                color: p.kg == null
+                                    ? Theme.of(context).colorScheme.surfaceContainerHighest
+                                    : Theme.of(context).colorScheme.primaryContainer,
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              AppDateUtils.shortDayVi(p.d),
+                              style: Theme.of(context).textTheme.labelSmall,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
+    );
   }
 }
 
