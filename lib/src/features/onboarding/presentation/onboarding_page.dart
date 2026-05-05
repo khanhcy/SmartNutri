@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:smartnutri/src/core/utils/firestore_write_message.dart';
 import 'package:smartnutri/src/core/services/auth_service.dart';
 import 'package:smartnutri/src/core/services/goal_service.dart';
 import 'package:smartnutri/src/core/services/profile_service.dart';
@@ -248,7 +249,7 @@ class _OnboardingPageState extends State<OnboardingPage> {
       // AuthGate's StreamBuilder detects onboardingCompleted=true and navigates automatically.
     } catch (e) {
       if (mounted) {
-        setState(() => _error = 'Lưu hồ sơ thất bại. Vui lòng thử lại.\n${e.toString()}');
+        setState(() => _error = firestoreWriteErrorMessage(e));
       }
     } finally {
       if (mounted) {

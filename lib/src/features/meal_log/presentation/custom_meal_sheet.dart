@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:smartnutri/src/core/utils/firestore_write_message.dart';
 import 'package:smartnutri/src/core/services/auth_service.dart';
 import 'package:smartnutri/src/core/services/meal_service.dart';
 import 'package:smartnutri/src/core/ui/theme/app_spacing.dart';
@@ -12,7 +13,9 @@ import 'package:uuid/uuid.dart';
 void showCustomMealSheet(
   BuildContext context, {
   MealType initialMealType = MealType.lunch,
+  DateTime? logDate,
 }) {
+  final day = logDate ?? DateTime.now();
   showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
@@ -24,14 +27,21 @@ void showCustomMealSheet(
         Provider.value(value: context.read<AuthService>()),
         Provider.value(value: context.read<MealService>()),
       ],
-      child: _CustomMealSheet(initialMealType: initialMealType),
+      child: _CustomMealSheet(
+        initialMealType: initialMealType,
+        logDate: day,
+      ),
     ),
   );
 }
 
 class _CustomMealSheet extends StatefulWidget {
-  const _CustomMealSheet({required this.initialMealType});
+  const _CustomMealSheet({
+    required this.initialMealType,
+    required this.logDate,
+  });
   final MealType initialMealType;
+  final DateTime logDate;
 
   @override
   State<_CustomMealSheet> createState() => _CustomMealSheetState();
@@ -270,7 +280,7 @@ class _CustomMealSheetState extends State<_CustomMealSheet> {
     final entry = MealEntry(
       id: const Uuid().v4(),
       uid: uid,
-      date: AppDateUtils.todayStr(),
+      date: AppDateUtils.toDateStr(widget.logDate),
       mealType: _mealType,
       foodName: _nameCtrl.text.trim(),
       portionG: double.parse(_portionCtrl.text),
@@ -298,7 +308,7 @@ class _CustomMealSheetState extends State<_CustomMealSheet> {
       if (mounted) {
         setState(() {
           _saving = false;
-          _error = 'Không thể lưu: ${e.toString()}';
+          _error = firestoreWriteErrorMessage(e);
         });
       }
     }

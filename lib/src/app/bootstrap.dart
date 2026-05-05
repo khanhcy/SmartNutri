@@ -18,6 +18,7 @@ import 'package:smartnutri/src/core/services/notification_service.dart';
 import 'package:smartnutri/src/core/services/profile_service.dart';
 import 'package:smartnutri/src/core/services/recent_foods_service.dart';
 import 'package:smartnutri/src/core/services/water_service.dart';
+import 'package:smartnutri/src/core/services/weight_service.dart';
 
 Future<void> bootstrap() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -68,6 +69,7 @@ Future<void> bootstrap() async {
         Provider(create: (_) => MealService()),
         Provider(create: (_) => FoodService()),
         Provider(create: (_) => WaterService()),
+        Provider(create: (_) => WeightService()),
         Provider(create: (_) => ConnectivityService()),
         Provider.value(value: notificationService),
         ChangeNotifierProvider.value(value: recentFoods),

@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:smartnutri/src/core/utils/firestore_write_message.dart';
 import 'package:smartnutri/src/core/services/auth_service.dart';
 import 'package:smartnutri/src/core/services/food_service.dart';
 import 'package:smartnutri/src/core/services/meal_service.dart';
 import 'package:smartnutri/src/core/ui/theme/app_spacing.dart';
+import 'package:smartnutri/src/core/utils/date_utils.dart';
 import 'package:smartnutri/src/features/meal_log/domain/meal_entry.dart';
 import 'package:smartnutri/src/features/search/domain/food_item.dart';
 
@@ -12,7 +14,9 @@ import 'package:smartnutri/src/features/search/domain/food_item.dart';
 Future<void> showAddMealSheet(
   BuildContext context, {
   MealType initialMealType = MealType.lunch,
+  DateTime? logDate,
 }) {
+  final day = logDate ?? DateTime.now();
   return showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
@@ -26,14 +30,22 @@ Future<void> showAddMealSheet(
         Provider.value(value: context.read<FoodService>()),
         Provider.value(value: context.read<MealService>()),
       ],
-      child: _AddMealSheet(initialMealType: initialMealType),
+      child: _AddMealSheet(
+        initialMealType: initialMealType,
+        logDate: day,
+      ),
     ),
   );
 }
 
 class _AddMealSheet extends StatefulWidget {
-  const _AddMealSheet({required this.initialMealType});
+  const _AddMealSheet({
+    required this.initialMealType,
+    required this.logDate,
+  });
   final MealType initialMealType;
+  /// Calendar day stored on the meal entry (`date` field).
+  final DateTime logDate;
 
   @override
   State<_AddMealSheet> createState() => _AddMealSheetState();
@@ -304,8 +316,7 @@ class _AddMealSheetState extends State<_AddMealSheet> {
 
     final uid = context.read<AuthService>().currentUser!.uid;
     final now = DateTime.now();
-    final dateStr =
-        '${now.year}-${now.month.toString().padLeft(2, '0')}-${now.day.toString().padLeft(2, '0')}';
+    final dateStr = AppDateUtils.toDateStr(widget.logDate);
 
     final entry = MealEntry(
       id: '',
@@ -331,7 +342,7 @@ class _AddMealSheetState extends State<_AddMealSheet> {
       if (mounted) {
         setState(() {
           _isSaving = false;
-          _error = 'Lưu thất bại. Vui lòng thử lại.';
+          _error = firestoreWriteErrorMessage(e);
         });
       }
     }

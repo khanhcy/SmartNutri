@@ -1,3 +1,4 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:smartnutri/src/core/services/auth_service.dart';
@@ -22,6 +23,18 @@ class MealLogPage extends StatefulWidget {
 
 class _MealLogPageState extends State<MealLogPage> {
   DateTime _selectedDate = DateTime.now();
+
+  MealType _suggestMealTypeForSelectedDay() {
+    final now = DateTime.now();
+    if (!AppDateUtils.isSameDay(_selectedDate, now)) {
+      return MealType.lunch;
+    }
+    final hour = now.hour;
+    if (hour < 10) return MealType.breakfast;
+    if (hour < 14) return MealType.lunch;
+    if (hour < 19) return MealType.dinner;
+    return MealType.snack;
+  }
 
   String get _dateStr => AppDateUtils.toDateStr(_selectedDate);
 
@@ -98,7 +111,11 @@ class _MealLogPageState extends State<MealLogPage> {
                     children: [
                       Expanded(
                         child: FilledButton.icon(
-                          onPressed: () => showAddMealSheet(context),
+                          onPressed: () => showAddMealSheet(
+                            context,
+                            initialMealType: _suggestMealTypeForSelectedDay(),
+                            logDate: _selectedDate,
+                          ),
                           icon: const Icon(Icons.search),
                           label: const Text('Tìm món'),
                         ),
@@ -106,7 +123,11 @@ class _MealLogPageState extends State<MealLogPage> {
                       const SizedBox(width: AppSpacing.sm),
                       Expanded(
                         child: OutlinedButton.icon(
-                          onPressed: () => showCustomMealSheet(context),
+                          onPressed: () => showCustomMealSheet(
+                            context,
+                            initialMealType: _suggestMealTypeForSelectedDay(),
+                            logDate: _selectedDate,
+                          ),
                           icon: const Icon(Icons.edit_note),
                           label: const Text('Nhập thủ công'),
                         ),
@@ -297,6 +318,7 @@ class _EntryRow extends StatelessWidget {
   final String uid;
 
   Future<void> _editPortion(BuildContext context) async {
+    final mealService = context.read<MealService>();
     final controller =
         TextEditingController(text: entry.portionG.round().toString());
     final confirmed = await showDialog<bool>(
@@ -323,6 +345,7 @@ class _EntryRow extends StatelessWidget {
       ),
     );
 
+    if (!context.mounted) return;
     if (confirmed != true) return;
     final newPortion = double.tryParse(controller.text);
     if (newPortion == null || newPortion <= 0) return;
@@ -343,8 +366,26 @@ class _EntryRow extends StatelessWidget {
       loggedAt: entry.loggedAt,
     );
 
-    if (context.mounted) {
-      await context.read<MealService>().updateEntry(uid, updated);
+    try {
+      await mealService.updateEntry(uid, updated);
+    } on FirebaseException catch (e) {
+      if (!context.mounted) return;
+      final messenger = ScaffoldMessenger.of(context);
+      final message = e.code == 'permission-denied'
+          ? 'Không thể lưu. Kiểm tra quyền Firestore Rules trên Firebase.'
+          : 'Không thể lưu lúc này. Vui lòng thử lại.';
+      messenger
+        ..hideCurrentSnackBar()
+        ..showSnackBar(SnackBar(content: Text(message)));
+    } catch (_) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context)
+        ..hideCurrentSnackBar()
+        ..showSnackBar(
+          const SnackBar(
+            content: Text('Không thể lưu lúc này. Vui lòng thử lại.'),
+          ),
+        );
     }
   }
 
@@ -363,7 +404,8 @@ class _EntryRow extends StatelessWidget {
         child: const Icon(Icons.delete_outline, color: Colors.red),
       ),
       confirmDismiss: (_) async {
-        return await showDialog<bool>(
+        final mealService = context.read<MealService>();
+        final confirmed = await showDialog<bool>(
           context: context,
           builder: (ctx) => AlertDialog(
             title: const Text('Xóa bữa ăn?'),
@@ -378,9 +420,33 @@ class _EntryRow extends StatelessWidget {
             ],
           ),
         );
+        if (!context.mounted) return false;
+        if (confirmed != true) return false;
+        try {
+          await mealService.deleteEntry(uid, entry.id);
+          return true;
+        } on FirebaseException catch (e) {
+          if (!context.mounted) return false;
+          final messenger = ScaffoldMessenger.of(context);
+          final message = e.code == 'permission-denied'
+              ? 'Không thể xóa món. Kiểm tra quyền Firestore Rules trên Firebase.'
+              : 'Không thể xóa món lúc này. Vui lòng thử lại.';
+          messenger
+            ..hideCurrentSnackBar()
+            ..showSnackBar(SnackBar(content: Text(message)));
+          return false;
+        } catch (_) {
+          if (!context.mounted) return false;
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              const SnackBar(
+                content: Text('Không thể xóa món lúc này. Vui lòng thử lại.'),
+              ),
+            );
+          return false;
+        }
       },
-      onDismissed: (_) =>
-          context.read<MealService>().deleteEntry(uid, entry.id),
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 2),
         child: Row(

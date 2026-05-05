@@ -5,6 +5,9 @@ import 'package:smartnutri/src/core/services/auth_service.dart';
 import 'package:smartnutri/src/core/services/notification_service.dart';
 import 'package:smartnutri/src/core/services/goal_service.dart';
 import 'package:smartnutri/src/core/services/profile_service.dart';
+import 'package:smartnutri/src/core/services/weight_service.dart';
+import 'package:smartnutri/src/core/utils/date_utils.dart';
+import 'package:smartnutri/src/core/utils/firestore_write_message.dart';
 import 'package:smartnutri/src/core/ui/components/sn_card.dart';
 import 'package:smartnutri/src/core/ui/layout/page_template.dart';
 import 'package:smartnutri/src/core/ui/theme/app_spacing.dart';
@@ -12,6 +15,7 @@ import 'package:smartnutri/src/features/nutrition/domain/nutrition_goal.dart';
 import 'package:smartnutri/src/features/profile/domain/user_profile.dart';
 import 'package:smartnutri/src/features/profile/presentation/about_page.dart';
 import 'package:smartnutri/src/features/profile/presentation/edit_profile_page.dart';
+import 'package:smartnutri/src/features/stats/presentation/statistics_page.dart';
 
 class ProfilePage extends StatelessWidget {
   const ProfilePage({super.key});
@@ -43,6 +47,27 @@ class ProfilePage extends StatelessWidget {
                     const SizedBox(height: AppSpacing.md),
                   ],
                   _GoalCard(goal: goal, uid: uid),
+                  const SizedBox(height: AppSpacing.md),
+                  SNCard(
+                    child: ListTile(
+                      contentPadding: EdgeInsets.zero,
+                      leading: const Icon(Icons.bar_chart_outlined),
+                      title: const Text('Thống kê 7 ngày'),
+                      subtitle: const Text(
+                        'Trung bình calo, macro, nước và chuỗi ngày đạt mục tiêu',
+                      ),
+                      trailing: const Icon(Icons.chevron_right),
+                      onTap: () => Navigator.of(context).push(
+                            MaterialPageRoute<void>(
+                              builder: (_) => const StatisticsPage(),
+                            ),
+                          ),
+                    ),
+                  ),
+                  if (profile != null) ...[
+                    const SizedBox(height: AppSpacing.md),
+                    _WeightTrackerCard(profile: profile),
+                  ],
                   const SizedBox(height: AppSpacing.md),
                   _AccountCard(
                     email: context.read<AuthService>().currentUser!.email,
@@ -431,6 +456,118 @@ class _SettingsCard extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+class _WeightTrackerCard extends StatelessWidget {
+  const _WeightTrackerCard({required this.profile});
+  final UserProfile profile;
+
+  @override
+  Widget build(BuildContext context) {
+    final uid = profile.uid;
+    final today = AppDateUtils.todayStr();
+    return SNCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text('Cân nặng',
+              style: Theme.of(context).textTheme.titleSmall),
+          const SizedBox(height: AppSpacing.sm),
+          StreamBuilder<double?>(
+            stream: context.read<WeightService>().watchWeightKg(uid, today),
+            builder: (context, snap) {
+              final logged = snap.data;
+              return Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Theo hồ sơ: ${profile.weightKg.toStringAsFixed(1)} kg',
+                    style: Theme.of(context).textTheme.bodyMedium,
+                  ),
+                  if (logged != null)
+                    Text(
+                      'Đã ghi hôm nay: ${logged.toStringAsFixed(1)} kg',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                ],
+              );
+            },
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          FilledButton.tonal(
+            onPressed: () => _logWeight(context, profile),
+            child: const Text('Cập nhật cân nặng hôm nay'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _logWeight(BuildContext context, UserProfile profile) async {
+    final ctrl =
+        TextEditingController(text: profile.weightKg.toStringAsFixed(1));
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Cân nặng hôm nay'),
+        content: TextField(
+          controller: ctrl,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          decoration: const InputDecoration(
+            labelText: 'Cân nặng',
+            suffixText: 'kg',
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: const Text('Hủy'),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: const Text('Lưu'),
+          ),
+        ],
+      ),
+    );
+    final text = ctrl.text;
+    ctrl.dispose();
+    if (ok != true || !context.mounted) return;
+    final kg = double.tryParse(text.replaceAll(',', '.'));
+    if (kg == null || kg <= 0 || kg > 600) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Nhập cân nặng hợp lệ (kg).')),
+      );
+      return;
+    }
+    final weightSvc = context.read<WeightService>();
+    final profileSvc = context.read<ProfileService>();
+    try {
+      await weightSvc.setWeightKg(profile.uid, AppDateUtils.todayStr(), kg);
+      final updated = UserProfile(
+        uid: profile.uid,
+        email: profile.email,
+        displayName: profile.displayName,
+        age: profile.age,
+        heightCm: profile.heightCm,
+        weightKg: kg,
+        gender: profile.gender,
+        activityLevel: profile.activityLevel,
+        onboardingCompleted: profile.onboardingCompleted,
+        updatedAt: DateTime.now(),
+      );
+      await profileSvc.upsertProfile(updated);
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Đã lưu cân nặng.')),
+      );
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(firestoreWriteErrorMessage(e))),
+      );
+    }
   }
 }
 

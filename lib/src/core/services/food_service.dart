@@ -150,6 +150,37 @@ class FoodService {
     }
   }
 
+  /// A few popular picks for the current time of day (empty-query UX).
+  List<FoodItem> suggestedForCurrentMealtime() {
+    final hour = DateTime.now().hour;
+    final ids = hour < 10
+        ? <String>['pho_bo', 'banh_mi_thit', 'chao_ga', 'trung_op_la', 'sua_tuoi']
+        : hour < 14
+            ? <String>[
+                'com_ga',
+                'com_tam',
+                'bun_bo_hue',
+                'rau_muong_xao',
+                'tao',
+              ]
+            : hour < 19
+                ? <String>[
+                    'com_suon',
+                    'ca_hoi_nuong',
+                    'canh_chua',
+                    'com_trang',
+                    'chuoi',
+                  ]
+                : <String>[
+                    'chao_ga',
+                    'mi_goi',
+                    'salad_uc_ga',
+                    'yogurt',
+                    'tra_sua',
+                  ];
+    return ids.map(getById).whereType<FoodItem>().toList();
+  }
+
   static String _removeDiacritics(String s) {
     const withDiacritics =
         'àáâãäåæçèéêëìíîïðñòóôõöøùúûüýþÿăắặẳẵằâấậẩẫàáảãạêếệểễèéẻẽẹôốộổỗòóỏõọơớợởỡờúùủũụưứựửữừíìỉĩịđ';

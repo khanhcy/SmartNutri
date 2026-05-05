@@ -5,13 +5,16 @@ import 'package:provider/provider.dart';
 import 'package:smartnutri/src/core/services/auth_service.dart';
 import 'package:smartnutri/src/core/services/goal_service.dart';
 import 'package:smartnutri/src/core/services/meal_service.dart';
+import 'package:smartnutri/src/core/services/profile_service.dart';
 import 'package:smartnutri/src/core/services/water_service.dart';
 import 'package:smartnutri/src/core/ui/components/sn_card.dart';
 import 'package:smartnutri/src/core/ui/layout/page_template.dart';
 import 'package:smartnutri/src/core/ui/theme/app_spacing.dart';
+import 'package:smartnutri/src/core/utils/calorie_streak.dart';
 import 'package:smartnutri/src/core/utils/date_utils.dart';
 import 'package:smartnutri/src/features/home/presentation/macro_trend_card.dart';
 import 'package:smartnutri/src/features/meal_log/domain/meal_entry.dart';
+import 'package:smartnutri/src/features/profile/domain/user_profile.dart';
 import 'package:smartnutri/src/features/meal_log/presentation/add_meal_bottom_sheet.dart';
 import 'package:smartnutri/src/features/meal_log/presentation/custom_meal_sheet.dart';
 import 'package:smartnutri/src/features/nutrition/domain/nutrition_goal.dart';
@@ -24,38 +27,55 @@ class HomePage extends StatelessWidget {
     final uid = context.read<AuthService>().currentUser!.uid;
     final today = AppDateUtils.todayStr();
 
-    return StreamBuilder<NutritionGoal?>(
-      stream: context.read<GoalService>().watchGoal(uid),
-      builder: (context, goalSnap) {
-        final goal = goalSnap.data ?? NutritionGoal.defaultGoal(uid);
-        return StreamBuilder<List<MealEntry>>(
-          stream: context.read<MealService>().watchEntriesForDate(uid, today),
-          builder: (context, entriesSnap) {
-            final entries = entriesSnap.data ?? [];
-            final consumed = entries.fold(0.0, (s, e) => s + e.calorieKcal);
-            final remaining =
-                (goal.calorieTarget - consumed).clamp(0.0, goal.calorieTarget.toDouble());
-            final proteinConsumed = entries.fold(0.0, (s, e) => s + e.proteinG);
-            final carbConsumed = entries.fold(0.0, (s, e) => s + e.carbG);
-            final fatConsumed = entries.fold(0.0, (s, e) => s + e.fatG);
+    return StreamBuilder<UserProfile?>(
+      stream: context.read<ProfileService>().watchProfile(uid),
+      builder: (context, profileSnap) {
+        final displayName = profileSnap.data?.displayName;
+        return StreamBuilder<NutritionGoal?>(
+          stream: context.read<GoalService>().watchGoal(uid),
+          builder: (context, goalSnap) {
+            final goal = goalSnap.data ?? NutritionGoal.defaultGoal(uid);
+            return StreamBuilder<List<MealEntry>>(
+              stream:
+                  context.read<MealService>().watchEntriesForDate(uid, today),
+              builder: (context, entriesSnap) {
+                final entries = entriesSnap.data ?? [];
+                final consumed =
+                    entries.fold(0.0, (s, e) => s + e.calorieKcal);
+                final remaining = (goal.calorieTarget - consumed)
+                    .clamp(0.0, goal.calorieTarget.toDouble());
+                final proteinConsumed =
+                    entries.fold(0.0, (s, e) => s + e.proteinG);
+                final carbConsumed =
+                    entries.fold(0.0, (s, e) => s + e.carbG);
+                final fatConsumed =
+                    entries.fold(0.0, (s, e) => s + e.fatG);
 
-              return StreamBuilder<double>(
-              stream: context.read<WaterService>().watchWaterMl(uid, today),
-              builder: (context, waterSnap) {
-                final waterMl = waterSnap.data ?? 0.0;
+                return StreamBuilder<double>(
+                  stream:
+                      context.read<WaterService>().watchWaterMl(uid, today),
+                  builder: (context, waterSnap) {
+                    final waterMl = waterSnap.data ?? 0.0;
 
-                return PageTemplate(
-                  title: 'Tổng quan hôm nay',
-                  subtitle: _greetingSubtitle(uid, context),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      _CalorieSummaryCard(
-                        consumed: consumed,
-                        goal: goal.calorieTarget.toDouble(),
-                        remaining: remaining,
-                      ),
-                      const SizedBox(height: AppSpacing.md),
+                    return PageTemplate(
+                      title: 'Tổng quan hôm nay',
+                      subtitle: homeGreetingSubtitle(displayName),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _CalorieSummaryCard(
+                            consumed: consumed,
+                            goal: goal.calorieTarget.toDouble(),
+                            remaining: remaining,
+                          ),
+                          const SizedBox(height: AppSpacing.sm),
+                          _StreakBadge(
+                            uid: uid,
+                            calorieTarget: goal.calorieTarget,
+                            refreshToken:
+                                entries.length + consumed.round(),
+                          ),
+                          const SizedBox(height: AppSpacing.md),
                       _WaterCard(
                         waterMl: waterMl,
                         targetMl: goal.waterTargetMl,
@@ -104,8 +124,10 @@ class HomePage extends StatelessWidget {
                         children: [
                           Expanded(
                             child: FilledButton.icon(
-                              onPressed: () => showAddMealSheet(context,
-                                  initialMealType: _suggestMealType()),
+                              onPressed: () => showAddMealSheet(
+                                context,
+                                initialMealType: homeSuggestMealType(),
+                              ),
                               icon: const Icon(Icons.search),
                               label: const Text('Tìm món'),
                             ),
@@ -113,8 +135,10 @@ class HomePage extends StatelessWidget {
                           const SizedBox(width: AppSpacing.sm),
                           Expanded(
                             child: OutlinedButton.icon(
-                              onPressed: () => showCustomMealSheet(context,
-                                  initialMealType: _suggestMealType()),
+                              onPressed: () => showCustomMealSheet(
+                                context,
+                                initialMealType: homeSuggestMealType(),
+                              ),
                               icon: const Icon(Icons.edit_note),
                               label: const Text('Nhập thủ công'),
                             ),
@@ -123,6 +147,8 @@ class HomePage extends StatelessWidget {
                       ),
                     ],
                   ),
+                    );
+                  },
                 );
               },
             );
@@ -131,23 +157,105 @@ class HomePage extends StatelessWidget {
       },
     );
   }
+}
 
-  String _greetingSubtitle(String uid, BuildContext context) {
-    final hour = DateTime.now().hour;
-    final greeting = hour < 12
-        ? 'Chào buổi sáng'
-        : hour < 18
-            ? 'Chào buổi chiều'
-            : 'Chào buổi tối';
-    return '$greeting! Theo dõi dinh dưỡng của bạn hôm nay.';
+String homeGreetingSubtitle(String? displayName) {
+  final hour = DateTime.now().hour;
+  final greeting = hour < 12
+      ? 'Chào buổi sáng'
+      : hour < 18
+          ? 'Chào buổi chiều'
+          : 'Chào buổi tối';
+  final name = displayName?.trim();
+  final first =
+      (name != null && name.isNotEmpty) ? name.split(RegExp(r'\s+')).first : null;
+  if (first != null && first.isNotEmpty) {
+    return '$greeting, $first! Theo dõi dinh dưỡng của bạn hôm nay.';
+  }
+  return '$greeting! Theo dõi dinh dưỡng của bạn hôm nay.';
+}
+
+MealType homeSuggestMealType() {
+  final hour = DateTime.now().hour;
+  if (hour < 10) return MealType.breakfast;
+  if (hour < 14) return MealType.lunch;
+  if (hour < 19) return MealType.dinner;
+  return MealType.snack;
+}
+
+class _StreakBadge extends StatefulWidget {
+  const _StreakBadge({
+    required this.uid,
+    required this.calorieTarget,
+    required this.refreshToken,
+  });
+
+  final String uid;
+  final int calorieTarget;
+  final int refreshToken;
+
+  @override
+  State<_StreakBadge> createState() => _StreakBadgeState();
+}
+
+class _StreakBadgeState extends State<_StreakBadge> {
+  int? _value;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
   }
 
-  MealType _suggestMealType() {
-    final hour = DateTime.now().hour;
-    if (hour < 10) return MealType.breakfast;
-    if (hour < 14) return MealType.lunch;
-    if (hour < 19) return MealType.dinner;
-    return MealType.snack;
+  @override
+  void didUpdateWidget(covariant _StreakBadge oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.uid != widget.uid ||
+        oldWidget.calorieTarget != widget.calorieTarget ||
+        oldWidget.refreshToken != widget.refreshToken) {
+      _load();
+    }
+  }
+
+  Future<void> _load() async {
+    final meal = context.read<MealService>();
+    final n = await CalorieStreak.compute(
+      meal: meal,
+      uid: widget.uid,
+      calorieTarget: widget.calorieTarget,
+    );
+    if (mounted) setState(() => _value = n);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final v = _value;
+    if (v == null) {
+      return const SizedBox(
+        height: 24,
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: SizedBox(
+            width: 20,
+            height: 20,
+            child: CircularProgressIndicator(strokeWidth: 2),
+          ),
+        ),
+      );
+    }
+    if (v == 0) return const SizedBox.shrink();
+    return Row(
+      children: [
+        Icon(Icons.local_fire_department, color: Colors.orange.shade700, size: 22),
+        const SizedBox(width: 6),
+        Expanded(
+          child: Text(
+            '$v ngày liên tiếp đạt mục tiêu calo (80–110%)',
+            style: Theme.of(context).textTheme.bodySmall,
+          ),
+        ),
+      ],
+    );
   }
 }
 

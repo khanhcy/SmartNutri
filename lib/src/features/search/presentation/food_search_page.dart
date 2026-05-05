@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:smartnutri/src/core/utils/firestore_write_message.dart';
 import 'package:smartnutri/src/core/services/auth_service.dart';
 import 'package:smartnutri/src/core/services/food_service.dart';
 import 'package:smartnutri/src/core/services/meal_service.dart';
@@ -202,11 +203,24 @@ class _FoodSearchPageState extends State<FoodSearchPage> {
           if (_results.isEmpty)
             SNCard(
               child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Icon(Icons.search_off,
                       size: 40, color: colorScheme.onSurfaceVariant),
                   const SizedBox(height: AppSpacing.sm),
                   const Text('Không tìm thấy món phù hợp'),
+                  if (_queryController.text.isNotEmpty ||
+                      _selectedCategory != 'Tất cả') ...[
+                    const SizedBox(height: AppSpacing.md),
+                    Text(
+                      'Gợi ý theo buổi',
+                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                            color: colorScheme.primary,
+                          ),
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    ..._suggestionTiles(context),
+                  ],
                 ],
               ),
             )
@@ -224,6 +238,17 @@ class _FoodSearchPageState extends State<FoodSearchPage> {
         ],
       ),
     );
+  }
+
+  List<Widget> _suggestionTiles(BuildContext context) {
+    final foods = context.read<FoodService>().suggestedForCurrentMealtime();
+    if (foods.isEmpty) return [];
+    return [
+      for (int i = 0; i < foods.length; i++) ...[
+        _FoodTile(food: foods[i]),
+        if (i < foods.length - 1) const Divider(height: 1),
+      ],
+    ];
   }
 }
 
@@ -486,7 +511,7 @@ class _FoodDetailSheetState extends State<_FoodDetailSheet> {
       if (mounted) {
         setState(() {
           _isSaving = false;
-          _error = 'Không thể lưu: ${e.toString()}';
+          _error = firestoreWriteErrorMessage(e);
         });
       }
     }

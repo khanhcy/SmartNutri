@@ -32,4 +32,9 @@ class WaterService {
       SetOptions(merge: true),
     );
   }
+
+  Future<double> getWaterMl(String uid, String date) async {
+    final snap = await _doc(uid, date).get();
+    return (snap.data()?['waterMl'] as num?)?.toDouble() ?? 0.0;
+  }
 }

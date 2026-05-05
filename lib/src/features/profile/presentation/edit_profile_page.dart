@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:smartnutri/src/core/utils/firestore_write_message.dart';
 import 'package:smartnutri/src/core/services/goal_service.dart';
 import 'package:smartnutri/src/core/services/profile_service.dart';
 import 'package:smartnutri/src/core/ui/components/sn_button.dart';
@@ -315,9 +316,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
           ),
         );
       }
-    } catch (_) {
+    } catch (e) {
       if (mounted) {
-        setState(() => _error = 'Lưu thất bại. Vui lòng thử lại.');
+        setState(() => _error = firestoreWriteErrorMessage(e));
       }
     } finally {
       if (mounted) setState(() => _isSaving = false);
