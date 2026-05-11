@@ -6,6 +6,7 @@ import 'package:smartnutri/src/core/services/meal_service.dart';
 import 'package:smartnutri/src/core/services/profile_service.dart';
 import 'package:smartnutri/src/core/ui/layout/page_template.dart';
 import 'package:smartnutri/src/core/ui/theme/app_spacing.dart';
+import 'package:smartnutri/src/core/ui/components/staggered_entrance.dart';
 import 'package:smartnutri/src/core/utils/date_utils.dart';
 import 'package:smartnutri/src/features/home/presentation/macro_trend_card.dart';
 import 'package:smartnutri/src/features/meal_log/domain/meal_entry.dart';
@@ -72,8 +73,7 @@ class _HomePageContent extends StatelessWidget {
     return PageTemplate(
       title: 'Tổng quan hôm nay',
       subtitle: homeGreetingSubtitle(displayName),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: StaggeredEntrance(
         children: [
           CalorieSummaryCard(
             consumed: consumed,

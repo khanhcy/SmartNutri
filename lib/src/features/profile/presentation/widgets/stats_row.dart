@@ -74,22 +74,34 @@ class _StatChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    return SNCard(
+    return Container(
+      padding: const EdgeInsets.symmetric(vertical: AppSpacing.md, horizontal: AppSpacing.sm),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+        borderRadius: BorderRadius.circular(16),
+      ),
       child: Column(
         children: [
-          Icon(icon, color: colorScheme.primary, size: 20),
-          const SizedBox(height: 4),
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: colorScheme.surface,
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: subColor ?? colorScheme.primary, size: 20),
+          ),
+          const SizedBox(height: AppSpacing.sm),
           Text(value,
               style: Theme.of(context)
                   .textTheme
-                  .titleSmall
+                  .titleMedium
                   ?.copyWith(fontWeight: FontWeight.bold)),
           if (sub != null)
             Text(sub!,
                 style: Theme.of(context)
                     .textTheme
                     .bodySmall
-                    ?.copyWith(color: subColor))
+                    ?.copyWith(color: subColor, fontWeight: FontWeight.w600))
           else
             Text(label, style: Theme.of(context).textTheme.bodySmall),
         ],

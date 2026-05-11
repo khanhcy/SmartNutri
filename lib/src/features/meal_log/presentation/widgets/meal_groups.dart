@@ -214,21 +214,37 @@ class _EntryRow extends StatelessWidget {
         }
       },
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 2),
+        padding: const EdgeInsets.symmetric(vertical: 4),
         child: Row(
           children: [
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(entry.foodName,
-                      style: Theme.of(context).textTheme.bodyMedium),
                   Text(
-                    '${entry.portionG.round()}g  •  '
-                    'P:${entry.proteinG.toStringAsFixed(1)}g  '
-                    'C:${entry.carbG.toStringAsFixed(1)}g  '
-                    'F:${entry.fatG.toStringAsFixed(1)}g',
-                    style: Theme.of(context).textTheme.bodySmall,
+                    entry.foodName,
+                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 4),
+                  Row(
+                    children: [
+                      Text(
+                        '${entry.portionG.round()}g',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                              color: Theme.of(context).colorScheme.onSurfaceVariant,
+                            ),
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      _MacroBadge(label: 'P', value: entry.proteinG, color: Colors.blue),
+                      const SizedBox(width: 4),
+                      _MacroBadge(label: 'C', value: entry.carbG, color: Colors.orange),
+                      const SizedBox(width: 4),
+                      _MacroBadge(label: 'F', value: entry.fatG, color: Colors.pink),
+                    ],
                   ),
                 ],
               ),
@@ -237,8 +253,8 @@ class _EntryRow extends StatelessWidget {
               '${entry.calorieKcal.round()} kcal',
               style: Theme.of(context)
                   .textTheme
-                  .bodySmall
-                  ?.copyWith(fontWeight: FontWeight.w600),
+                  .titleSmall
+                  ?.copyWith(fontWeight: FontWeight.bold),
             ),
             IconButton(
               icon: Icon(
@@ -251,6 +267,38 @@ class _EntryRow extends StatelessWidget {
               onPressed: () => _editPortion(context),
             ),
           ],
+        ),
+      ),
+    );
+  }
+}
+
+class _MacroBadge extends StatelessWidget {
+  const _MacroBadge({
+    required this.label,
+    required this.value,
+    required this.color,
+  });
+
+  final String label;
+  final double value;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(4),
+        border: Border.all(color: color.withValues(alpha: 0.2)),
+      ),
+      child: Text(
+        '$label ${value.round()}g',
+        style: TextStyle(
+          fontSize: 10,
+          fontWeight: FontWeight.bold,
+          color: color.withValues(alpha: 0.8),
         ),
       ),
     );

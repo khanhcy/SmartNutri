@@ -191,26 +191,49 @@ class _FoodSearchPageState extends State<FoodSearchPage> {
 
           if (_results.isEmpty)
             SNCard(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Icon(Icons.search_off,
-                      size: 40, color: colorScheme.onSurfaceVariant),
-                  const SizedBox(height: AppSpacing.sm),
-                  const Text('Không tìm thấy món phù hợp'),
-                  if (_queryController.text.isNotEmpty ||
-                      _selectedCategory != 'Tất cả') ...[
-                    const SizedBox(height: AppSpacing.md),
-                    Text(
-                      'Gợi ý theo buổi',
-                      style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                            color: colorScheme.primary,
-                          ),
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(AppSpacing.lg),
+                      decoration: BoxDecoration(
+                        color: colorScheme.surfaceContainerHighest,
+                        shape: BoxShape.circle,
+                      ),
+                      child: Icon(Icons.search_off_rounded,
+                          size: 48, color: colorScheme.onSurfaceVariant),
                     ),
-                    const SizedBox(height: AppSpacing.xs),
-                    ..._suggestionTiles(context),
+                    const SizedBox(height: AppSpacing.md),
+                    Text('Không tìm thấy món phù hợp',
+                        style: Theme.of(context).textTheme.titleMedium),
+                    if (_queryController.text.isNotEmpty ||
+                        _selectedCategory != 'Tất cả') ...[
+                      const SizedBox(height: AppSpacing.xs),
+                      Text(
+                        'Bạn có thể nhập thủ công bằng nút bên cạnh',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: colorScheme.onSurfaceVariant,
+                            ),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: AppSpacing.xl),
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'Gợi ý theo buổi',
+                          style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                                color: colorScheme.primary,
+                              ),
+                        ),
+                      ),
+                      const SizedBox(height: AppSpacing.xs),
+                      ..._suggestionTiles(context),
+                    ],
                   ],
-                ],
+                ),
               ),
             )
           else

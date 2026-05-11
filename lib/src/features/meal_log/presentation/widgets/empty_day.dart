@@ -8,17 +8,42 @@ class EmptyDay extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    
     return SNCard(
-      child: Column(
-        children: [
-          Icon(Icons.restaurant_outlined,
-              size: 40,
-              color: Theme.of(context).colorScheme.onSurfaceVariant),
-          const SizedBox(height: AppSpacing.sm),
-          Text('Chưa có bữa ăn nào $date',
-              style: Theme.of(context).textTheme.bodyMedium,
-              textAlign: TextAlign.center),
-        ],
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.xl),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              decoration: BoxDecoration(
+                color: colorScheme.primaryContainer.withValues(alpha: 0.5),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.restaurant_menu_rounded,
+                size: 48,
+                color: colorScheme.primary,
+              ),
+            ),
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              'Chưa có bữa ăn nào',
+              style: Theme.of(context).textTheme.titleMedium,
+            ),
+            const SizedBox(height: AppSpacing.xs),
+            Text(
+              'Ghi lại thực đơn $date để theo dõi tiến độ',
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
       ),
     );
   }
