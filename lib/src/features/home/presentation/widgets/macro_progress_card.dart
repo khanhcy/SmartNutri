@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smartnutri/src/core/ui/components/sn_card.dart';
+import 'package:smartnutri/src/core/ui/theme/app_colors.dart';
 import 'package:smartnutri/src/core/ui/theme/app_spacing.dart';
 
 class MacroProgressCard extends StatelessWidget {
@@ -27,7 +28,7 @@ class MacroProgressCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            'Tiến độ macro',
+            'Dinh dưỡng đa lượng',
             style: Theme.of(context).textTheme.titleSmall,
           ),
           const SizedBox(height: AppSpacing.md),
@@ -35,21 +36,21 @@ class MacroProgressCard extends StatelessWidget {
             label: 'Protein',
             consumed: proteinConsumed,
             goal: proteinGoal,
-            color: Colors.blue,
+            color: AppColors.protein,
           ),
-          const SizedBox(height: AppSpacing.sm),
+          const SizedBox(height: AppSpacing.md),
           _MacroRow(
             label: 'Carb',
             consumed: carbConsumed,
             goal: carbGoal,
-            color: Colors.orange,
+            color: AppColors.carb,
           ),
-          const SizedBox(height: AppSpacing.sm),
+          const SizedBox(height: AppSpacing.md),
           _MacroRow(
             label: 'Fat',
             consumed: fatConsumed,
             goal: fatGoal,
-            color: Colors.pink,
+            color: AppColors.fat,
           ),
         ],
       ),
@@ -73,6 +74,7 @@ class _MacroRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ratio = goal > 0 ? (consumed / goal).clamp(0.0, 1.0) : 0.0;
+    
     return RepaintBoundary(
       child: Column(
         children: [
@@ -87,13 +89,34 @@ class _MacroRow extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 4),
-          LinearProgressIndicator(
-            value: ratio,
-            color: color,
-            backgroundColor: color.withValues(alpha: 0.15),
-            minHeight: 6,
-            borderRadius: BorderRadius.circular(3),
+          const SizedBox(height: AppSpacing.xs),
+          TweenAnimationBuilder<double>(
+            tween: Tween<double>(begin: 0, end: ratio),
+            duration: const Duration(milliseconds: 600),
+            curve: Curves.easeOutCubic,
+            builder: (context, value, _) {
+              return Container(
+                height: 8,
+                width: double.infinity,
+                decoration: BoxDecoration(
+                  color: color.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(4),
+                ),
+                child: Stack(
+                  children: [
+                    FractionallySizedBox(
+                      widthFactor: value,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: color,
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
           ),
         ],
       ),

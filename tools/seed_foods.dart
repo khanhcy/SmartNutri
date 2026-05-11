@@ -1,0 +1,335 @@
+// ignore_for_file: prefer_const_constructors
+import 'dart:convert';
+import 'dart:io';
+
+/// Script: `dart run tools/seed_foods.dart`
+/// Outputs `tools/foods.json` — importable into Firestore `foods` collection.
+///
+/// All nutrition values are per 100g unless noted otherwise.
+
+void main() {
+  final foods = <Map<String, dynamic>>[];
+  foods.addAll(_original122());
+  foods.addAll(_mienBac());
+  foods.addAll(_mienTrung());
+  foods.addAll(_mienNam());
+  foods.addAll(_doUong());
+  foods.addAll(_anVat());
+  foods.addAll(_fastfoodChain());
+
+  final out = File('tools/foods.json');
+  out.writeAsStringSync(const JsonEncoder.withIndent('  ').convert(foods));
+  print('Wrote ${foods.length} foods to ${out.path}');
+}
+
+// ── Original 122 items (unchanged) ────────────────────────────────────────
+List<Map<String, dynamic>> _original122() => const [
+  // ── Món nước ─────────────────────────────────────────────────────────
+  {'id':'pho_bo',        'name':'Phở bò',                'calorieKcal':68,  'proteinG':5.8, 'carbG':9.2,  'fatG':1.2, 'category':'Món nước','defaultPortionG':400},
+  {'id':'pho_ga',        'name':'Phở gà',                'calorieKcal':62,  'proteinG':5.2, 'carbG':8.8,  'fatG':1.0, 'category':'Món nước','defaultPortionG':400},
+  {'id':'bun_bo_hue',    'name':'Bún bò Huế',            'calorieKcal':72,  'proteinG':6.2, 'carbG':9.8,  'fatG':1.4, 'category':'Món nước','defaultPortionG':400},
+  {'id':'bun_rieu',      'name':'Bún riêu cua',          'calorieKcal':65,  'proteinG':5.5, 'carbG':8.5,  'fatG':1.3, 'category':'Món nước','defaultPortionG':400},
+  {'id':'bun_mam',       'name':'Bún mắm',               'calorieKcal':78,  'proteinG':6.5, 'carbG':10.5, 'fatG':1.5, 'category':'Món nước','defaultPortionG':400},
+  {'id':'hu_tieu',       'name':'Hủ tiếu Nam Vang',      'calorieKcal':75,  'proteinG':5.5, 'carbG':10.2, 'fatG':1.5, 'category':'Món nước','defaultPortionG':400},
+  {'id':'mi_quang',      'name':'Mì Quảng',              'calorieKcal':80,  'proteinG':6.0, 'carbG':11.0, 'fatG':1.8, 'category':'Món nước','defaultPortionG':400},
+  {'id':'banh_canh',     'name':'Bánh canh ghẹ',         'calorieKcal':70,  'proteinG':5.8, 'carbG':9.5,  'fatG':1.2, 'category':'Món nước','defaultPortionG':400},
+  {'id':'sup_cua',       'name':'Súp cua',               'calorieKcal':55,  'proteinG':4.5, 'carbG':7.0,  'fatG':0.8, 'category':'Món nước','defaultPortionG':300},
+  {'id':'lau_thai',      'name':'Lẩu Thái',              'calorieKcal':60,  'proteinG':5.0, 'carbG':7.5,  'fatG':1.0, 'category':'Món nước','defaultPortionG':350},
+
+  // ── Cơm ──────────────────────────────────────────────────────────────
+  {'id':'com_trang',     'name':'Cơm trắng',             'calorieKcal':130, 'proteinG':2.7, 'carbG':28.2, 'fatG':0.3, 'category':'Tinh bột', 'defaultPortionG':200},
+  {'id':'com_ga',        'name':'Cơm gà nướng',          'calorieKcal':140, 'proteinG':9.8, 'carbG':18.5, 'fatG':3.5, 'category':'Cơm',      'defaultPortionG':350},
+  {'id':'com_suon',      'name':'Cơm sườn nướng',        'calorieKcal':155, 'proteinG':11.2,'carbG':19.8, 'fatG':4.2, 'category':'Cơm',      'defaultPortionG':350},
+  {'id':'com_rang',      'name':'Cơm rang trứng',        'calorieKcal':165, 'proteinG':4.5, 'carbG':28.8, 'fatG':3.8, 'category':'Cơm',      'defaultPortionG':300},
+  {'id':'com_tam',       'name':'Cơm tấm sườn bì',       'calorieKcal':160, 'proteinG':10.5,'carbG':20.0, 'fatG':4.5, 'category':'Cơm',      'defaultPortionG':380},
+  {'id':'com_chien_duong_chau','name':'Cơm chiên Dương Châu','calorieKcal':175,'proteinG':5.5,'carbG':30.0,'fatG':4.5, 'category':'Cơm','defaultPortionG':300},
+  {'id':'com_ca_kho',    'name':'Cơm cá kho tộ',         'calorieKcal':145, 'proteinG':10.0,'carbG':19.5, 'fatG':3.5, 'category':'Cơm',      'defaultPortionG':350},
+  {'id':'com_bo_luc_lac','name':'Cơm bò lúc lắc',        'calorieKcal':170, 'proteinG':12.5,'carbG':19.0, 'fatG':5.5, 'category':'Cơm',      'defaultPortionG':380},
+
+  // ── Bánh mì / Bánh ───────────────────────────────────────────────────
+  {'id':'banh_mi_thit',  'name':'Bánh mì thịt',          'calorieKcal':245, 'proteinG':10.8,'carbG':32.5, 'fatG':9.5, 'category':'Bánh mì',  'defaultPortionG':200},
+  {'id':'banh_mi_trung', 'name':'Bánh mì trứng',         'calorieKcal':220, 'proteinG':9.2, 'carbG':30.8, 'fatG':7.5, 'category':'Bánh mì',  'defaultPortionG':180},
+  {'id':'banh_mi_pate',  'name':'Bánh mì patê',          'calorieKcal':255, 'proteinG':11.0,'carbG':31.0, 'fatG':10.5,'category':'Bánh mì', 'defaultPortionG':200},
+  {'id':'banh_mi_op_la', 'name':'Bánh mì ốp lá',         'calorieKcal':235, 'proteinG':10.5,'carbG':29.0, 'fatG':9.0, 'category':'Bánh mì',  'defaultPortionG':190},
+  {'id':'banh_cuon',     'name':'Bánh cuốn nhân thịt',   'calorieKcal':105, 'proteinG':5.5, 'carbG':15.5, 'fatG':2.2, 'category':'Bánh mì',  'defaultPortionG':200},
+  {'id':'banh_xeo',      'name':'Bánh xèo (1 cái)',      'calorieKcal':165, 'proteinG':7.5, 'carbG':22.0, 'fatG':6.5, 'category':'Bánh mì',  'defaultPortionG':200},
+  {'id':'banh_bao',      'name':'Bánh bao nhân thịt',    'calorieKcal':220, 'proteinG':8.5, 'carbG':35.0, 'fatG':5.0, 'category':'Bánh mì',  'defaultPortionG':100},
+
+  // ── Thịt ─────────────────────────────────────────────────────────────
+  {'id':'ga_luoc',       'name':'Gà luộc',               'calorieKcal':165, 'proteinG':23.5,'carbG':0,    'fatG':7.5, 'category':'Thịt',      'defaultPortionG':150},
+  {'id':'thit_heo_luoc', 'name':'Thịt heo nạc luộc',     'calorieKcal':185, 'proteinG':22.8,'carbG':0,    'fatG':10.5,'category':'Thịt',     'defaultPortionG':100},
+  {'id':'thit_bo_xao',   'name':'Thịt bò xào hành',      'calorieKcal':198, 'proteinG':21.5,'carbG':3.0,  'fatG':11.0,'category':'Thịt',     'defaultPortionG':150},
+  {'id':'suon_heo_nuong','name':'Sườn heo nướng',        'calorieKcal':242, 'proteinG':20.0,'carbG':2.0,  'fatG':17.0,'category':'Thịt',     'defaultPortionG':150},
+  {'id':'ga_chien',      'name':'Gà chiên giòn',         'calorieKcal':250, 'proteinG':22.0,'carbG':8.0,  'fatG':15.5,'category':'Thịt',     'defaultPortionG':150},
+  {'id':'thit_kho',      'name':'Thịt heo kho tàu',      'calorieKcal':210, 'proteinG':20.0,'carbG':3.5,  'fatG':13.0,'category':'Thịt',     'defaultPortionG':120},
+  {'id':'vit_quay',      'name':'Vịt quay (100g)',       'calorieKcal':337, 'proteinG':19.0,'carbG':0,    'fatG':28.5,'category':'Thịt',     'defaultPortionG':150},
+  {'id':'cha_gio',       'name':'Chả giò (2 cái)',       'calorieKcal':180, 'proteinG':7.5, 'carbG':20.0, 'fatG':9.0, 'category':'Thịt',      'defaultPortionG':100},
+
+  // ── Hải sản ──────────────────────────────────────────────────────────
+  {'id':'ca_hoi_nuong',  'name':'Cá hồi nướng',          'calorieKcal':208, 'proteinG':22.1,'carbG':0,    'fatG':13.5,'category':'Hải sản',   'defaultPortionG':150},
+  {'id':'ca_thu_kho',    'name':'Cá thu kho',            'calorieKcal':180, 'proteinG':20.5,'carbG':2.5,  'fatG':10.0,'category':'Hải sản',   'defaultPortionG':100},
+  {'id':'tom_luoc',      'name':'Tôm luộc',              'calorieKcal':99,  'proteinG':20.3,'carbG':0.9,  'fatG':1.1, 'category':'Hải sản',   'defaultPortionG':150},
+  {'id':'tom_xao_ty',    'name':'Tôm xào tỏi ớt',        'calorieKcal':120, 'proteinG':18.5,'carbG':3.5,  'fatG':3.5, 'category':'Hải sản',   'defaultPortionG':150},
+  {'id':'muc_xao',       'name':'Mực xào sả ớt',         'calorieKcal':110, 'proteinG':18.0,'carbG':3.0,  'fatG':2.5, 'category':'Hải sản',   'defaultPortionG':150},
+  {'id':'oc_luoc',       'name':'Ốc luộc',               'calorieKcal':90,  'proteinG':12.5,'carbG':4.2,  'fatG':2.5, 'category':'Hải sản',   'defaultPortionG':150},
+  {'id':'cua_rang_muoi', 'name':'Cua rang muối',         'calorieKcal':115, 'proteinG':17.0,'carbG':2.0,  'fatG':4.5, 'category':'Hải sản',   'defaultPortionG':150},
+  {'id':'ca_chien',      'name':'Cá chép chiên',         'calorieKcal':195, 'proteinG':18.5,'carbG':5.0,  'fatG':11.0,'category':'Hải sản',   'defaultPortionG':150},
+
+  // ── Trứng ────────────────────────────────────────────────────────────
+  {'id':'trung_luoc',    'name':'Trứng gà luộc',         'calorieKcal':155, 'proteinG':12.6,'carbG':1.1,  'fatG':10.6,'category':'Trứng',     'defaultPortionG':60},
+  {'id':'trung_op_la',   'name':'Trứng ốp lá',           'calorieKcal':185, 'proteinG':12.2,'carbG':0.5,  'fatG':14.5,'category':'Trứng',     'defaultPortionG':60},
+  {'id':'trung_chien',   'name':'Trứng chiên hành',      'calorieKcal':200, 'proteinG':12.0,'carbG':1.5,  'fatG':16.0,'category':'Trứng',     'defaultPortionG':60},
+  {'id':'trung_vit_luoc','name':'Trứng vịt luộc',        'calorieKcal':185, 'proteinG':13.0,'carbG':1.0,  'fatG':14.0,'category':'Trứng',     'defaultPortionG':70},
+  {'id':'trung_cut',     'name':'Trứng cút luộc (5 quả)','calorieKcal':178, 'proteinG':13.0,'carbG':0.5,  'fatG':13.5,'category':'Trứng',     'defaultPortionG':50},
+
+  // ── Rau củ ───────────────────────────────────────────────────────────
+  {'id':'rau_muong_xao', 'name':'Rau muống xào tỏi',     'calorieKcal':45,  'proteinG':2.8, 'carbG':5.2,  'fatG':1.8, 'category':'Rau củ',    'defaultPortionG':150},
+  {'id':'bap_cai_luoc',  'name':'Bắp cải luộc',          'calorieKcal':25,  'proteinG':1.3, 'carbG':5.8,  'fatG':0.1, 'category':'Rau củ',    'defaultPortionG':150},
+  {'id':'rau_cai_xao',   'name':'Cải xanh xào tỏi',      'calorieKcal':35,  'proteinG':2.5, 'carbG':4.5,  'fatG':1.0, 'category':'Rau củ',    'defaultPortionG':150},
+  {'id':'gia_xao',       'name':'Giá xào thịt',          'calorieKcal':70,  'proteinG':5.5, 'carbG':5.0,  'fatG':2.5, 'category':'Rau củ',    'defaultPortionG':150},
+  {'id':'khoai_lang_luoc','name':'Khoai lang luộc',      'calorieKcal':86,  'proteinG':1.6, 'carbG':20.1, 'fatG':0.1, 'category':'Tinh bột',  'defaultPortionG':150},
+  {'id':'khoai_tay_luoc','name':'Khoai tây luộc',        'calorieKcal':77,  'proteinG':2.0, 'carbG':17.5, 'fatG':0.1, 'category':'Rau củ',    'defaultPortionG':150},
+  {'id':'khoai_tay_chien','name':'Khoai tây chiên',      'calorieKcal':312, 'proteinG':3.5, 'carbG':41.5, 'fatG':15.0,'category':'Rau củ',    'defaultPortionG':100},
+  {'id':'dua_leo',       'name':'Dưa leo tươi',          'calorieKcal':16,  'proteinG':0.7, 'carbG':3.6,  'fatG':0.1, 'category':'Rau củ',    'defaultPortionG':100},
+  {'id':'ca_rot_xao',    'name':'Cà rốt xào trứng',      'calorieKcal':60,  'proteinG':3.5, 'carbG':8.0,  'fatG':2.0, 'category':'Rau củ',    'defaultPortionG':150},
+
+  // ── Canh ─────────────────────────────────────────────────────────────
+  {'id':'canh_chua',     'name':'Canh chua cá',          'calorieKcal':42,  'proteinG':3.8, 'carbG':5.5,  'fatG':0.8, 'category':'Canh',      'defaultPortionG':250},
+  {'id':'canh_bi_dao',   'name':'Canh bí đao thịt',      'calorieKcal':38,  'proteinG':3.0, 'carbG':5.0,  'fatG':0.8, 'category':'Canh',      'defaultPortionG':250},
+  {'id':'canh_rau_ngot', 'name':'Canh rau ngót thịt',    'calorieKcal':45,  'proteinG':4.0, 'carbG':4.5,  'fatG':1.0, 'category':'Canh',      'defaultPortionG':250},
+  {'id':'canh_kho_qua',  'name':'Canh khổ qua nhồi thịt','calorieKcal':50,  'proteinG':4.5, 'carbG':4.0,  'fatG':1.5, 'category':'Canh',      'defaultPortionG':250},
+
+  // ── Chay / Salad ─────────────────────────────────────────────────────
+  {'id':'dau_hu_xao',    'name':'Đậu hủ xào sả ớt',      'calorieKcal':95,  'proteinG':8.5, 'carbG':3.2,  'fatG':5.5, 'category':'Chay',      'defaultPortionG':150},
+  {'id':'dau_hu_sot_ca', 'name':'Đậu hủ sốt cà chua',    'calorieKcal':85,  'proteinG':7.5, 'carbG':5.5,  'fatG':3.5, 'category':'Chay',      'defaultPortionG':150},
+  {'id':'nam_xao_toi',   'name':'Nấm xào tỏi',           'calorieKcal':40,  'proteinG':3.0, 'carbG':5.5,  'fatG':1.0, 'category':'Chay',      'defaultPortionG':150},
+  {'id':'salad_uc_ga',   'name':'Salad ức gà',           'calorieKcal':98,  'proteinG':18.8,'carbG':2.5,  'fatG':1.8, 'category':'Salad',     'defaultPortionG':200},
+  {'id':'salad_ca_ngu',  'name':'Salad cá ngừ',          'calorieKcal':110, 'proteinG':17.5,'carbG':3.0,  'fatG':3.5, 'category':'Salad',     'defaultPortionG':200},
+  {'id':'salad_trung',   'name':'Salad trứng',           'calorieKcal':120, 'proteinG':8.5, 'carbG':4.0,  'fatG':8.0, 'category':'Salad',     'defaultPortionG':200},
+
+  // ── Cháo ─────────────────────────────────────────────────────────────
+  {'id':'chao_ga',       'name':'Cháo gà',               'calorieKcal':55,  'proteinG':4.2, 'carbG':7.8,  'fatG':0.8, 'category':'Cháo',      'defaultPortionG':350},
+  {'id':'chao_lon',      'name':'Cháo lòng heo',         'calorieKcal':65,  'proteinG':5.5, 'carbG':8.5,  'fatG':1.2, 'category':'Cháo',      'defaultPortionG':350},
+  {'id':'chao_tom',      'name':'Cháo tôm',              'calorieKcal':58,  'proteinG':5.0, 'carbG':8.0,  'fatG':0.8, 'category':'Cháo',      'defaultPortionG':350},
+  {'id':'chao_ca',       'name':'Cháo cá',               'calorieKcal':52,  'proteinG':4.5, 'carbG':7.5,  'fatG':0.7, 'category':'Cháo',      'defaultPortionG':350},
+
+  // ── Tinh bột / Bún / Mì ──────────────────────────────────────────────
+  {'id':'mi_goi',        'name':'Mì gói nấu (1 gói)',    'calorieKcal':130, 'proteinG':3.8, 'carbG':24.5, 'fatG':2.5, 'category':'Tinh bột',  'defaultPortionG':350},
+  {'id':'bun_tuoi',      'name':'Bún tươi',              'calorieKcal':110, 'proteinG':2.5, 'carbG':25.0, 'fatG':0.2, 'category':'Tinh bột',  'defaultPortionG':200},
+  {'id':'mi_trung',      'name':'Mì trứng',              'calorieKcal':140, 'proteinG':5.0, 'carbG':28.0, 'fatG':1.5, 'category':'Tinh bột',  'defaultPortionG':200},
+  {'id':'banh_pho',      'name':'Bánh phở (sống)',       'calorieKcal':105, 'proteinG':2.2, 'carbG':23.5, 'fatG':0.2, 'category':'Tinh bột',  'defaultPortionG':200},
+
+  // ── Trái cây ─────────────────────────────────────────────────────────
+  {'id':'chuoi',         'name':'Chuối',                 'calorieKcal':89,  'proteinG':1.1, 'carbG':22.8, 'fatG':0.3, 'category':'Trái cây',  'defaultPortionG':120},
+  {'id':'tao',           'name':'Táo',                   'calorieKcal':52,  'proteinG':0.3, 'carbG':13.8, 'fatG':0.2, 'category':'Trái cây',  'defaultPortionG':180},
+  {'id':'xoai',          'name':'Xoài',                  'calorieKcal':60,  'proteinG':0.8, 'carbG':15.0, 'fatG':0.4, 'category':'Trái cây',  'defaultPortionG':150},
+  {'id':'dua_hau',       'name':'Dưa hấu',               'calorieKcal':30,  'proteinG':0.6, 'carbG':7.6,  'fatG':0.2, 'category':'Trái cây',  'defaultPortionG':200},
+  {'id':'cam',           'name':'Cam',                   'calorieKcal':47,  'proteinG':0.9, 'carbG':11.8, 'fatG':0.1, 'category':'Trái cây',  'defaultPortionG':130},
+  {'id':'nho',           'name':'Nho',                   'calorieKcal':69,  'proteinG':0.7, 'carbG':18.1, 'fatG':0.2, 'category':'Trái cây',  'defaultPortionG':100},
+  {'id':'buoi',          'name':'Bưởi',                  'calorieKcal':32,  'proteinG':0.6, 'carbG':8.1,  'fatG':0.1, 'category':'Trái cây',  'defaultPortionG':150},
+  {'id':'thanh_long',    'name':'Thanh long',            'calorieKcal':50,  'proteinG':1.1, 'carbG':11.0, 'fatG':0.4, 'category':'Trái cây',  'defaultPortionG':150},
+
+  // ── Sữa / Dairy ─────────────────────────────────────────────────────
+  {'id':'yogurt',        'name':'Yogurt không đường',    'calorieKcal':59,  'proteinG':3.5, 'carbG':7.8,  'fatG':0.8, 'category':'Sữa',       'defaultPortionG':150},
+  {'id':'sua_tuoi',      'name':'Sữa tươi không đường',  'calorieKcal':61,  'proteinG':3.2, 'carbG':4.8,  'fatG':3.3, 'category':'Sữa',       'defaultPortionG':200},
+  {'id':'sua_chua_co_duong','name':'Sữa chua có đường',  'calorieKcal':95,  'proteinG':3.0, 'carbG':17.0, 'fatG':1.5, 'category':'Sữa',       'defaultPortionG':150},
+  {'id':'pho_mai',       'name':'Phô mai tươi',          'calorieKcal':98,  'proteinG':6.5, 'carbG':3.5,  'fatG':7.0, 'category':'Sữa',       'defaultPortionG':50},
+
+  // ── Tráng miệng / Đồ uống ───────────────────────────────────────────
+  {'id':'banh_chuoi',    'name':'Bánh chuối hấp',        'calorieKcal':135, 'proteinG':2.2, 'carbG':27.5, 'fatG':2.5, 'category':'Tráng miệng','defaultPortionG':100},
+  {'id':'che_dau_xanh',  'name':'Chè đậu xanh',          'calorieKcal':110, 'proteinG':4.5, 'carbG':22.0, 'fatG':0.5, 'category':'Tráng miệng','defaultPortionG':200},
+  {'id':'che_ba_mau',    'name':'Chè ba màu',            'calorieKcal':130, 'proteinG':3.0, 'carbG':27.0, 'fatG':1.5, 'category':'Tráng miệng','defaultPortionG':200},
+  {'id':'kem_tuoi',      'name':'Kem tươi (1 cây)',      'calorieKcal':145, 'proteinG':2.5, 'carbG':22.0, 'fatG':5.5, 'category':'Tráng miệng','defaultPortionG':80},
+  {'id':'nuoc_cam_tuoi', 'name':'Nước cam tươi',         'calorieKcal':45,  'proteinG':0.7, 'carbG':10.4, 'fatG':0.2, 'category':'Tráng miệng','defaultPortionG':250},
+  {'id':'tra_sua',       'name':'Trà sữa trân châu',     'calorieKcal':168, 'proteinG':2.0, 'carbG':36.5, 'fatG':2.5, 'category':'Tráng miệng','defaultPortionG':500},
+  {'id':'sinh_to_chuoi', 'name':'Sinh tố chuối',         'calorieKcal':120, 'proteinG':2.5, 'carbG':25.0, 'fatG':1.5, 'category':'Tráng miệng','defaultPortionG':300},
+];
+
+// ── Miền Bắc (~60 items) ──────────────────────────────────────────────────
+List<Map<String, dynamic>> _mienBac() => const [
+  {'id':'pho_tai',           'name':'Phở tái',                      'calorieKcal':65,  'proteinG':5.5, 'carbG':9.0,  'fatG':1.0, 'category':'Món nước','region':'miền Bắc','defaultPortionG':400},
+  {'id':'pho_chin',          'name':'Phở chín',                     'calorieKcal':70,  'proteinG':6.0, 'carbG':9.5,  'fatG':1.2, 'category':'Món nước','region':'miền Bắc','defaultPortionG':400},
+  {'id':'pho_tai_nam',      'name':'Phở tái nạm',                  'calorieKcal':75,  'proteinG':6.5, 'carbG':9.5,  'fatG':1.5, 'category':'Món nước','region':'miền Bắc','defaultPortionG':400},
+  {'id':'pho_cuon',          'name':'Phở cuốn',                      'calorieKcal':120, 'proteinG':8.5, 'carbG':15.0, 'fatG':3.0, 'category':'Món nước','region':'miền Bắc','defaultPortionG':250},
+  {'id':'pho_xao',           'name':'Phở xào bò',                    'calorieKcal':165, 'proteinG':10.5,'carbG':22.0, 'fatG':4.5, 'category':'Món nước','region':'miền Bắc','defaultPortionG':300},
+  {'id':'bun_cha',           'name':'Bún chả Hà Nội',                'calorieKcal':135, 'proteinG':12.0,'carbG':15.5, 'fatG':3.5, 'category':'Món nước','region':'miền Bắc','defaultPortionG':350},
+  {'id':'bun_dau_mam_tom',   'name':'Bún đậu mắm tôm',              'calorieKcal':155, 'proteinG':14.0,'carbG':16.0, 'fatG':4.0, 'category':'Món nước','region':'miền Bắc','defaultPortionG':350},
+  {'id':'bun_thang',         'name':'Bún thang',                     'calorieKcal':58,  'proteinG':6.5, 'carbG':7.0,  'fatG':0.8, 'category':'Món nước','region':'miền Bắc','defaultPortionG':400},
+  {'id':'bun_oc',            'name':'Bún ốc',                        'calorieKcal':62,  'proteinG':5.0, 'carbG':8.5,  'fatG':1.0, 'category':'Món nước','region':'miền Bắc','defaultPortionG':400},
+  {'id':'mien_luon',         'name':'Miến lươn',                     'calorieKcal':95,  'proteinG':8.0, 'carbG':12.0, 'fatG':2.0, 'category':'Món nước','region':'miền Bắc','defaultPortionG':350},
+  {'id':'cha_ca_la_vong',    'name':'Chả cá Lã Vọng',                'calorieKcal':175, 'proteinG':16.5,'carbG':5.0,  'fatG':10.0,'category':'Hải sản','region':'miền Bắc','defaultPortionG':200},
+  {'id':'banh_tom_ho_tay',   'name':'Bánh tôm Hồ Tây',               'calorieKcal':210, 'proteinG':9.0, 'carbG':22.0, 'fatG':10.0,'category':'Bánh mì','region':'miền Bắc','defaultPortionG':150},
+  {'id':'nem_ran',           'name':'Nem rán (chả giò)',             'calorieKcal':165, 'proteinG':8.0, 'carbG':18.0, 'fatG':7.5, 'category':'Thịt','region':'miền Bắc','defaultPortionG':100},
+  {'id':'xoi_xeo',           'name':'Xôi xéo',                       'calorieKcal':175, 'proteinG':4.5, 'carbG':32.0, 'fatG':3.5, 'category':'Tinh bột','region':'miền Bắc','defaultPortionG':200},
+  {'id':'xoi_ga',            'name':'Xôi gà',                         'calorieKcal':185, 'proteinG':10.5,'carbG':28.0, 'fatG':4.0, 'category':'Tinh bột','region':'miền Bắc','defaultPortionG':250},
+  {'id':'xoi_lac',           'name':'Xôi lạc (đậu phộng)',           'calorieKcal':195, 'proteinG':6.5, 'carbG':30.0, 'fatG':5.5, 'category':'Tinh bột','region':'miền Bắc','defaultPortionG':200},
+  {'id':'xoi_ngo',           'name':'Xôi ngô',                       'calorieKcal':170, 'proteinG':3.5, 'carbG':34.0, 'fatG':2.5, 'category':'Tinh bột','region':'miền Bắc','defaultPortionG':200},
+  {'id':'xoi_man',           'name':'Xôi mặn (thịt, chả, trứng)',    'calorieKcal':210, 'proteinG':11.0,'carbG':29.0, 'fatG':6.0, 'category':'Tinh bột','region':'miền Bắc','defaultPortionG':280},
+  {'id':'banh_duc',          'name':'Bánh đúc nộm',                   'calorieKcal':85,  'proteinG':2.5, 'carbG':16.0, 'fatG':1.5, 'category':'Ăn vặt','region':'miền Bắc','defaultPortionG':200},
+  {'id':'banh_gio',          'name':'Bánh giò',                       'calorieKcal':155, 'proteinG':7.0, 'carbG':20.0, 'fatG':5.0, 'category':'Bánh mì','region':'miền Bắc','defaultPortionG':200},
+  {'id':'banh_khuc',         'name':'Bánh khúc',                      'calorieKcal':145, 'proteinG':6.5, 'carbG':22.0, 'fatG':3.5, 'category':'Bánh mì','region':'miền Bắc','defaultPortionG':150},
+  {'id':'banh_ran',          'name':'Bánh rán nhân đỗ',              'calorieKcal':180, 'proteinG':4.5, 'carbG':28.0, 'fatG':5.5, 'category':'Tráng miệng','region':'miền Bắc','defaultPortionG':100},
+  {'id':'banh_com',          'name':'Bánh cốm',                       'calorieKcal':120, 'proteinG':2.0, 'carbG':25.0, 'fatG':1.5, 'category':'Tráng miệng','region':'miền Bắc','defaultPortionG':80},
+  {'id':'com',               'name':'Cốm tươi',                       'calorieKcal':130, 'proteinG':3.0, 'carbG':27.0, 'fatG':1.0, 'category':'Tráng miệng','region':'miền Bắc','defaultPortionG':100},
+  {'id':'o_mai',             'name':'Ô mai các loại',                 'calorieKcal':180, 'proteinG':0.5, 'carbG':42.0, 'fatG':0.5, 'category':'Tráng miệng','region':'miền Bắc','defaultPortionG':50},
+  {'id':'nem_chua',          'name':'Nem chua',                       'calorieKcal':145, 'proteinG':12.0,'carbG':8.0,  'fatG':7.5, 'category':'Thịt','region':'miền Bắc','defaultPortionG':50},
+  {'id':'gio_lua',           'name':'Giò lụa',                        'calorieKcal':185, 'proteinG':16.0,'carbG':3.0,  'fatG':12.0,'category':'Thịt','region':'miền Bắc','defaultPortionG':100},
+  {'id':'cha_que',           'name':'Chả quế',                        'calorieKcal':195, 'proteinG':15.5,'carbG':5.0,  'fatG':12.5,'category':'Thịt','region':'miền Bắc','defaultPortionG':100},
+  {'id':'ruou_nep',          'name':'Rượu nếp cẩm',                   'calorieKcal':95,  'proteinG':2.0, 'carbG':20.0, 'fatG':0.5, 'category':'Đồ uống','region':'miền Bắc','defaultPortionG':100},
+  {'id':'bun_rieu_cua',      'name':'Bún riêu cua Hà Nội',           'calorieKcal':68,  'proteinG':6.0, 'carbG':8.8,  'fatG':1.5, 'category':'Món nước','region':'miền Bắc','defaultPortionG':400},
+  {'id':'mien_ngan',         'name':'Miến ngan',                      'calorieKcal':72,  'proteinG':7.5, 'carbG':9.0,  'fatG':1.2, 'category':'Món nước','region':'miền Bắc','defaultPortionG':350},
+  {'id':'bun_doc_mung',      'name':'Bún dọc mùng',                   'calorieKcal':55,  'proteinG':4.5, 'carbG':7.5,  'fatG':1.0, 'category':'Món nước','region':'miền Bắc','defaultPortionG':400},
+  {'id':'lau_rieu_cua',      'name':'Lẩu riêu cua',                   'calorieKcal':65,  'proteinG':7.0, 'carbG':6.0,  'fatG':1.5, 'category':'Món nước','region':'miền Bắc','defaultPortionG':350},
+  {'id':'thit_dong',         'name':'Thịt đông',                     'calorieKcal':210, 'proteinG':18.0,'carbG':3.0,  'fatG':14.0,'category':'Thịt','region':'miền Bắc','defaultPortionG':100},
+  {'id':'du_du_hanh',        'name':'Dưa hành muối',                  'calorieKcal':22,  'proteinG':1.0, 'carbG':4.5,  'fatG':0.1, 'category':'Rau củ','region':'miền Bắc','defaultPortionG':50},
+  {'id':'dua_gia',           'name':'Dưa giá muối',                   'calorieKcal':20,  'proteinG':1.2, 'carbG':3.8,  'fatG':0.1, 'category':'Rau củ','region':'miền Bắc','defaultPortionG':80},
+  {'id':'rau_cai_cu_son',    'name':'Rau cải cúc xào',               'calorieKcal':38,  'proteinG':2.5, 'carbG':4.5,  'fatG':1.2, 'category':'Rau củ','region':'miền Bắc','defaultPortionG':150},
+  {'id':'su_sao_xao',        'name':'Su su xào tỏi',                 'calorieKcal':35,  'proteinG':1.8, 'carbG':6.0,  'fatG':0.8, 'category':'Rau củ','region':'miền Bắc','defaultPortionG':150},
+  {'id':'che_com',           'name':'Chè cốm',                       'calorieKcal':125, 'proteinG':3.0, 'carbG':26.0, 'fatG':1.0, 'category':'Tráng miệng','region':'miền Bắc','defaultPortionG':180},
+  {'id':'che_khoai',         'name':'Chè khoai',                     'calorieKcal':130, 'proteinG':1.5, 'carbG':28.0, 'fatG':1.5, 'category':'Tráng miệng','region':'miền Bắc','defaultPortionG':200},
+  {'id':'che_sen',           'name':'Chè hạt sen',                   'calorieKcal':115, 'proteinG':3.5, 'carbG':24.0, 'fatG':0.5, 'category':'Tráng miệng','region':'miền Bắc','defaultPortionG':200},
+  {'id':'ca_phe_trung',      'name':'Cà phê trứng',                  'calorieKcal':95,  'proteinG':3.0, 'carbG':8.5,  'fatG':5.0, 'category':'Đồ uống','region':'miền Bắc','defaultPortionG':80},
+  {'id':'banh_my_ha_noi',    'name':'Bánh mì Hà Nội',                 'calorieKcal':250, 'proteinG':11.0,'carbG':33.0, 'fatG':9.0, 'category':'Bánh mì','region':'miền Bắc','defaultPortionG':200},
+  {'id':'pho_xao_rau',       'name':'Phở xào rau cải',               'calorieKcal':145, 'proteinG':6.5, 'carbG':24.0, 'fatG':3.0, 'category':'Món nước','region':'miền Bắc','defaultPortionG':300},
+  {'id':'bun_moc',           'name':'Bún mọc',                       'calorieKcal':60,  'proteinG':6.0, 'carbG':7.5,  'fatG':1.0, 'category':'Món nước','region':'miền Bắc','defaultPortionG':400},
+  {'id':'banh_goi',          'name':'Bánh gối',                      'calorieKcal':190, 'proteinG':8.0, 'carbG':20.0, 'fatG':8.5, 'category':'Bánh mì','region':'miền Bắc','defaultPortionG':120},
+  {'id':'xoi_do',            'name':'Xôi đỗ xanh',                   'calorieKcal':165, 'proteinG':5.5, 'carbG':30.0, 'fatG':2.5, 'category':'Tinh bột','region':'miền Bắc','defaultPortionG':200},
+  {'id':'banh_nep',          'name':'Bánh nếp nhân đỗ',             'calorieKcal':155, 'proteinG':3.5, 'carbG':30.0, 'fatG':2.5, 'category':'Tráng miệng','region':'miền Bắc','defaultPortionG':100},
+  {'id':'nem_cua_be',        'name':'Nem cua bể',                    'calorieKcal':175, 'proteinG':12.0,'carbG':14.0, 'fatG':7.0, 'category':'Hải sản','region':'miền Bắc','defaultPortionG':100},
+  {'id':'ruoc',              'name':'Ruốc (chà bông)',               'calorieKcal':290, 'proteinG':35.0,'carbG':8.0,  'fatG':14.0,'category':'Thịt','region':'miền Bắc','defaultPortionG':30},
+  {'id':'bo_bia',            'name':'Bò bía',                        'calorieKcal':110, 'proteinG':5.0, 'carbG':14.0, 'fatG':3.5, 'category':'Ăn vặt','region':'miền Bắc','defaultPortionG':100},
+  {'id':'goi_xoai_xanh',     'name':'Gỏi xoài xanh',                 'calorieKcal':55,  'proteinG':1.5, 'carbG':12.0, 'fatG':0.5, 'category':'Salad','region':'miền Bắc','defaultPortionG':150},
+  {'id':'nom_du_du',         'name':'Nộm đu đủ',                     'calorieKcal':50,  'proteinG':1.5, 'carbG':11.0, 'fatG':0.5, 'category':'Salad','region':'miền Bắc','defaultPortionG':150},
+  {'id':'goi_bo_kho',        'name':'Gỏi bò khô',                   'calorieKcal':85,  'proteinG':8.5, 'carbG':10.0, 'fatG':1.5, 'category':'Salad','region':'miền Bắc','defaultPortionG':150},
+  {'id':'banh_trung_thu',    'name':'Bánh Trung Thu nhân thập cẩm',  'calorieKcal':380, 'proteinG':8.0, 'carbG':55.0, 'fatG':15.0,'category':'Tráng miệng','region':'miền Bắc','defaultPortionG':150},
+  {'id':'banh_trung_thu_deo','name':'Bánh Trung Thu dẻo',            'calorieKcal':340, 'proteinG':5.0, 'carbG':60.0, 'fatG':10.0,'category':'Tráng miệng','region':'miền Bắc','defaultPortionG':120},
+  {'id':'ca_kho_lang',       'name':'Cá kho làng Vũ Đại',           'calorieKcal':175, 'proteinG':18.0,'carbG':5.0,  'fatG':9.5, 'category':'Hải sản','region':'miền Bắc','defaultPortionG':120},
+  {'id':'che_buoi',          'name':'Chè bưởi',                      'calorieKcal':108, 'proteinG':2.0, 'carbG':24.0, 'fatG':0.5, 'category':'Tráng miệng','region':'miền Bắc','defaultPortionG':200},
+  {'id':'che_troi_nuoc',     'name':'Chè trôi nước',                'calorieKcal':140, 'proteinG':3.5, 'carbG':28.0, 'fatG':2.0, 'category':'Tráng miệng','region':'miền Bắc','defaultPortionG':200},
+];
+
+// ── Miền Trung (~60 items) ─────────────────────────────────────────────────
+List<Map<String, dynamic>> _mienTrung() => const [
+  {'id':'bun_bo_hue_day_du', 'name':'Bún bò Huế đầy đủ',            'calorieKcal':78,  'proteinG':7.5, 'carbG':9.5,  'fatG':1.8, 'category':'Món nước','region':'miền Trung','defaultPortionG':400},
+  {'id':'bun_hen',           'name':'Bún hến',                       'calorieKcal':55,  'proteinG':5.0, 'carbG':8.0,  'fatG':0.5, 'category':'Món nước','region':'miền Trung','defaultPortionG':350},
+  {'id':'com_hen',           'name':'Cơm hến',                       'calorieKcal':85,  'proteinG':6.5, 'carbG':14.0, 'fatG':0.8, 'category':'Cơm','region':'miền Trung','defaultPortionG':300},
+  {'id':'cao_lau',           'name':'Cao lầu Hội An',                'calorieKcal':135, 'proteinG':10.0,'carbG':18.5, 'fatG':3.0, 'category':'Món nước','region':'miền Trung','defaultPortionG':350},
+  {'id':'mi_quang_ga',       'name':'Mì Quảng gà',                   'calorieKcal':85,  'proteinG':7.0, 'carbG':11.5, 'fatG':1.5, 'category':'Món nước','region':'miền Trung','defaultPortionG':400},
+  {'id':'mi_quang_tom_thit', 'name':'Mì Quảng tôm thịt',             'calorieKcal':95,  'proteinG':8.5, 'carbG':12.0, 'fatG':2.0, 'category':'Món nước','region':'miền Trung','defaultPortionG':400},
+  {'id':'banh_beo',          'name':'Bánh bèo',                      'calorieKcal':75,  'proteinG':3.5, 'carbG':14.0, 'fatG':0.8, 'category':'Bánh mì','region':'miền Trung','defaultPortionG':150},
+  {'id':'banh_nam',          'name':'Bánh nậm',                      'calorieKcal':70,  'proteinG':4.0, 'carbG':12.0, 'fatG':1.0, 'category':'Bánh mì','region':'miền Trung','defaultPortionG':150},
+  {'id':'banh_bot_loc',      'name':'Bánh bột lọc',                  'calorieKcal':80,  'proteinG':3.5, 'carbG':15.0, 'fatG':1.0, 'category':'Bánh mì','region':'miền Trung','defaultPortionG':150},
+  {'id':'banh_khoai',        'name':'Bánh khoái Huế',                'calorieKcal':160, 'proteinG':7.0, 'carbG':20.0, 'fatG':6.0, 'category':'Bánh mì','region':'miền Trung','defaultPortionG':200},
+  {'id':'banh_trang_cuon_thit','name':'Bánh tráng cuốn thịt heo',    'calorieKcal':120, 'proteinG':10.5,'carbG':14.0, 'fatG':2.5, 'category':'Thịt','region':'miền Trung','defaultPortionG':200},
+  {'id':'banh_uot',          'name':'Bánh ướt',                      'calorieKcal':90,  'proteinG':3.0, 'carbG':18.0, 'fatG':1.0, 'category':'Bánh mì','region':'miền Trung','defaultPortionG':180},
+  {'id':'nem_lui',           'name':'Nem lụi Huế',                   'calorieKcal':145, 'proteinG':12.5,'carbG':8.0,  'fatG':7.5, 'category':'Thịt','region':'miền Trung','defaultPortionG':100},
+  {'id':'banh_canh_ca_loc',  'name':'Bánh canh cá lóc',             'calorieKcal':68,  'proteinG':6.0, 'carbG':9.0,  'fatG':1.0, 'category':'Món nước','region':'miền Trung','defaultPortionG':400},
+  {'id':'banh_canh_cha_ca',  'name':'Bánh canh chả cá Nha Trang',   'calorieKcal':72,  'proteinG':7.0, 'carbG':8.5,  'fatG':1.5, 'category':'Món nước','region':'miền Trung','defaultPortionG':400},
+  {'id':'bun_ca',            'name':'Bún cá',                        'calorieKcal':58,  'proteinG':5.5, 'carbG':7.8,  'fatG':0.8, 'category':'Món nước','region':'miền Trung','defaultPortionG':400},
+  {'id':'bun_sua',           'name':'Bún sứa',                       'calorieKcal':55,  'proteinG':4.5, 'carbG':8.0,  'fatG':0.5, 'category':'Món nước','region':'miền Trung','defaultPortionG':400},
+  {'id':'banh_xeo_mien_trung','name':'Bánh xèo miền Trung (nhỏ)',    'calorieKcal':155, 'proteinG':6.5, 'carbG':20.0, 'fatG':5.5, 'category':'Bánh mì','region':'miền Trung','defaultPortionG':150},
+  {'id':'banh_can',          'name':'Bánh căn',                      'calorieKcal':100, 'proteinG':5.5, 'carbG':14.0, 'fatG':3.0, 'category':'Bánh mì','region':'miền Trung','defaultPortionG':150},
+  {'id':'bun_thit_nuong',    'name':'Bún thịt nướng',               'calorieKcal':128, 'proteinG':10.5,'carbG':16.0, 'fatG':3.0, 'category':'Món nước','region':'miền Trung','defaultPortionG':350},
+  {'id':'bun_mam_nem',       'name':'Bún mắm nêm',                  'calorieKcal':82,  'proteinG':7.0, 'carbG':10.5, 'fatG':2.0, 'category':'Món nước','region':'miền Trung','defaultPortionG':400},
+  {'id':'banh_trang_nuong_mt','name':'Bánh tráng nướng miền Trung',  'calorieKcal':185, 'proteinG':7.5, 'carbG':24.0, 'fatG':7.0, 'category':'Ăn vặt','region':'miền Trung','defaultPortionG':100},
+  {'id':'che_heo_quay',      'name':'Chè hột é',                    'calorieKcal':95,  'proteinG':1.0, 'carbG':22.0, 'fatG':0.5, 'category':'Tráng miệng','region':'miền Trung','defaultPortionG':200},
+  {'id':'che_hat_sen_hue',   'name':'Chè hạt sen Huế',              'calorieKcal':110, 'proteinG':3.5, 'carbG':23.0, 'fatG':0.5, 'category':'Tráng miệng','region':'miền Trung','defaultPortionG':200},
+  {'id':'che_dau_van',       'name':'Chè đậu ván',                   'calorieKcal':115, 'proteinG':5.0, 'carbG':22.0, 'fatG':0.5, 'category':'Tráng miệng','region':'miền Trung','defaultPortionG':200},
+  {'id':'che_khoai_mon',     'name':'Chè khoai môn',                'calorieKcal':125, 'proteinG':1.5, 'carbG':27.0, 'fatG':1.5, 'category':'Tráng miệng','region':'miền Trung','defaultPortionG':200},
+  {'id':'mit_tron',          'name':'Mít trộn',                     'calorieKcal':95,  'proteinG':2.0, 'carbG':22.0, 'fatG':0.5, 'category':'Tráng miệng','region':'miền Trung','defaultPortionG':150},
+  {'id':'ram_it',            'name':'Ram ít',                       'calorieKcal':155, 'proteinG':6.0, 'carbG':18.0, 'fatG':6.5, 'category':'Bánh mì','region':'miền Trung','defaultPortionG':120},
+  {'id':'banh_it_tran',      'name':'Bánh ít trần',                 'calorieKcal':145, 'proteinG':4.5, 'carbG':22.0, 'fatG':4.0, 'category':'Bánh mì','region':'miền Trung','defaultPortionG':100},
+  {'id':'banh_tet',          'name':'Bánh tét',                     'calorieKcal':250, 'proteinG':6.0, 'carbG':45.0, 'fatG':5.0, 'category':'Tinh bột','region':'miền Trung','defaultPortionG':200},
+  {'id':'tom_chua',          'name':'Tôm chua Huế',                 'calorieKcal':85,  'proteinG':14.0,'carbG':2.0,  'fatG':1.5, 'category':'Hải sản','region':'miền Trung','defaultPortionG':80},
+  {'id':'cha_bo_hue',        'name':'Chả bò Huế',                  'calorieKcal':165, 'proteinG':16.0,'carbG':5.0,  'fatG':9.5, 'category':'Thịt','region':'miền Trung','defaultPortionG':100},
+  {'id':'tre',               'name':'Tré',                          'calorieKcal':135, 'proteinG':11.0,'carbG':8.0,  'fatG':6.5, 'category':'Thịt','region':'miền Trung','defaultPortionG':80},
+  {'id':'goi_ca_mai',        'name':'Gỏi cá mai',                   'calorieKcal':65,  'proteinG':9.5, 'carbG':3.0,  'fatG':2.0, 'category':'Salad','region':'miền Trung','defaultPortionG':120},
+  {'id':'banh_dap',          'name':'Bánh đập',                     'calorieKcal':105, 'proteinG':3.5, 'carbG':22.0, 'fatG':0.5, 'category':'Bánh mì','region':'miền Trung','defaultPortionG':150},
+  {'id':'hen_xuc_banh_trang','name':'Hến xúc bánh tráng',           'calorieKcal':68,  'proteinG':6.0, 'carbG':8.0,  'fatG':0.8, 'category':'Hải sản','region':'miền Trung','defaultPortionG':150},
+  {'id':'goi_mit_non',       'name':'Gỏi mít non',                  'calorieKcal':72,  'proteinG':3.5, 'carbG':13.0, 'fatG':1.0, 'category':'Salad','region':'miền Trung','defaultPortionG':180},
+  {'id':'banh_trang_trộn_mt','name':'Bánh tráng trộn miền Trung',   'calorieKcal':175, 'proteinG':5.5, 'carbG':28.0, 'fatG':5.0, 'category':'Ăn vặt','region':'miền Trung','defaultPortionG':120},
+  {'id':'bun_cha_ca',        'name':'Bún chả cá',                   'calorieKcal':65,  'proteinG':7.0, 'carbG':7.5,  'fatG':1.2, 'category':'Món nước','region':'miền Trung','defaultPortionG':400},
+  {'id':'lau_ca_keo',        'name':'Lẩu cá kèo',                   'calorieKcal':55,  'proteinG':6.5, 'carbG':4.0,  'fatG':1.0, 'category':'Món nước','region':'miền Trung','defaultPortionG':350},
+  {'id':'banh_la',           'name':'Bánh lá',                      'calorieKcal':115, 'proteinG':3.0, 'carbG':22.0, 'fatG':2.0, 'category':'Bánh mì','region':'miền Trung','defaultPortionG':120},
+  {'id':'banh_bo_hue',       'name':'Bánh bò Huế',                  'calorieKcal':130, 'proteinG':2.5, 'carbG':26.0, 'fatG':2.0, 'category':'Tráng miệng','region':'miền Trung','defaultPortionG':80},
+  {'id':'cha_tom',           'name':'Chạo tôm',                     'calorieKcal':155, 'proteinG':14.5,'carbG':8.0,  'fatG':7.0, 'category':'Hải sản','region':'miền Trung','defaultPortionG':100},
+  {'id':'nuoc_mam_nhi',      'name':'Nước mắm nhỉ',                'calorieKcal':35,  'proteinG':5.0, 'carbG':3.5,  'fatG':0,   'category':'Khác','region':'miền Trung','defaultPortionG':15},
+  {'id':'banh_mi_hoi_an',    'name':'Bánh mì Hội An',              'calorieKcal':240, 'proteinG':10.5,'carbG':32.0, 'fatG':8.5, 'category':'Bánh mì','region':'miền Trung','defaultPortionG':200},
+  {'id':'banh_it_gai',       'name':'Bánh ít lá gai',              'calorieKcal':140, 'proteinG':3.0, 'carbG':28.0, 'fatG':2.5, 'category':'Tráng miệng','region':'miền Trung','defaultPortionG':100},
+  {'id':'com_thit_nuong',    'name':'Cơm thịt nướng',              'calorieKcal':160, 'proteinG':10.5,'carbG':20.0, 'fatG':4.0, 'category':'Cơm','region':'miền Trung','defaultPortionG':350},
+  {'id':'che_bap',           'name':'Chè bắp',                     'calorieKcal':120, 'proteinG':2.0, 'carbG':25.0, 'fatG':1.5, 'category':'Tráng miệng','region':'miền Trung','defaultPortionG':200},
+  {'id':'che_dau_xanh_danh', 'name':'Chè đậu xanh đánh',          'calorieKcal':105, 'proteinG':4.5, 'carbG':21.0, 'fatG':0.5, 'category':'Tráng miệng','region':'miền Trung','defaultPortionG':200},
+  {'id':'goi_du_du_kho_bo',  'name':'Gỏi đu đủ khô bò',          'calorieKcal':75,  'proteinG':6.5, 'carbG':10.0, 'fatG':1.5, 'category':'Salad','region':'miền Trung','defaultPortionG':150},
+  {'id':'banh_cuon_thit_nuong','name':'Bánh cuốn thịt nướng',      'calorieKcal':135, 'proteinG':9.0, 'carbG':16.0, 'fatG':4.0, 'category':'Bánh mì','region':'miền Trung','defaultPortionG':200},
+  {'id':'bun_bo_gion',       'name':'Bún bò giòn',                 'calorieKcal':85,  'proteinG':8.0, 'carbG':10.0, 'fatG':2.0, 'category':'Món nước','region':'miền Trung','defaultPortionG':400},
+  {'id':'cha_ram',           'name':'Chả ram',                     'calorieKcal':150, 'proteinG':8.5, 'carbG':12.0, 'fatG':7.5, 'category':'Thịt','region':'miền Trung','defaultPortionG':100},
+  {'id':'nem_nuong_nha_trang','name':'Nem nướng Nha Trang',        'calorieKcal':140, 'proteinG':12.5,'carbG':7.5,  'fatG':7.0, 'category':'Thịt','region':'miền Trung','defaultPortionG':100},
+  {'id':'bun_nuoc_leo',      'name':'Bún nước lèo',               'calorieKcal':60,  'proteinG':5.5, 'carbG':8.0,  'fatG':1.0, 'category':'Món nước','region':'miền Trung','defaultPortionG':400},
+  {'id':'banh_trang_dap',    'name':'Bánh tráng đập',             'calorieKcal':85,  'proteinG':3.0, 'carbG':18.0, 'fatG':0.3, 'category':'Bánh mì','region':'miền Trung','defaultPortionG':100},
+  {'id':'che_bot_san',       'name':'Chè bột sắn',               'calorieKcal':100, 'proteinG':0.5, 'carbG':25.0, 'fatG':0.1, 'category':'Tráng miệng','region':'miền Trung','defaultPortionG':200},
+  {'id':'banh_thuan',        'name':'Bánh thuẫn',                 'calorieKcal':120, 'proteinG':2.5, 'carbG':24.0, 'fatG':2.0, 'category':'Tráng miệng','region':'miền Trung','defaultPortionG':80},
+];
+
+// ── Miền Nam (~60 items) ───────────────────────────────────────────────────
+List<Map<String, dynamic>> _mienNam() => const [
+  {'id':'com_tam_suon',      'name':'Cơm tấm sườn',                 'calorieKcal':165, 'proteinG':10.8,'carbG':20.5, 'fatG':4.8, 'category':'Cơm','region':'miền Nam','defaultPortionG':380},
+  {'id':'com_tam_bi_cha',    'name':'Cơm tấm bì chả',              'calorieKcal':170, 'proteinG':11.5,'carbG':21.0, 'fatG':5.0, 'category':'Cơm','region':'miền Nam','defaultPortionG':400},
+  {'id':'com_tam_suon_trung','name':'Cơm tấm sườn trứng ốp la',     'calorieKcal':195, 'proteinG':13.5,'carbG':20.8, 'fatG':7.5, 'category':'Cơm','region':'miền Nam','defaultPortionG':420},
+  {'id':'hu_tieu_nam_vang',  'name':'Hủ tiếu Nam Vang đặc biệt',   'calorieKcal':82,  'proteinG':6.5, 'carbG':10.8, 'fatG':2.0, 'category':'Món nước','region':'miền Nam','defaultPortionG':400},
+  {'id':'hu_tieu_mi',        'name':'Hủ tiếu mì khô',              'calorieKcal':95,  'proteinG':8.0, 'carbG':12.5, 'fatG':2.5, 'category':'Món nước','region':'miền Nam','defaultPortionG':350},
+  {'id':'hu_tieu_ca',        'name':'Hủ tiếu cá',                   'calorieKcal':62,  'proteinG':5.5, 'carbG':8.5,  'fatG':1.0, 'category':'Món nước','region':'miền Nam','defaultPortionG':400},
+  {'id':'bun_mam_dac_biet',  'name':'Bún mắm đặc biệt',            'calorieKcal':85,  'proteinG':7.5, 'carbG':10.8, 'fatG':2.0, 'category':'Món nước','region':'miền Nam','defaultPortionG':400},
+  {'id':'banh_xeo_mien_nam', 'name':'Bánh xèo miền Nam (lớn)',      'calorieKcal':170, 'proteinG':8.0, 'carbG':22.5, 'fatG':6.0, 'category':'Bánh mì','region':'miền Nam','defaultPortionG':220},
+  {'id':'banh_khot',         'name':'Bánh khọt',                   'calorieKcal':130, 'proteinG':6.0, 'carbG':16.0, 'fatG':5.0, 'category':'Bánh mì','region':'miền Nam','defaultPortionG':150},
+  {'id':'goi_cuon',          'name':'Gỏi cuốn',                    'calorieKcal':75,  'proteinG':7.0, 'carbG':8.0,  'fatG':1.5, 'category':'Salad','region':'miền Nam','defaultPortionG':150},
+  {'id':'goi_cuon_tom_thit', 'name':'Gỏi cuốn tôm thịt',           'calorieKcal':85,  'proteinG':8.5, 'carbG':8.0,  'fatG':2.0, 'category':'Salad','region':'miền Nam','defaultPortionG':160},
+  {'id':'cha_gio_mien_nam',  'name':'Chả giò miền Nam',            'calorieKcal':170, 'proteinG':7.0, 'carbG':18.0, 'fatG':8.5, 'category':'Thịt','region':'miền Nam','defaultPortionG':100},
+  {'id':'bo_kho_sai_gon',    'name':'Bò kho Sài Gòn',              'calorieKcal':85,  'proteinG':7.5, 'carbG':4.0,  'fatG':4.0, 'category':'Món nước','region':'miền Nam','defaultPortionG':350},
+  {'id':'banh_canh_cua',     'name':'Bánh canh cua',               'calorieKcal':75,  'proteinG':6.5, 'carbG':10.0, 'fatG':1.5, 'category':'Món nước','region':'miền Nam','defaultPortionG':400},
+  {'id':'bun_suong',         'name':'Bún sương',                    'calorieKcal':52,  'proteinG':4.5, 'carbG':7.5,  'fatG':0.5, 'category':'Món nước','region':'miền Nam','defaultPortionG':400},
+  {'id':'bun_bo_xao',        'name':'Bún bò xào',                  'calorieKcal':128, 'proteinG':10.5,'carbG':16.0, 'fatG':3.0, 'category':'Món nước','region':'miền Nam','defaultPortionG':350},
+  {'id':'banh_mi_sai_gon',   'name':'Bánh mì Sài Gòn',             'calorieKcal':260, 'proteinG':12.0,'carbG':34.0, 'fatG':10.0,'category':'Bánh mì','region':'miền Nam','defaultPortionG':220},
+  {'id':'banh_mi_cha_ca',    'name':'Bánh mì chả cá',              'calorieKcal':240, 'proteinG':13.0,'carbG':30.0, 'fatG':8.5, 'category':'Bánh mì','region':'miền Nam','defaultPortionG':200},
+  {'id':'banh_mi_xa_xiu',    'name':'Bánh mì xá xíu',              'calorieKcal':255, 'proteinG':12.5,'carbG':32.0, 'fatG':9.5, 'category':'Bánh mì','region':'miền Nam','defaultPortionG':200},
+  {'id':'chao_long_sg',      'name':'Cháo lòng Sài Gòn',           'calorieKcal':68,  'proteinG':6.0, 'carbG':8.5,  'fatG':1.5, 'category':'Cháo','region':'miền Nam','defaultPortionG':350},
+  {'id':'chao_tieu',         'name':'Cháo tiêu',                    'calorieKcal':55,  'proteinG':4.5, 'carbG':7.8,  'fatG':0.8, 'category':'Cháo','region':'miền Nam','defaultPortionG':350},
+  {'id':'nuoc_mia',          'name':'Nước mía',                     'calorieKcal':60,  'proteinG':0.2, 'carbG':15.0, 'fatG':0,   'category':'Đồ uống','region':'miền Nam','defaultPortionG':300},
+  {'id':'nuoc_dua_tuoi',     'name':'Nước dừa tươi',                'calorieKcal':19,  'proteinG':0.7, 'carbG':3.7,  'fatG':0.2, 'category':'Đồ uống','region':'miền Nam','defaultPortionG':300},
+  {'id':'sam_dua',           'name':'Sâm dừa',                      'calorieKcal':65,  'proteinG':1.5, 'carbG':12.0, 'fatG':1.5, 'category':'Đồ uống','region':'miền Nam','defaultPortionG':250},
+  {'id':'rau_cau_dua',       'name':'Rau câu dừa',                 'calorieKcal':45,  'proteinG':0.5, 'carbG':10.0, 'fatG':0.5, 'category':'Tráng miệng','region':'miền Nam','defaultPortionG':100},
+  {'id':'sua_dau_nanh',      'name':'Sữa đậu nành',                'calorieKcal':44,  'proteinG':3.3, 'carbG':5.0,  'fatG':1.3, 'category':'Đồ uống','region':'miền Nam','defaultPortionG':250},
+  {'id':'che_chuoi_nuong',   'name':'Chè chuối nướng',             'calorieKcal':130, 'proteinG':2.0, 'carbG':28.0, 'fatG':1.5, 'category':'Tráng miệng','region':'miền Nam','defaultPortionG':200},
+  {'id':'che_thung',         'name':'Chè thùng',                    'calorieKcal':125, 'proteinG':3.0, 'carbG':26.0, 'fatG':1.0, 'category':'Tráng miệng','region':'miền Nam','defaultPortionG':200},
+  {'id':'chuoi_nuong',       'name':'Chuối nướng',                  'calorieKcal':95,  'proteinG':1.2, 'carbG':24.0, 'fatG':0.3, 'category':'Tráng miệng','region':'miền Nam','defaultPortionG':130},
+  {'id':'khoai_lang_nuong',  'name':'Khoai lang nướng',            'calorieKcal':90,  'proteinG':1.8, 'carbG':21.0, 'fatG':0.2, 'category':'Tinh bột','region':'miền Nam','defaultPortionG':160},
+  {'id':'bap_nuong',         'name':'Bắp nướng',                   'calorieKcal':105, 'proteinG':3.5, 'carbG':20.0, 'fatG':1.5, 'category':'Ăn vặt','region':'miền Nam','defaultPortionG':150},
+  {'id':'bap_xao',           'name':'Bắp xào bơ',                  'calorieKcal':125, 'proteinG':3.0, 'carbG':22.0, 'fatG':3.0, 'category':'Ăn vặt','region':'miền Nam','defaultPortionG':150},
+  {'id':'banh_tieu',         'name':'Bánh tiêu',                    'calorieKcal':155, 'proteinG':3.0, 'carbG':22.0, 'fatG':5.5, 'category':'Bánh mì','region':'miền Nam','defaultPortionG':60},
+  {'id':'banh_cam',          'name':'Bánh cam',                     'calorieKcal':180, 'proteinG':3.5, 'carbG':28.0, 'fatG':6.0, 'category':'Tráng miệng','region':'miền Nam','defaultPortionG':80},
+  {'id':'bot_chien',         'name':'Bột chiên',                    'calorieKcal':195, 'proteinG':5.5, 'carbG':24.0, 'fatG':8.5, 'category':'Ăn vặt','region':'miền Nam','defaultPortionG':150},
+  {'id':'ca_vien_chien',     'name':'Cá viên chiên',               'calorieKcal':175, 'proteinG':10.0,'carbG':14.0, 'fatG':8.5, 'category':'Ăn vặt','region':'miền Nam','defaultPortionG':100},
+  {'id':'goi_du_du_thai',    'name':'Gỏi đu đủ Thái',             'calorieKcal':62,  'proteinG':1.5, 'carbG':13.0, 'fatG':0.8, 'category':'Salad','region':'miền Nam','defaultPortionG':150},
+  {'id':'sup_nam_cua',       'name':'Súp nấm cua',                 'calorieKcal':52,  'proteinG':4.0, 'carbG':6.5,  'fatG':0.8, 'category':'Món nước','region':'miền Nam','defaultPortionG':300},
+  {'id':'lau_mam',           'name':'Lẩu mắm',                     'calorieKcal':72,  'proteinG':7.5, 'carbG':6.0,  'fatG':2.0, 'category':'Món nước','region':'miền Nam','defaultPortionG':350},
+  {'id':'lau_bo',            'name':'Lẩu bò',                      'calorieKcal':85,  'proteinG':9.5, 'carbG':4.0,  'fatG':3.5, 'category':'Món nước','region':'miền Nam','defaultPortionG':350},
+  {'id':'canh_chua_ca_bong','name':'Canh chua cá bông lau',       'calorieKcal':48,  'proteinG':4.5, 'carbG':6.0,  'fatG':1.0, 'category':'Canh','region':'miền Nam','defaultPortionG':250},
+  {'id':'canh_kho_qua_nam',  'name':'Canh khổ qua',               'calorieKcal':45,  'proteinG':4.0, 'carbG':4.5,  'fatG':1.2, 'category':'Canh','region':'miền Nam','defaultPortionG':250},
+  {'id':'ca_kho_to',         'name':'Cá kho tộ',                   'calorieKcal':155, 'proteinG':16.0,'carbG':2.0,  'fatG':9.0, 'category':'Hải sản','region':'miền Nam','defaultPortionG':120},
+  {'id':'suon_ram_man',      'name':'Sườn ram mặn',               'calorieKcal':220, 'proteinG':18.0,'carbG':4.0,  'fatG':15.0,'category':'Thịt','region':'miền Nam','defaultPortionG':120},
+  {'id':'thit_kho_trung',    'name':'Thịt kho trứng (thịt kho tàu)','calorieKcal':215,'proteinG':18.5,'carbG':3.0, 'fatG':14.0,'category':'Thịt','region':'miền Nam','defaultPortionG':130},
+  {'id':'dau_bap_xao_toi',   'name':'Đậu bắp xào tỏi',            'calorieKcal':38,  'proteinG':2.0, 'carbG':6.0,  'fatG':0.8, 'category':'Rau củ','region':'miền Nam','defaultPortionG':150},
+  {'id':'rau_mong_toi_luoc','name':'Rau mồng tơi luộc',          'calorieKcal':22,  'proteinG':1.8, 'carbG':3.5,  'fatG':0.2, 'category':'Rau củ','region':'miền Nam','defaultPortionG':150},
+  {'id':'rau_day_luoc',      'name':'Rau đay luộc',               'calorieKcal':24,  'proteinG':2.0, 'carbG':4.0,  'fatG':0.2, 'category':'Rau củ','region':'miền Nam','defaultPortionG':150},
+  {'id':'man_bap_cai',       'name':'Măng bắp cải chua',          'calorieKcal':20,  'proteinG':1.0, 'carbG':3.5,  'fatG':0.1, 'category':'Rau củ','region':'miền Nam','defaultPortionG':80},
+  {'id':'che_ma_tran',       'name':'Chè ma trận',                'calorieKcal':135, 'proteinG':3.0, 'carbG':27.0, 'fatG':2.0, 'category':'Tráng miệng','region':'miền Nam','defaultPortionG':200},
+  {'id':'che_xoai',          'name':'Chè xoài',                    'calorieKcal':115, 'proteinG':1.0, 'carbG':26.0, 'fatG':1.0, 'category':'Tráng miệng','region':'miền Nam','defaultPortionG':200},
+  {'id':'sinh_to_xoai',      'name':'Sinh tố xoài',                'calorieKcal':75,  'proteinG':1.0, 'carbG':17.0, 'fatG':0.5, 'category':'Đồ uống','region':'miền Nam','defaultPortionG':300},
+  {'id':'sinh_to_bo',        'name':'Sinh tố bơ',                  'calorieKcal':140, 'proteinG':2.0, 'carbG':12.0, 'fatG':10.0,'category':'Đồ uống','region':'miền Nam','defaultPortionG':300},
+  {'id':'che_dau_do',        'name':'Chè đậu đỏ',                 'calorieKcal':120, 'proteinG':4.0, 'carbG':24.0, 'fatG':0.5, 'category':'Tráng miệng','region':'miền Nam','defaultPortionG':200},
+  {'id':'che_suong_sa_hat_luu','name':'Chè sương sá hạt lựu',      'calorieKcal':105, 'proteinG':1.0, 'carbG':25.0, 'fatG':0.3, 'category':'Tráng miệng','region':'miền Nam','defaultPortionG':200},
+  {'id':'banh_bo_nuong',     'name':'Bánh bò nướng',               'calorieKcal':140, 'proteinG':3.0, 'carbG':24.0, 'fatG':3.5, 'category':'Tráng miệng','region':'miền Nam','defaultPortionG':80},
+  {'id':'banh_da_lon',       'name':'Bánh da lợn',                 'calorieKcal':135, 'proteinG':2.5, 'carbG':26.0, 'fatG':3.0, 'category':'Tráng miệng','region':'miền Nam','defaultPortionG':80},
+  {'id':'banh_pia',          'name':'Bánh pía',                    'calorieKcal':350, 'proteinG':5.0, 'carbG':50.0, 'fatG':15.0,'category':'Tráng miệng','region':'miền Nam','defaultPortionG':80},
+  {'id':'dua_kho',           'name':'Đùa kho (mứt dừa)',           'calorieKcal':280, 'proteinG':2.0, 'carbG':55.0, 'fatG':6.0, 'category':'Tráng miệng','region':'miền Nam','defaultPortionG':50},
+  {'id':'va_tron',           'name':'Vả trộn',                     'calorieKcal':68,  'proteinG':3.0, 'carbG':12.0, 'fatG':1.0, 'category':'Salad','region':'miền Nam','defaultPortionG':150},
+];

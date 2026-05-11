@@ -4,6 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:provider/provider.dart';
 import 'package:smartnutri/src/core/services/water_service.dart';
 import 'package:smartnutri/src/core/ui/components/sn_card.dart';
+import 'package:smartnutri/src/core/ui/theme/app_colors.dart';
 import 'package:smartnutri/src/core/ui/theme/app_spacing.dart';
 import 'package:smartnutri/src/core/ui/components/skeleton.dart';
 
@@ -25,11 +26,10 @@ class WaterCard extends StatelessWidget {
       stream: context.read<WaterService>().watchWaterMl(uid, date),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const SkeletonBox(height: 140, width: double.infinity);
+          return const SkeletonBox(height: 160, width: double.infinity);
         }
 
         final waterMl = snapshot.data ?? 0.0;
-        final colorScheme = Theme.of(context).colorScheme;
         final progress = targetMl > 0 ? (waterMl / targetMl).clamp(0.0, 1.0) : 0.0;
         final remaining = (targetMl - waterMl).clamp(0.0, targetMl);
 
@@ -39,14 +39,15 @@ class WaterCard extends StatelessWidget {
             children: [
               Row(
                 children: [
-                  Icon(Icons.water_drop_outlined, color: Colors.blue.shade400),
-                  const SizedBox(width: 8),
+                  const Icon(Icons.water_drop_rounded, color: AppColors.water),
+                  const SizedBox(width: AppSpacing.sm),
                   Text('Nước uống hôm nay',
                       style: Theme.of(context).textTheme.titleSmall),
                 ],
               ),
-              const SizedBox(height: AppSpacing.sm),
+              const SizedBox(height: AppSpacing.md),
               Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
                   Expanded(
                     child: Column(
@@ -54,15 +55,16 @@ class WaterCard extends StatelessWidget {
                       children: [
                         Text(
                           '${(waterMl / 1000).toStringAsFixed(1)} / ${(targetMl / 1000).toStringAsFixed(1)} L',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                fontWeight: FontWeight.bold,
-                                color: Colors.blue.shade600,
+                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                fontWeight: FontWeight.w800,
+                                color: AppColors.water,
                               ),
                         ),
+                        const SizedBox(height: 2),
                         Text(
                           remaining > 0
                               ? 'Còn thiếu ${(remaining / 1000).toStringAsFixed(1)} L'
-                              : 'Đã đủ nước hôm nay!',
+                              : 'Tuyệt vời! Đã đủ nước hôm nay.',
                           style: Theme.of(context).textTheme.bodySmall,
                         ),
                       ],
@@ -70,35 +72,58 @@ class WaterCard extends StatelessWidget {
                   ),
                   Text(
                     '${(progress * 100).round()}%',
-                    style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          color: Colors.blue.shade600,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: AppColors.water,
                           fontWeight: FontWeight.bold,
                         ),
                   ),
                 ],
               ),
-              const SizedBox(height: AppSpacing.sm),
-              LinearProgressIndicator(
-                value: progress,
-                color: Colors.blue.shade400,
-                backgroundColor: Colors.blue.shade50,
-                minHeight: 8,
-                borderRadius: BorderRadius.circular(4),
+              const SizedBox(height: AppSpacing.md),
+              TweenAnimationBuilder<double>(
+                tween: Tween<double>(begin: 0, end: progress),
+                duration: const Duration(milliseconds: 600),
+                curve: Curves.easeOutCubic,
+                builder: (context, value, _) {
+                  return Container(
+                    height: 12,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: AppColors.water.withValues(alpha: 0.15),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Stack(
+                      children: [
+                        FractionallySizedBox(
+                          widthFactor: value,
+                          child: Container(
+                            decoration: BoxDecoration(
+                              color: AppColors.water,
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
               ),
-              const SizedBox(height: AppSpacing.sm),
+              const SizedBox(height: AppSpacing.lg),
               Row(
                 children: [
                   for (final ml in [150.0, 200.0, 250.0, 330.0])
                     Expanded(
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 3),
-                        child: OutlinedButton(
-                          style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(horizontal: 4),
+                        child: FilledButton.tonal(
+                          style: FilledButton.styleFrom(
                             padding: EdgeInsets.zero,
-                            minimumSize: const Size(0, 36),
-                            side: BorderSide(color: colorScheme.outline),
+                            minimumSize: const Size(0, 40),
+                            backgroundColor:
+                                AppColors.water.withValues(alpha: 0.1),
+                            foregroundColor: AppColors.water,
                             shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8)),
+                                borderRadius: BorderRadius.circular(10)),
                           ),
                           onPressed: () {
                             HapticFeedback.selectionClick();
@@ -108,7 +133,8 @@ class WaterCard extends StatelessWidget {
                             ml >= 1000
                                 ? '${(ml / 1000).toStringAsFixed(1)}L'
                                 : '${ml.round()}ml',
-                            style: const TextStyle(fontSize: 12),
+                            style: const TextStyle(
+                                fontSize: 13, fontWeight: FontWeight.w600),
                           ),
                         ),
                       ),
@@ -129,19 +155,18 @@ class WaterCard extends StatelessWidget {
       if (!context.mounted) return;
       final messenger = ScaffoldMessenger.of(context);
       final message = e.code == 'permission-denied'
-          ? 'Không thể cập nhật nước uống. Kiểm tra quyền Firestore Rules.'
-          : 'Không thể cập nhật nước uống lúc này. Vui lòng thử lại.';
+          ? 'Không thể cập nhật. Kiểm tra quyền Firestore Rules.'
+          : 'Không thể cập nhật lúc này. Vui lòng thử lại.';
       messenger
         ..hideCurrentSnackBar()
         ..showSnackBar(SnackBar(content: Text(message)));
     } catch (_) {
       if (!context.mounted) return;
-      final messenger = ScaffoldMessenger.of(context);
-      messenger
+      ScaffoldMessenger.of(context)
         ..hideCurrentSnackBar()
         ..showSnackBar(
           const SnackBar(
-            content: Text('Không thể cập nhật nước uống lúc này. Vui lòng thử lại.'),
+            content: Text('Không thể cập nhật lúc này. Vui lòng thử lại.'),
           ),
         );
     }
