@@ -9,7 +9,9 @@ import 'package:smartnutri/src/app/smartnutri_app.dart';
 import 'package:smartnutri/src/core/config/app_environment.dart';
 import 'package:smartnutri/src/core/firebase/firebase_options.dart';
 import 'package:smartnutri/src/core/providers/app_settings_provider.dart';
+import 'package:smartnutri/src/core/services/ai_food_service.dart';
 import 'package:smartnutri/src/core/services/auth_service.dart';
+import 'package:smartnutri/src/core/services/barcode_service.dart';
 import 'package:smartnutri/src/core/services/connectivity_service.dart';
 import 'package:smartnutri/src/core/services/food_service.dart';
 import 'package:smartnutri/src/core/services/goal_service.dart';
@@ -18,6 +20,7 @@ import 'package:smartnutri/src/core/services/notification_service.dart';
 import 'package:smartnutri/src/core/services/profile_service.dart';
 import 'package:smartnutri/src/core/services/recent_foods_service.dart';
 import 'package:smartnutri/src/core/services/water_service.dart';
+import 'package:smartnutri/src/core/services/weight_service.dart';
 
 Future<void> bootstrap() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -54,6 +57,7 @@ Future<void> bootstrap() async {
 
   final authService = AuthService();
   final profileService = ProfileService();
+  final foodService = FoodService();
 
   final notificationService = NotificationService();
   await notificationService.init();
@@ -64,11 +68,14 @@ Future<void> bootstrap() async {
         Provider.value(value: environment),
         Provider.value(value: authService),
         Provider.value(value: profileService),
+        Provider.value(value: foodService),
         Provider(create: (_) => GoalService()),
         Provider(create: (_) => MealService()),
-        Provider(create: (_) => FoodService()),
         Provider(create: (_) => WaterService()),
+        Provider(create: (_) => WeightService()),
         Provider(create: (_) => ConnectivityService()),
+        Provider(create: (_) => AiFoodService(foodService: foodService)),
+        Provider(create: (_) => BarcodeService()),
         Provider.value(value: notificationService),
         ChangeNotifierProvider.value(value: recentFoods),
         ChangeNotifierProvider.value(value: settings),

@@ -18,19 +18,19 @@ migrate_working_dir/
 *.iws
 .idea/
 
-# The .vscode folder contains launch configuration and tasks you configure in
-# VS Code which you may wish to be included in version control, so this line
-# is commented out by default.
+# VS Code (uncomment if you want to ignore)
 #.vscode/
 
 # Flutter/Dart/Pub related
 **/doc/api/
 **/ios/Flutter/.last_build_id
 .dart_tool/
+.flutter-plugins
 .flutter-plugins-dependencies
 .pub-cache/
 .pub/
 /build/
+**/build/
 /coverage/
 
 # Symbolication related
@@ -43,3 +43,64 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+/android/.gradle/
+/android/.kotlin/
+/android/local.properties
+
+# iOS
+/ios/Pods/
+/ios/.symlinks/
+
+# Environment variables — NEVER commit secrets
+.env
+.env.*
+*.local
+
+# Firebase related
+.firebase/
+firebase-debug.log*
+firestore-debug.log*
+database-debug.log*
+ui-debug.log*
+.firebaserc.local
+
+# Node / npm / Cloud Functions
+node_modules/
+**/node_modules/
+functions/lib/
+functions/.env
+admin-web/dist/
+admin-web/.vite/
+
+# TypeScript build output
+lib/
+dist/
+*.js.map
+
+# AI Agents & IDE Cache (Do NOT push these)
+.gemini/
+.cursor/
+.aider*/
+.cline/
+*.chat
+*.session
+
+# Web, macOS, Windows, Linux build output
+/linux/flutter/ephemeral/
+/macOS/Flutter/ephemeral/
+/windows/flutter/ephemeral/
+
+# AI/Dev Documents (local only)
+CLAUDE.md
+docs/
+PROJECT_NOTES.md
+
+# Test images / temp data
+test_images/
+
+# Puro (Flutter version manager)
+.puro.json
+
+# Lock files for sub-packages (keep root pubspec.lock)
+functions/package-lock.json
+admin-web/package-lock.json

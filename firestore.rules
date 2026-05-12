@@ -9,22 +9,37 @@ service cloud.firestore {
       allow read, write: if request.auth != null && request.auth.uid == userId;
     }
 
-    match /users/{userId}/meal_entries/{entryId} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
-    }
+    match /users/{userId} {
+      // Admin can list all users for dashboard
+      allow read: if request.auth != null &&
+        (request.auth.uid == userId || request.auth.token.admin == true);
 
-    match /users/{userId}/daily_stats/{date} {
-      allow read, write: if request.auth != null && request.auth.uid == userId;
+      match /meal_entries/{entryId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+
+      match /daily_stats/{date} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+
+      match /weight_log/{date} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
     }
 
     match /foods/{foodId} {
       allow read: if request.auth != null;
-      allow write: if false;
+      allow write: if request.auth != null && request.auth.token.admin == true;
     }
 
     match /workouts/{workoutId} {
       allow read: if request.auth != null;
-      allow write: if false;
+      allow write: if request.auth != null && request.auth.token.admin == true;
+    }
+
+    // Aggregate stats for admin dashboard
+    match /admin_stats/{docId} {
+      allow read, write: if request.auth != null && request.auth.token.admin == true;
     }
   }
 }

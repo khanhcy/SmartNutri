@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
+import 'package:smartnutri/src/core/utils/firestore_write_message.dart';
 import 'package:smartnutri/src/core/services/auth_service.dart';
 import 'package:smartnutri/src/core/services/meal_service.dart';
 import 'package:smartnutri/src/core/ui/theme/app_spacing.dart';
@@ -12,7 +13,9 @@ import 'package:uuid/uuid.dart';
 void showCustomMealSheet(
   BuildContext context, {
   MealType initialMealType = MealType.lunch,
+  DateTime? logDate,
 }) {
+  final day = logDate ?? DateTime.now();
   showModalBottomSheet<void>(
     context: context,
     isScrollControlled: true,
@@ -24,14 +27,21 @@ void showCustomMealSheet(
         Provider.value(value: context.read<AuthService>()),
         Provider.value(value: context.read<MealService>()),
       ],
-      child: _CustomMealSheet(initialMealType: initialMealType),
+      child: _CustomMealSheet(
+        initialMealType: initialMealType,
+        logDate: day,
+      ),
     ),
   );
 }
 
 class _CustomMealSheet extends StatefulWidget {
-  const _CustomMealSheet({required this.initialMealType});
+  const _CustomMealSheet({
+    required this.initialMealType,
+    required this.logDate,
+  });
   final MealType initialMealType;
+  final DateTime logDate;
 
   @override
   State<_CustomMealSheet> createState() => _CustomMealSheetState();
@@ -54,6 +64,23 @@ class _CustomMealSheetState extends State<_CustomMealSheet> {
   void initState() {
     super.initState();
     _mealType = widget.initialMealType;
+    _proteinCtrl.addListener(_updateCalories);
+    _carbCtrl.addListener(_updateCalories);
+    _fatCtrl.addListener(_updateCalories);
+  }
+
+  void _updateCalories() {
+    final p = double.tryParse(_proteinCtrl.text) ?? 0;
+    final c = double.tryParse(_carbCtrl.text) ?? 0;
+    final f = double.tryParse(_fatCtrl.text) ?? 0;
+    
+    // Only auto-update if macros are greater than 0
+    if (p > 0 || c > 0 || f > 0) {
+      final kcal = (p * 4) + (c * 4) + (f * 9);
+      if (kcal > 0) {
+        _kcalCtrl.text = kcal.round().toString();
+      }
+    }
   }
 
   @override
@@ -61,8 +88,11 @@ class _CustomMealSheetState extends State<_CustomMealSheet> {
     _nameCtrl.dispose();
     _portionCtrl.dispose();
     _kcalCtrl.dispose();
+    _proteinCtrl.removeListener(_updateCalories);
     _proteinCtrl.dispose();
+    _carbCtrl.removeListener(_updateCalories);
     _carbCtrl.dispose();
+    _fatCtrl.removeListener(_updateCalories);
     _fatCtrl.dispose();
     super.dispose();
   }
@@ -86,132 +116,137 @@ class _CustomMealSheetState extends State<_CustomMealSheet> {
               Center(
                 child: Container(
                   width: 40,
-                  height: 4,
+                  height: 5,
                   decoration: BoxDecoration(
-                    color: colorScheme.outlineVariant,
-                    borderRadius: BorderRadius.circular(2),
+                    color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+                    borderRadius: BorderRadius.circular(2.5),
                   ),
                 ),
               ),
-              const SizedBox(height: AppSpacing.md),
-              Row(
-                children: [
-                  Icon(Icons.edit_note, color: colorScheme.primary),
-                  const SizedBox(width: 8),
-                  Text('Nhập bữa ăn thủ công',
-                      style: Theme.of(context).textTheme.titleMedium),
-                ],
-              ),
-              const SizedBox(height: 4),
+              const SizedBox(height: AppSpacing.lg),
+              
               Text(
-                'Nhập thông tin dinh dưỡng cho bữa ăn chưa có trong danh sách.',
-                style: Theme.of(context)
-                    .textTheme
-                    .bodySmall
-                    ?.copyWith(color: colorScheme.onSurfaceVariant),
+                'Nhập món thủ công',
+                style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                      fontWeight: FontWeight.w800,
+                    ),
               ),
-              const SizedBox(height: AppSpacing.md),
+              const SizedBox(height: AppSpacing.sm),
+              Text(
+                'Ghi lại các bữa ăn chưa có trong danh sách. Nếu nhập Macro, Calo sẽ tự động khớp.',
+                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+              ),
+              const SizedBox(height: AppSpacing.xl),
 
               // Tên món
               TextFormField(
                 controller: _nameCtrl,
                 textCapitalization: TextCapitalization.sentences,
-                decoration: const InputDecoration(
-                  labelText: 'Tên món ăn *',
-                  hintText: 'Vd: Cơm nhà, Gà luộc tự làm...',
-                  prefixIcon: Icon(Icons.restaurant_outlined),
+                style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16),
+                decoration: InputDecoration(
+                  labelText: 'Tên món ăn',
+                  hintText: 'Vd: Phở bò tái, Sinh tố bơ...',
+                  prefixIcon: const Icon(Icons.restaurant_menu),
+                  filled: true,
+                  fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
                 ),
                 validator: (v) =>
-                    (v == null || v.trim().isEmpty) ? 'Nhập tên món ăn' : null,
+                    (v == null || v.trim().isEmpty) ? 'Vui lòng nhập tên món' : null,
               ),
-              const SizedBox(height: AppSpacing.sm),
+              const SizedBox(height: AppSpacing.md),
 
-              // Khẩu phần + Calo (hàng ngang)
               Row(
                 children: [
                   Expanded(
-                    child: TextFormField(
+                    child: _StyledTextField(
                       controller: _portionCtrl,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      decoration: const InputDecoration(
-                        labelText: 'Khẩu phần *',
-                        suffixText: 'g',
-                      ),
+                      label: 'Khẩu phần',
+                      suffix: 'g',
+                      icon: Icons.scale,
                       validator: _positiveNumberValidator,
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.md),
+                  Expanded(
+                    child: _StyledTextField(
+                      controller: _kcalCtrl,
+                      label: 'Tổng Calo',
+                      suffix: 'kcal',
+                      icon: Icons.local_fire_department,
+                      iconColor: Colors.orange,
+                      validator: _nonNegativeNumberValidator,
+                    ),
+                  ),
+                ],
+              ),
+              
+              const SizedBox(height: AppSpacing.lg),
+              Text(
+                'Dinh dưỡng đa lượng (Tùy chọn)',
+                style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                      color: colorScheme.primary,
+                      fontWeight: FontWeight.bold,
+                    ),
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              
+              Row(
+                children: [
+                  Expanded(
+                    child: _StyledTextField(
+                      controller: _proteinCtrl,
+                      label: 'Protein',
+                      suffix: 'g',
+                      iconColor: Colors.blue,
+                      validator: _nonNegativeNumberValidator,
                     ),
                   ),
                   const SizedBox(width: AppSpacing.sm),
                   Expanded(
-                    child: TextFormField(
-                      controller: _kcalCtrl,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      decoration: const InputDecoration(
-                        labelText: 'Calo *',
-                        suffixText: 'kcal',
-                      ),
-                      validator: _nonNegativeNumberValidator,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.sm),
-
-              // Macro row
-              Row(
-                children: [
-                  Expanded(
-                    child: TextFormField(
-                      controller: _proteinCtrl,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      decoration: InputDecoration(
-                        labelText: 'Protein',
-                        suffixText: 'g',
-                        suffixStyle: TextStyle(color: Colors.blue.shade600),
-                      ),
-                      validator: _nonNegativeNumberValidator,
-                    ),
-                  ),
-                  const SizedBox(width: AppSpacing.xs),
-                  Expanded(
-                    child: TextFormField(
+                    child: _StyledTextField(
                       controller: _carbCtrl,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      decoration: InputDecoration(
-                        labelText: 'Carb',
-                        suffixText: 'g',
-                        suffixStyle: TextStyle(color: Colors.orange.shade600),
-                      ),
+                      label: 'Carb',
+                      suffix: 'g',
+                      iconColor: Colors.orange,
                       validator: _nonNegativeNumberValidator,
                     ),
                   ),
-                  const SizedBox(width: AppSpacing.xs),
+                  const SizedBox(width: AppSpacing.sm),
                   Expanded(
-                    child: TextFormField(
+                    child: _StyledTextField(
                       controller: _fatCtrl,
-                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
-                      decoration: InputDecoration(
-                        labelText: 'Fat',
-                        suffixText: 'g',
-                        suffixStyle: TextStyle(color: Colors.pink.shade600),
-                      ),
+                      label: 'Fat',
+                      suffix: 'g',
+                      iconColor: Colors.pink,
                       validator: _nonNegativeNumberValidator,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: AppSpacing.sm),
-
-              // Loại bữa ăn
+              
+              const SizedBox(height: AppSpacing.lg),
               DropdownButtonFormField<MealType>(
-                initialValue: _mealType,
-                decoration: const InputDecoration(
-                  labelText: 'Loại bữa ăn',
-                  prefixIcon: Icon(Icons.schedule_outlined),
+                value: _mealType,
+                decoration: InputDecoration(
+                  labelText: 'Thêm vào bữa',
+                  prefixIcon: const Icon(Icons.schedule),
+                  filled: true,
+                  fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
                 ),
                 items: MealType.values
                     .map((t) => DropdownMenuItem(
                           value: t,
-                          child: Text(t.label),
+                          child: Text(t.label, style: const TextStyle(fontWeight: FontWeight.w600)),
                         ))
                     .toList(),
                 onChanged: (v) => setState(() => _mealType = v ?? MealType.lunch),
@@ -223,19 +258,26 @@ class _CustomMealSheetState extends State<_CustomMealSheet> {
                     style: TextStyle(color: colorScheme.error, fontSize: 13)),
               ],
 
-              const SizedBox(height: AppSpacing.md),
+              const SizedBox(height: AppSpacing.xl),
               SizedBox(
                 width: double.infinity,
+                height: 56,
                 child: FilledButton(
+                  style: FilledButton.styleFrom(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16),
+                    ),
+                  ),
                   onPressed: _saving ? null : _save,
                   child: _saving
                       ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2))
-                      : const Text('Lưu vào nhật ký'),
+                          width: 24,
+                          height: 24,
+                          child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white))
+                      : const Text('Lưu vào nhật ký', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                 ),
               ),
+              const SizedBox(height: AppSpacing.md),
             ],
           ),
         ),
@@ -270,7 +312,7 @@ class _CustomMealSheetState extends State<_CustomMealSheet> {
     final entry = MealEntry(
       id: const Uuid().v4(),
       uid: uid,
-      date: AppDateUtils.todayStr(),
+      date: AppDateUtils.toDateStr(widget.logDate),
       mealType: _mealType,
       foodName: _nameCtrl.text.trim(),
       portionG: double.parse(_portionCtrl.text),
@@ -298,9 +340,54 @@ class _CustomMealSheetState extends State<_CustomMealSheet> {
       if (mounted) {
         setState(() {
           _saving = false;
-          _error = 'Không thể lưu: ${e.toString()}';
+          _error = firestoreWriteErrorMessage(e);
         });
       }
     }
+  }
+}
+
+class _StyledTextField extends StatelessWidget {
+  const _StyledTextField({
+    required this.controller,
+    required this.label,
+    required this.suffix,
+    this.icon,
+    this.iconColor,
+    this.validator,
+  });
+
+  final TextEditingController controller;
+  final String label;
+  final String suffix;
+  final IconData? icon;
+  final Color? iconColor;
+  final String? Function(String?)? validator;
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    return TextFormField(
+      controller: controller,
+      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+      decoration: InputDecoration(
+        labelText: label,
+        suffixText: suffix,
+        suffixStyle: TextStyle(
+            color: iconColor ?? colorScheme.primary, fontWeight: FontWeight.bold),
+        prefixIcon: icon != null
+            ? Icon(icon, color: iconColor ?? colorScheme.primary, size: 20)
+            : null,
+        filled: true,
+        fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: BorderSide.none,
+        ),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      ),
+      validator: validator,
+    );
   }
 }
