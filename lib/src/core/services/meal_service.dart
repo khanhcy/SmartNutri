@@ -32,6 +32,15 @@ class MealService {
     return q.docs.map((d) => MealEntry.fromMap(d.id, d.data())).toList();
   }
 
+  Future<double> sumCaloriesForDate(String uid, String date) async {
+    final entries = await getEntriesForDate(uid, date);
+    var total = 0.0;
+    for (final e in entries) {
+      total += e.calorieKcal;
+    }
+    return total;
+  }
+
   Future<void> addEntry(String uid, MealEntry entry) async {
     final id = _uuid.v4();
     await _col(uid).doc(id).set(entry.toMap());

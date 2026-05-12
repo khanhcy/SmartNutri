@@ -1,7 +1,16 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:smartnutri/src/features/search/domain/food_item.dart';
 
 class FoodService {
-  static const List<FoodItem> _foods = [
+  FoodService({FirebaseFirestore? firestore})
+      : _firestore = firestore ?? FirebaseFirestore.instance;
+
+  final FirebaseFirestore _firestore;
+  List<FoodItem>? _cached;
+  bool _isLoading = false;
+
+  // Kept as seed fallback — used only when Firestore is empty.
+  static const List<FoodItem> _seedFoods = [
     // ── Món nước ───────────────────────────────────────────────────────────
     FoodItem(id: 'pho_bo',         name: 'Phở bò',                  calorieKcal: 68,  proteinG: 5.8, carbG: 9.2,  fatG: 1.2, category: 'Món nước',   defaultPortionG: 400),
     FoodItem(id: 'pho_ga',         name: 'Phở gà',                  calorieKcal: 62,  proteinG: 5.2, carbG: 8.8,  fatG: 1.0, category: 'Món nước',   defaultPortionG: 400),
@@ -123,30 +132,107 @@ class FoodService {
     FoodItem(id: 'sinh_to_chuoi',  name: 'Sinh tố chuối',           calorieKcal: 120, proteinG: 2.5, carbG: 25.0, fatG: 1.5, category: 'Tráng miệng', defaultPortionG: 300),
   ];
 
-  /// Pre-computed sorted list of unique categories.
-  static final List<String> categories = List.unmodifiable(
-    (_foods.map((f) => f.category).toSet().toList()..sort()),
+  Future<List<String>> getCategories() async {
+    await _ensureLoaded();
+    final cats = (_cached?.map((f) => f.category).toSet().toList() ?? _seedCategories)
+      ..sort();
+    return cats;
+  }
+
+  static final List<String> _seedCategories = List.unmodifiable(
+    _seedFoods.map((f) => f.category).toSet().toList()..sort(),
   );
 
-  List<FoodItem> search(String query) {
+  Future<List<FoodItem>> search(String query) async {
+    await _ensureLoaded();
     if (query.trim().isEmpty) return [];
     final q = _removeDiacritics(query.toLowerCase().trim());
-    return _foods.where((f) {
+    final foods = _cached ?? _seedFoods;
+    return foods.where((f) {
       final name = _removeDiacritics(f.name.toLowerCase());
       return name.contains(q);
     }).take(20).toList();
   }
 
-  List<FoodItem> getAll() => List.unmodifiable(_foods);
+  Future<List<FoodItem>> getAll() async {
+    await _ensureLoaded();
+    return List.unmodifiable(_cached ?? _seedFoods);
+  }
 
-  List<FoodItem> getByCategory(String category) =>
-      _foods.where((f) => f.category == category).toList();
+  Future<List<FoodItem>> getByCategory(String category) async {
+    await _ensureLoaded();
+    final foods = _cached ?? _seedFoods;
+    return foods.where((f) => f.category == category).toList();
+  }
 
-  FoodItem? getById(String id) {
+  Future<FoodItem?> getById(String id) async {
+    await _ensureLoaded();
+    final foods = _cached ?? _seedFoods;
     try {
-      return _foods.firstWhere((f) => f.id == id);
+      return foods.firstWhere((f) => f.id == id);
     } catch (_) {
       return null;
+    }
+  }
+
+  Future<List<FoodItem>> suggestedForCurrentMealtime() async {
+    await _ensureLoaded();
+    final hour = DateTime.now().hour;
+    final ids = hour < 10
+        ? <String>['pho_bo', 'banh_mi_thit', 'chao_ga', 'trung_op_la', 'sua_tuoi']
+        : hour < 14
+            ? <String>[
+                'com_ga',
+                'com_tam',
+                'bun_bo_hue',
+                'rau_muong_xao',
+                'tao',
+              ]
+            : hour < 19
+                ? <String>[
+                    'com_suon',
+                    'ca_hoi_nuong',
+                    'canh_chua',
+                    'com_trang',
+                    'chuoi',
+                  ]
+                : <String>[
+                    'chao_ga',
+                    'mi_goi',
+                    'salad_uc_ga',
+                    'yogurt',
+                    'tra_sua',
+                  ];
+    final results = <FoodItem>[];
+    for (final id in ids) {
+      final item = await getById(id);
+      if (item != null) results.add(item);
+    }
+    return results;
+  }
+
+  Future<void> _ensureLoaded() async {
+    if (_cached != null) return;
+    if (_isLoading) {
+      while (_isLoading) {
+        await Future<void>.delayed(const Duration(milliseconds: 50));
+      }
+      return;
+    }
+    _isLoading = true;
+    try {
+      final snapshot = await _firestore.collection('foods').get();
+      if (snapshot.docs.isNotEmpty) {
+        _cached = snapshot.docs
+            .map((d) => FoodItem.fromMap(d.data()))
+            .toList();
+      } else {
+        _cached = List.unmodifiable(_seedFoods);
+      }
+    } catch (_) {
+      _cached = List.unmodifiable(_seedFoods);
+    } finally {
+      _isLoading = false;
     }
   }
 

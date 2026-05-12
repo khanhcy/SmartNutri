@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:smartnutri/src/core/utils/firestore_write_message.dart';
 import 'package:smartnutri/src/core/services/goal_service.dart';
 import 'package:smartnutri/src/core/services/profile_service.dart';
 import 'package:smartnutri/src/core/ui/components/sn_button.dart';
@@ -42,6 +43,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
   bool _isSaving = false;
   String? _error;
 
+  // Whether the goal fields were manually edited by the user
+  bool _goalManuallyEdited = false;
+
   @override
   void initState() {
     super.initState();
@@ -58,10 +62,40 @@ class _EditProfilePageState extends State<EditProfilePage> {
     _waterController = TextEditingController(text: g.waterTargetMl.round().toString());
     _gender = p.gender;
     _activityLevel = p.activityLevel;
+
+    // Auto-recalculate goals whenever profile inputs change
+    _heightController.addListener(_onProfileInputChanged);
+    _weightController.addListener(_onProfileInputChanged);
+    _ageController.addListener(_onProfileInputChanged);
+
+    // Mark goal as manually edited if user touches those fields
+    _calorieController.addListener(_onGoalManualEdit);
+    _proteinController.addListener(_onGoalManualEdit);
+    _carbController.addListener(_onGoalManualEdit);
+    _fatController.addListener(_onGoalManualEdit);
+  }
+
+  void _onProfileInputChanged() {
+    // Only auto-recalculate if user hasn't manually overridden the goal fields
+    if (!_goalManuallyEdited) {
+      _recalculateGoal();
+    }
+  }
+
+  void _onGoalManualEdit() {
+    // Once user edits goal fields directly, stop auto-recalculating
+    _goalManuallyEdited = true;
   }
 
   @override
   void dispose() {
+    _heightController.removeListener(_onProfileInputChanged);
+    _weightController.removeListener(_onProfileInputChanged);
+    _ageController.removeListener(_onProfileInputChanged);
+    _calorieController.removeListener(_onGoalManualEdit);
+    _proteinController.removeListener(_onGoalManualEdit);
+    _carbController.removeListener(_onGoalManualEdit);
+    _fatController.removeListener(_onGoalManualEdit);
     _nameController.dispose();
     _ageController.dispose();
     _heightController.dispose();
@@ -86,12 +120,22 @@ class _EditProfilePageState extends State<EditProfilePage> {
       gender: _gender,
       activityLevel: _activityLevel,
     );
+    // Temporarily remove manual-edit listeners while we auto-fill
+    _calorieController.removeListener(_onGoalManualEdit);
+    _proteinController.removeListener(_onGoalManualEdit);
+    _carbController.removeListener(_onGoalManualEdit);
+    _fatController.removeListener(_onGoalManualEdit);
     setState(() {
+      _goalManuallyEdited = false;
       _calorieController.text = goal.calorieTarget.toString();
       _proteinController.text = goal.proteinG.toString();
       _carbController.text = goal.carbG.toString();
       _fatController.text = goal.fatG.toString();
     });
+    _calorieController.addListener(_onGoalManualEdit);
+    _proteinController.addListener(_onGoalManualEdit);
+    _carbController.addListener(_onGoalManualEdit);
+    _fatController.addListener(_onGoalManualEdit);
   }
 
   @override
@@ -138,8 +182,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
                         DropdownMenuItem(value: 'female', child: Text('Nữ')),
                         DropdownMenuItem(value: 'other', child: Text('Khác')),
                       ],
-                      onChanged: (v) =>
-                          setState(() => _gender = v ?? 'male'),
+                      onChanged: (v) {
+                        setState(() => _gender = v ?? 'male');
+                        if (!_goalManuallyEdited) _recalculateGoal();
+                      },
                     ),
                   ),
                 ],
@@ -181,8 +227,10 @@ class _EditProfilePageState extends State<EditProfilePage> {
                   DropdownMenuItem(value: 'moderate', child: Text('Vận động vừa')),
                   DropdownMenuItem(value: 'active', child: Text('Năng động')),
                 ],
-                onChanged: (v) =>
-                    setState(() => _activityLevel = v ?? 'light'),
+                onChanged: (v) {
+                  setState(() => _activityLevel = v ?? 'light');
+                  if (!_goalManuallyEdited) _recalculateGoal();
+                },
               ),
               const SizedBox(height: AppSpacing.sm),
               OutlinedButton.icon(
@@ -315,9 +363,9 @@ class _EditProfilePageState extends State<EditProfilePage> {
           ),
         );
       }
-    } catch (_) {
+    } catch (e) {
       if (mounted) {
-        setState(() => _error = 'Lưu thất bại. Vui lòng thử lại.');
+        setState(() => _error = firestoreWriteErrorMessage(e));
       }
     } finally {
       if (mounted) setState(() => _isSaving = false);

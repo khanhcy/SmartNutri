@@ -9,6 +9,7 @@ import 'package:smartnutri/src/features/meal_log/presentation/meal_log_page.dart
 import 'package:smartnutri/src/features/onboarding/presentation/onboarding_page.dart';
 import 'package:smartnutri/src/features/profile/presentation/profile_page.dart';
 import 'package:smartnutri/src/features/search/presentation/food_search_page.dart';
+import 'package:smartnutri/src/features/stats/presentation/statistics_page.dart';
 
 /// Route paths for deep links & notifications.
 abstract final class AppPaths {
@@ -20,6 +21,7 @@ abstract final class AppPaths {
   static const search = '/app/search';
   static const log = '/app/log';
   static const profile = '/app/profile';
+  static const stats = '/app/stats';
 }
 
 GoRouter createAppRouter({required AuthFlowNotifier authFlow}) {
@@ -116,6 +118,11 @@ GoRouter createAppRouter({required AuthFlowNotifier authFlow}) {
                 ],
               ),
             ],
+          ),
+          GoRoute(
+            path: 'stats',
+            pageBuilder: (context, state) =>
+                const NoTransitionPage<void>(child: StatisticsPage()),
           ),
         ],
       ),

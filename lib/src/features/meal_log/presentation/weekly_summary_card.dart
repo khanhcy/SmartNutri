@@ -17,8 +17,18 @@ class WeeklySummaryCard extends StatefulWidget {
 
 class _WeeklySummaryCardState extends State<WeeklySummaryCard> {
   List<_DayCalorie> _days = [];
+  List<_DayCalorie> _daysPrevWeek = [];
   bool _loading = true;
   bool _tickerWasActive = false;
+
+  double get _totalWeek => _days.fold(0.0, (s, d) => s + d.kcal);
+  double get _totalPrevWeek =>
+      _daysPrevWeek.fold(0.0, (s, d) => s + d.kcal);
+  double get _avgDay =>
+      _days.isEmpty ? 0 : _totalWeek / _days.length;
+  double get _avgPrevDay => _daysPrevWeek.isEmpty
+      ? 0
+      : _totalPrevWeek / _daysPrevWeek.length;
 
   @override
   void initState() {
@@ -41,18 +51,29 @@ class _WeeklySummaryCardState extends State<WeeklySummaryCard> {
     final uid = context.read<AuthService>().currentUser!.uid;
     final service = context.read<MealService>();
     final today = DateTime.now();
-    final results = <_DayCalorie>[];
 
+    final results = <_DayCalorie>[];
     for (int i = 6; i >= 0; i--) {
       final date = today.subtract(Duration(days: i));
-      final entries = await service.getEntriesForDate(uid, AppDateUtils.toDateStr(date));
+      final entries = await service.getEntriesForDate(
+          uid, AppDateUtils.toDateStr(date));
       final total = entries.fold(0.0, (s, e) => s + e.calorieKcal);
       results.add(_DayCalorie(date: date, kcal: total));
+    }
+
+    final prevResults = <_DayCalorie>[];
+    for (int i = 13; i >= 7; i--) {
+      final date = today.subtract(Duration(days: i));
+      final entries = await service.getEntriesForDate(
+          uid, AppDateUtils.toDateStr(date));
+      final total = entries.fold(0.0, (s, e) => s + e.calorieKcal);
+      prevResults.add(_DayCalorie(date: date, kcal: total));
     }
 
     if (mounted) {
       setState(() {
         _days = results;
+        _daysPrevWeek = prevResults;
         _loading = false;
       });
     }
@@ -69,11 +90,16 @@ class _WeeklySummaryCardState extends State<WeeklySummaryCard> {
       );
     }
 
-    final maxKcal = _days.map((d) => d.kcal).fold(0.0, (a, b) => a > b ? a : b);
+    final maxKcal =
+        _days.map((d) => d.kcal).fold(0.0, (a, b) => a > b ? a : b);
     final target = widget.goal.calorieTarget.toDouble();
     final effectiveMax = maxKcal > target ? maxKcal : target;
-    final totalWeek = _days.fold(0.0, (s, d) => s + d.kcal);
-    final avgDay = totalWeek / 7;
+
+    final deltaKcal = _totalWeek - _totalPrevWeek;
+    final deltaPercent = _totalPrevWeek > 0
+        ? ((deltaKcal / _totalPrevWeek) * 100)
+        : 0.0;
+    final deltaUp = deltaKcal > 0;
 
     return SNCard(
       child: Column(
@@ -82,13 +108,14 @@ class _WeeklySummaryCardState extends State<WeeklySummaryCard> {
           Row(
             children: [
               Icon(Icons.bar_chart,
-                  color: Theme.of(context).colorScheme.primary, size: 20),
+                  color: Theme.of(context).colorScheme.primary,
+                  size: 20),
               const SizedBox(width: 8),
               Text('Tổng kết 7 ngày',
                   style: Theme.of(context).textTheme.titleSmall),
               const Spacer(),
               Text(
-                'TB: ${avgDay.round()} kcal/ngày',
+                'TB: ${_avgDay.round()} kcal/ngày',
                 style: Theme.of(context).textTheme.bodySmall,
               ),
               const SizedBox(width: 4),
@@ -99,7 +126,9 @@ class _WeeklySummaryCardState extends State<WeeklySummaryCard> {
                   padding: const EdgeInsets.all(4),
                   child: Icon(Icons.refresh,
                       size: 16,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant),
+                      color: Theme.of(context)
+                          .colorScheme
+                          .onSurfaceVariant),
                 ),
               ),
             ],
@@ -110,14 +139,17 @@ class _WeeklySummaryCardState extends State<WeeklySummaryCard> {
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: _days.map((day) {
-                final ratio = effectiveMax > 0 ? day.kcal / effectiveMax : 0.0;
-                final isToday = _isSameDay(day.date, DateTime.now());
+                final ratio =
+                    effectiveMax > 0 ? day.kcal / effectiveMax : 0.0;
+                final isToday =
+                    _isSameDay(day.date, DateTime.now());
                 final overTarget = day.kcal > target && target > 0;
                 final colorScheme = Theme.of(context).colorScheme;
 
                 return Expanded(
                   child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 3),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 3),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
@@ -133,7 +165,8 @@ class _WeeklySummaryCardState extends State<WeeklySummaryCard> {
                           ),
                         const SizedBox(height: 2),
                         AnimatedContainer(
-                          duration: const Duration(milliseconds: 400),
+                          duration:
+                              const Duration(milliseconds: 400),
                           curve: Curves.easeOut,
                           height: ratio * 72,
                           decoration: BoxDecoration(
@@ -175,7 +208,8 @@ class _WeeklySummaryCardState extends State<WeeklySummaryCard> {
                       color: Theme.of(context).colorScheme.primary,
                       borderRadius: BorderRadius.circular(2))),
               const SizedBox(width: 4),
-              Text('Hôm nay', style: Theme.of(context).textTheme.bodySmall),
+              Text('Hôm nay',
+                  style: Theme.of(context).textTheme.bodySmall),
               const SizedBox(width: 12),
               Container(
                   width: 10,
@@ -188,12 +222,41 @@ class _WeeklySummaryCardState extends State<WeeklySummaryCard> {
                   style: Theme.of(context).textTheme.bodySmall),
             ],
           ),
+          if (_daysPrevWeek.isNotEmpty) ...[
+            const Divider(height: AppSpacing.lg),
+            Row(
+              children: [
+                Icon(
+                  deltaUp ? Icons.trending_up : Icons.trending_down,
+                  size: 18,
+                  color: deltaUp ? Colors.red : Colors.green,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  deltaUp
+                      ? 'Tăng ${deltaPercent.abs().toStringAsFixed(1)}% so với tuần trước'
+                      : 'Giảm ${deltaPercent.abs().toStringAsFixed(1)}% so với tuần trước',
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+                const Spacer(),
+                Text(
+                  'TB tuần trước: ${_avgPrevDay.round()} kcal/ngày',
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                        color: Theme.of(context)
+                            .colorScheme
+                            .onSurfaceVariant,
+                      ),
+                ),
+              ],
+            ),
+          ],
         ],
       ),
     );
   }
 
-  bool _isSameDay(DateTime a, DateTime b) => AppDateUtils.isSameDay(a, b);
+  bool _isSameDay(DateTime a, DateTime b) =>
+      AppDateUtils.isSameDay(a, b);
   String _shortDay(DateTime d) => AppDateUtils.shortDayVi(d);
 }
 
