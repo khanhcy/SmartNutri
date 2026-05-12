@@ -232,7 +232,7 @@ class _CustomMealSheetState extends State<_CustomMealSheet> {
               
               const SizedBox(height: AppSpacing.lg),
               DropdownButtonFormField<MealType>(
-                value: _mealType,
+                initialValue: _mealType,
                 decoration: InputDecoration(
                   labelText: 'Thêm vào bữa',
                   prefixIcon: const Icon(Icons.schedule),
