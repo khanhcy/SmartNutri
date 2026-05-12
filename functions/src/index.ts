@@ -163,16 +163,24 @@ Ví dụ output:
     ]);
 
     const text = result.response.text();
-    console.log("   Gemini:", text.substring(0, 300));
+    console.log("   Gemini raw:", text.substring(0, 300));
 
-    const jsonStr = text.replace(/```json|```/g, "").trim();
+    // Extract JSON: find first '[' and last ']'
+    const start = text.indexOf('[');
+    const end = text.lastIndexOf(']');
+    if (start === -1 || end === -1 || start >= end) {
+      console.error("❌ No JSON array found in Gemini response");
+      response.status(500).json({error: "ai_response_no_json"});
+      return;
+    }
+    const jsonStr = text.substring(start, end + 1);
     const items = JSON.parse(jsonStr);
     console.log("✅ parsed", items.length, "items");
 
     response.status(200).json({items});
   } catch (e: any) {
     console.error("❌ identifyFoodImage:", e.message ?? e);
-    response.status(500).json({error: e.message ?? "internal_error"});
+    response.status(500).json({error: "ai_processing_failed"});
   }
 });
 
@@ -245,13 +253,23 @@ Chỉ trả JSON array, không thêm text khác.`;
 
     const result = await model.generateContent(prompt);
     const text = result.response.text();
-    const jsonStr = text.replace(/```json|```/g, "").trim();
+    console.log("   Gemini raw:", text.substring(0, 200));
+
+    // Extract JSON: find first '[' and last ']'
+    const start = text.indexOf('[');
+    const end = text.lastIndexOf(']');
+    if (start === -1 || end === -1 || start >= end) {
+      console.error("❌ No JSON array found in Gemini response");
+      response.status(500).json({error: "ai_response_no_json"});
+      return;
+    }
+    const jsonStr = text.substring(start, end + 1);
     const suggestions = JSON.parse(jsonStr);
 
     response.status(200).json({suggestions});
   } catch (e: any) {
     console.error("❌ suggestMeals:", e.message ?? e);
-    response.status(500).json({error: e.message ?? "internal_error"});
+    response.status(500).json({error: "ai_processing_failed"});
   }
 });
 
