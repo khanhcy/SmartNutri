@@ -12,6 +12,7 @@ import 'package:smartnutri/src/core/providers/app_settings_provider.dart';
 import 'package:smartnutri/src/core/services/ai_food_service.dart';
 import 'package:smartnutri/src/core/services/auth_service.dart';
 import 'package:smartnutri/src/core/services/barcode_service.dart';
+import 'package:smartnutri/src/core/services/cloud_function_client.dart';
 import 'package:smartnutri/src/core/services/connectivity_service.dart';
 import 'package:smartnutri/src/core/services/food_service.dart';
 import 'package:smartnutri/src/core/services/goal_service.dart';
@@ -19,6 +20,7 @@ import 'package:smartnutri/src/core/services/meal_service.dart';
 import 'package:smartnutri/src/core/services/notification_service.dart';
 import 'package:smartnutri/src/core/services/profile_service.dart';
 import 'package:smartnutri/src/core/services/recent_foods_service.dart';
+import 'package:smartnutri/src/core/services/scan_history_service.dart';
 import 'package:smartnutri/src/core/services/water_service.dart';
 import 'package:smartnutri/src/core/services/weight_service.dart';
 
@@ -54,6 +56,7 @@ Future<void> bootstrap() async {
   final environment = AppEnvironment.fromDartDefines();
   final settings = await AppSettingsProvider.create();
   final recentFoods = await RecentFoodsService.create();
+  final scanHistory = await ScanHistoryService.create();
 
   final authService = AuthService();
   final profileService = ProfileService();
@@ -74,10 +77,12 @@ Future<void> bootstrap() async {
         Provider(create: (_) => WaterService()),
         Provider(create: (_) => WeightService()),
         Provider(create: (_) => ConnectivityService()),
+        Provider(create: (_) => CloudFunctionClient()),
         Provider(create: (_) => AiFoodService(foodService: foodService)),
         Provider(create: (_) => BarcodeService()),
         Provider.value(value: notificationService),
         ChangeNotifierProvider.value(value: recentFoods),
+        ChangeNotifierProvider.value(value: scanHistory),
         ChangeNotifierProvider.value(value: settings),
         ChangeNotifierProvider(
           create: (_) =>

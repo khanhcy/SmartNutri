@@ -1,5 +1,5 @@
 import * as admin from "firebase-admin";
-import {onRequest, onCall} from "firebase-functions/v2/https";
+import {onRequest} from "firebase-functions/v2/https";
 import {GoogleGenerativeAI} from "@google/generative-ai";
 
 admin.initializeApp();
@@ -8,63 +8,65 @@ function geminiModel() {
   const key = process.env.GEMINI_API_KEY;
   if (!key) throw new Error("Thiếu GEMINI_API_KEY trong .env");
   return new GoogleGenerativeAI(key)
-    .getGenerativeModel({model: "gemini-2.0-flash"});
+    .getGenerativeModel({model: "gemini-2.5-flash"});
 }
 
-// Helper: convert image base64 to a Gemini Part
 function base64ToPart(base64: string, mimeType: string) {
   return {inlineData: {mimeType, data: base64}};
 }
 
-// ── Health check ──────────────────────────────────────────────────────────
+// ── Auth helper cho onRequest ───────────────────────────────────────────────
+async function verifyAuth(request: any): Promise<string> {
+  const authHeader = request.headers.authorization;
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    throw new Error("missing_token");
+  }
+  const token = await admin.auth().verifyIdToken(authHeader.split(" ")[1]);
+  return token.uid;
+}
+
+// ── Health check ────────────────────────────────────────────────────────────
 export const health = onRequest((request, response) => {
   response.status(200).json({
     service: "smartnutri-functions",
-    method: request.method,
     ok: true,
     timestamp: Date.now(),
   });
 });
 
-// ── Admin role management ─────────────────────────────────────────────────
-export const setAdminRole = onCall(async (request) => {
-  const callerUid = request.auth?.uid;
-  if (!callerUid) {
-    throw new Error("unauthenticated");
-  }
-
-  const caller = await admin.auth().getUser(callerUid);
-  if (!caller.customClaims?.admin) {
-    throw new Error("not_an_admin");
-  }
-
-  const targetUid = request.data?.targetUid as string | undefined;
-  if (!targetUid) {
-    throw new Error("missing_target_uid");
-  }
-
-  await admin.auth().setCustomUserClaims(targetUid, {admin: true});
-  await admin.auth().revokeRefreshTokens(targetUid);
-
-  return {success: true, targetUid};
-});
-
-// ── Seed foods into Firestore ─────────────────────────────────────────────
-export const seedFoods = onRequest(async (request, response) => {
-  const authHeader = request.headers.authorization;
-  if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    response.status(401).json({error: "missing_token"});
-    return;
-  }
-
+// ── Admin: set role ─────────────────────────────────────────────────────────
+export const setAdminRole = onRequest(async (request, response) => {
   try {
-    const token = await admin.auth().verifyIdToken(authHeader.split(" ")[1]);
-    if (!token.admin) {
+    const callerUid = await verifyAuth(request);
+    const caller = await admin.auth().getUser(callerUid);
+    if (!caller.customClaims?.admin) {
       response.status(403).json({error: "not_an_admin"});
       return;
     }
-  } catch {
-    response.status(401).json({error: "invalid_token"});
+    const targetUid = request.body?.targetUid as string | undefined;
+    if (!targetUid) {
+      response.status(400).json({error: "missing_target_uid"});
+      return;
+    }
+    await admin.auth().setCustomUserClaims(targetUid, {admin: true});
+    await admin.auth().revokeRefreshTokens(targetUid);
+    response.status(200).json({success: true, targetUid});
+  } catch (e: any) {
+    response.status(401).json({error: e.message});
+  }
+});
+
+// ── Seed foods ──────────────────────────────────────────────────────────────
+export const seedFoods = onRequest(async (request, response) => {
+  try {
+    const callerUid = await verifyAuth(request);
+    const caller = await admin.auth().getUser(callerUid);
+    if (!caller.customClaims?.admin) {
+      response.status(403).json({error: "not_an_admin"});
+      return;
+    }
+  } catch (e: any) {
+    response.status(401).json({error: e.message});
     return;
   }
 
@@ -97,30 +99,63 @@ export const seedFoods = onRequest(async (request, response) => {
   response.status(200).json({ok: true, count: total});
 });
 
-// ── AI: Identify food from photo ──────────────────────────────────────────
-export const identifyFoodImage = onCall(async (request) => {
-    console.log("📷 identifyFoodImage called");
+// ── AI: Identify food from photo ────────────────────────────────────────────
+export const identifyFoodImage = onRequest(async (request, response) => {
+  try {
+    // Auth (optional - still allow emulator testing without token)
+    try {
+      await verifyAuth(request);
+    } catch {
+      // Continue without auth in emulator
+    }
 
-    const imageBase64 = request.data?.imageBase64 as string | undefined;
-    if (!imageBase64) throw new Error("missing_image");
+    const imageBase64 = request.body?.imageBase64 as string | undefined;
+    if (!imageBase64) {
+      response.status(400).json({error: "missing_image"});
+      return;
+    }
 
-    console.log("   image size:", imageBase64.length, "chars");
+    const knownFoodNames = (request.body?.knownFoodNames as string[]) ?? [];
 
-    if (!process.env.GEMINI_API_KEY) {
-      console.error("❌ GEMINI_API_KEY not set in .env");
-      throw new Error("missing_api_key");
+    console.log("📷 identifyFoodImage — image:", imageBase64.length, "chars, known foods:", knownFoodNames.length);
+
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+      console.error("❌ GEMINI_API_KEY not set");
+      response.status(500).json({error: "missing_api_key"});
+      return;
     }
 
     const model = geminiModel();
-    console.log("   sending to Gemini...");
 
-    const prompt = `Phân tích ảnh món ăn Việt Nam này. Trả về danh sách JSON array các món ăn có trong ảnh, mỗi món gồm:
-- "name": tên món (tiếng Việt)
+    const foodListSection = knownFoodNames.length > 0
+      ? `\nDanh sách món ăn có trong cơ sở dữ liệu (ưu tiên khớp tên với danh sách này):\n${knownFoodNames.map((n, i) => `${i + 1}. ${n}`).join("\n")}\n`
+      : "";
+
+    const prompt = `Bạn là chuyên gia ẩm thực Việt Nam. Phân tích kỹ ảnh món ăn này và xác định chính xác từng món.
+
+${foodListSection}
+Quan sát kỹ các đặc điểm sau để nhận diện:
+- Màu sắc, hình dạng, thành phần chính (thịt, cá, rau, bún, cơm, nước dùng...)
+- Cách trình bày (tô lớn có nước dùng = phở/bún/hủ tiếu; đĩa cơm với sườn/bì/chả = cơm tấm; cuốn trong bánh tráng = gỏi cuốn/chả giò...)
+- Các món ăn kèm (rau sống, nước chấm, đồ chua...)
+
+Trả về JSON array các món có trong ảnh. Mỗi món gồm:
+- "name": tên món chính xác (tiếng Việt có dấu). Nếu món có trong danh sách database, dùng ĐÚNG tên từ danh sách
 - "estimatedKcal": calo ước tính trên 100g (số nguyên)
-- "confidence": độ tự tin 0-1
+- "estimatedProteinG": protein trên 100g (số thực, 1 chữ số thập phân)
+- "estimatedCarbG": carb trên 100g (số thực, 1 chữ số thập phân)
+- "estimatedFatG": chất béo trên 100g (số thực, 1 chữ số thập phân)
+- "estimatedPortionG": khối lượng phần ăn trong ảnh (gram, số nguyên)
+- "confidence": độ tự tin 0.0-1.0 (chỉ đưa ra nếu >0.5)
 
-Chỉ trả về JSON array, không thêm text khác.
-Ví dụ: [{"name":"Phở bò","estimatedKcal":200,"confidence":0.9}]`;
+QUAN TRỌNG:
+- Nếu không tự tin (confidence <0.5), không trả về món đó
+- Nếu có danh sách database, ưu tiên khớp với tên trong đó
+- Chỉ trả về JSON array hợp lệ, không thêm text hay markdown
+
+Ví dụ output:
+[{"name":"Cơm tấm sườn","estimatedKcal":220,"estimatedProteinG":12.5,"estimatedCarbG":30.0,"estimatedFatG":8.0,"estimatedPortionG":400,"confidence":0.92}]`;
 
     const result = await model.generateContent([
       prompt,
@@ -128,39 +163,63 @@ Ví dụ: [{"name":"Phở bò","estimatedKcal":200,"confidence":0.9}]`;
     ]);
 
     const text = result.response.text();
-    console.log("   Gemini response:", text.substring(0, 200));
+    console.log("   Gemini:", text.substring(0, 300));
 
     const jsonStr = text.replace(/```json|```/g, "").trim();
     const items = JSON.parse(jsonStr);
     console.log("✅ parsed", items.length, "items");
 
-    return {items};
+    response.status(200).json({items});
+  } catch (e: any) {
+    console.error("❌ identifyFoodImage:", e.message ?? e);
+    response.status(500).json({error: e.message ?? "internal_error"});
+  }
 });
 
-// ── AI: Suggest meals based on remaining macros ──────────────────────────
-export const suggestMeals = onCall(async (request) => {
-    const {remainingKcal, proteinG, carbG, fatG} = request.data as Record<string, number>;
-    const recentFoodNames = (request.data?.recentFoodNames as string[]) ?? [];
-    const mealTime = (request.data?.mealTime as string) ?? "bất kỳ";
+// ── AI: Suggest meals ───────────────────────────────────────────────────────
+export const suggestMeals = onRequest(async (request, response) => {
+  try {
+    try { await verifyAuth(request); } catch { /* optional in emulator */ }
 
-    // Fetch all foods from Firestore to provide as context
+    const body = request.body ?? {};
+    const remainingKcal = body.remainingKcal as number;
+    const proteinG = body.proteinG as number;
+    const carbG = body.carbG as number;
+    const fatG = body.fatG as number;
+    const recentFoodNames = (body.recentFoodNames as string[]) ?? [];
+    const mealTime = (body.mealTime as string) ?? "bất kỳ";
+
+    if (remainingKcal === undefined) {
+      response.status(400).json({error: "missing_macros"});
+      return;
+    }
+
+    // Fetch foods from Firestore, fallback to foodCatalog from request
     const foodsSnap = await admin.firestore().collection("foods").get();
-    const foodList = foodsSnap.docs.map((d) => {
+    let foodList = foodsSnap.docs.map((d) => {
       const data = d.data();
       return {
         id: d.id,
         name: data.name,
-        calorieKcal: data.calories ?? 0,
-        proteinG: data.protein ?? 0,
-        carbG: data.carbs ?? 0,
-        fatG: data.fat ?? 0,
+        calorieKcal: data.calories ?? data.calorieKcal ?? 0,
+        proteinG: data.protein ?? data.proteinG ?? 0,
+        carbG: data.carbs ?? data.carbG ?? 0,
+        fatG: data.fat ?? data.fatG ?? 0,
         category: data.category ?? "",
       };
     });
 
-    if (foodList.length === 0) return {suggestions: []};
+    // Fallback: use food catalog from Flutter if Firestore is empty
+    if (foodList.length === 0 && Array.isArray(body.foodCatalog)) {
+      foodList = body.foodCatalog as any[];
+    }
 
-    const avoidSet = new Set(recentFoodNames.map((n) => n.toLowerCase()));
+    if (foodList.length === 0) {
+      response.status(200).json({suggestions: []});
+      return;
+    }
+
+    const avoidSet = new Set(recentFoodNames.map((n: string) => n.toLowerCase()));
     const available = foodList.filter(
       (f) => !avoidSet.has(f.name.toLowerCase())
     );
@@ -189,36 +248,54 @@ Chỉ trả JSON array, không thêm text khác.`;
     const jsonStr = text.replace(/```json|```/g, "").trim();
     const suggestions = JSON.parse(jsonStr);
 
-    return {suggestions};
+    response.status(200).json({suggestions});
+  } catch (e: any) {
+    console.error("❌ suggestMeals:", e.message ?? e);
+    response.status(500).json({error: e.message ?? "internal_error"});
+  }
 });
 
-// ── Barcode lookup via OpenFoodFacts ──────────────────────────────────────
-export const barcodeLookup = onCall(async (request) => {
-  const barcode = request.data?.barcode as string | undefined;
-  if (!barcode) throw new Error("missing_barcode");
+// ── Barcode lookup ──────────────────────────────────────────────────────────
+export const barcodeLookup = onRequest(async (request, response) => {
+  try {
+    const barcode = request.body?.barcode as string | undefined;
+    if (!barcode) {
+      response.status(400).json({error: "missing_barcode"});
+      return;
+    }
 
-  const url = `https://world.openfoodfacts.org/api/v2/product/${barcode}`;
-  const res = await fetch(url, {
-    headers: {"User-Agent": "SmartNutri/1.0"},
-  });
+    const url = `https://world.openfoodfacts.org/api/v2/product/${barcode}`;
+    const res = await fetch(url, {
+      headers: {"User-Agent": "SmartNutri/1.0"},
+    });
 
-  if (!res.ok) return {product: null};
+    if (!res.ok) {
+      response.status(200).json({product: null});
+      return;
+    }
 
-  const json = (await res.json()) as any;
-  if (json.status !== 1 || !json.product) return {product: null};
+    const json = (await res.json()) as any;
+    if (json.status !== 1 || !json.product) {
+      response.status(200).json({product: null});
+      return;
+    }
 
-  const p = json.product;
-  const nutriments = p.nutriments ?? {};
+    const p = json.product;
+    const nutriments = p.nutriments ?? {};
 
-  return {
-    product: {
-      name: p.product_name ?? p.brands ?? "",
-      brand: p.brands ?? "",
-      calorieKcal: Math.round(nutriments["energy-kcal_100g"] ?? 0),
-      proteinG: +(nutriments.proteins_100g ?? 0).toFixed(1),
-      carbG: +(nutriments.carbohydrates_100g ?? 0).toFixed(1),
-      fatG: +(nutriments.fat_100g ?? 0).toFixed(1),
-      portionG: +(p.product_quantity ?? 100),
-    },
-  };
+    response.status(200).json({
+      product: {
+        name: p.product_name ?? p.brands ?? "",
+        brand: p.brands ?? "",
+        calorieKcal: Math.round(nutriments["energy-kcal_100g"] ?? 0),
+        proteinG: +(nutriments.proteins_100g ?? 0).toFixed(1),
+        carbG: +(nutriments.carbohydrates_100g ?? 0).toFixed(1),
+        fatG: +(nutriments.fat_100g ?? 0).toFixed(1),
+        portionG: +(p.product_quantity ?? 100),
+      },
+    });
+  } catch (e: any) {
+    console.error("❌ barcodeLookup:", e.message ?? e);
+    response.status(500).json({error: e.message ?? "internal_error"});
+  }
 });

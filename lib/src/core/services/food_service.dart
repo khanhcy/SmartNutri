@@ -9,6 +9,10 @@ class FoodService {
   List<FoodItem>? _cached;
   bool _isLoading = false;
 
+  /// Synchronous access to the loaded food list (returns seed data if not yet loaded).
+  List<FoodItem> get foods => _cached ?? _seedFoods;
+
+
   // Kept as seed fallback — used only when Firestore is empty.
   static const List<FoodItem> _seedFoods = [
     // ── Món nước ───────────────────────────────────────────────────────────

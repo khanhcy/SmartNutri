@@ -7,8 +7,8 @@ import 'package:smartnutri/src/core/services/ai_food_service.dart';
 import 'package:smartnutri/src/core/services/connectivity_service.dart';
 import 'package:smartnutri/src/core/ui/theme/app_spacing.dart';
 import 'package:smartnutri/src/features/meal_log/presentation/add_meal_bottom_sheet.dart';
-import 'package:smartnutri/src/features/meal_log/domain/meal_entry.dart';
-import 'package:smartnutri/src/features/search/domain/food_item.dart';
+import 'package:smartnutri/src/features/home/presentation/widgets/ai_suggestions_card.dart';
+import 'package:smartnutri/src/features/scan/domain/scan_result.dart';
 
 class PhotoScanPage extends StatefulWidget {
   const PhotoScanPage({super.key});
@@ -21,7 +21,7 @@ class _PhotoScanPageState extends State<PhotoScanPage> {
   final _picker = ImagePicker();
   Uint8List? _previewBytes;
   bool _analyzing = false;
-  List<AiFoodCandidate> _candidates = [];
+  ScanResult? _scanResult;
   String? _error;
 
   Future<void> _pickAndAnalyze(ImageSource source) async {
@@ -38,10 +38,9 @@ class _PhotoScanPageState extends State<PhotoScanPage> {
       _previewBytes = bytes;
       _analyzing = true;
       _error = null;
-      _candidates = [];
+      _scanResult = null;
     });
 
-    // Check connectivity
     final connectivity = context.read<ConnectivityService>();
     final online = await connectivity.isOnline;
     if (!online) {
@@ -56,13 +55,13 @@ class _PhotoScanPageState extends State<PhotoScanPage> {
 
     final base64 = base64Encode(bytes);
     final ai = context.read<AiFoodService>();
-    final results = await ai.identifyFood(base64);
+    final result = await ai.identifyFood(base64);
 
     if (mounted) {
       setState(() {
         _analyzing = false;
-        _candidates = results;
-        if (results.isEmpty) {
+        _scanResult = result;
+        if (result.items.isEmpty) {
           _error = 'AI không nhận diện được món ăn trong ảnh. '
               'Thử lại với ảnh khác hoặc tìm thủ công.';
         }
@@ -70,20 +69,12 @@ class _PhotoScanPageState extends State<PhotoScanPage> {
     }
   }
 
-  void _selectCandidate(FoodItem food) {
+  void _selectCandidate(ScannedFoodItem item) {
     showAddMealSheet(
       context,
-      preselectedFood: food,
-      initialMealType: _mealTypeForNow(),
+      preselectedFood: item.foodItem,
+      initialMealType: mealTypeForNow(),
     );
-  }
-
-  MealType _mealTypeForNow() {
-    final h = DateTime.now().hour;
-    if (h < 10) return MealType.breakfast;
-    if (h < 14) return MealType.lunch;
-    if (h < 19) return MealType.dinner;
-    return MealType.snack;
   }
 
   @override
@@ -132,7 +123,7 @@ class _PhotoScanPageState extends State<PhotoScanPage> {
 
             const SizedBox(height: AppSpacing.xl),
 
-            // Preview / loading / results
+            // Preview
             if (_previewBytes != null) ...[
               ClipRRect(
                 borderRadius: BorderRadius.circular(12),
@@ -146,6 +137,7 @@ class _PhotoScanPageState extends State<PhotoScanPage> {
               const SizedBox(height: AppSpacing.md),
             ],
 
+            // Loading
             if (_analyzing) ...[
               const SizedBox(height: AppSpacing.xl),
               const Column(
@@ -157,6 +149,7 @@ class _PhotoScanPageState extends State<PhotoScanPage> {
               ),
             ],
 
+            // Error
             if (_error != null && !_analyzing) ...[
               const SizedBox(height: AppSpacing.md),
               Card(
@@ -174,18 +167,19 @@ class _PhotoScanPageState extends State<PhotoScanPage> {
               ),
             ],
 
-            if (_candidates.isNotEmpty) ...[
+            // Results
+            if (_scanResult != null && _scanResult!.items.isNotEmpty) ...[
               Text(
                 'Kết quả nhận diện',
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               const SizedBox(height: AppSpacing.sm),
-              ..._candidates.map(
-                (c) => Card(
+              ..._scanResult!.items.map(
+                (item) => Card(
                   margin: const EdgeInsets.only(bottom: AppSpacing.sm),
                   child: InkWell(
                     borderRadius: BorderRadius.circular(12),
-                    onTap: () => _selectCandidate(c.foodItem),
+                    onTap: () => _selectCandidate(item),
                     child: Padding(
                       padding: const EdgeInsets.all(AppSpacing.md),
                       child: Row(
@@ -200,16 +194,39 @@ class _PhotoScanPageState extends State<PhotoScanPage> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                Text(
-                                  c.foodItem.name,
-                                  style: Theme.of(context).textTheme.titleSmall,
+                                Row(
+                                  children: [
+                                    Flexible(
+                                      child: Text(
+                                        item.foodItem.name,
+                                        style: Theme.of(context).textTheme.titleSmall,
+                                      ),
+                                    ),
+                                    if (item.isAiEstimated) ...[
+                                      const SizedBox(width: 6),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          horizontal: 6,
+                                          vertical: 2,
+                                        ),
+                                        decoration: BoxDecoration(
+                                          color: Colors.amber.withValues(alpha: 0.2),
+                                          borderRadius: BorderRadius.circular(4),
+                                        ),
+                                        child: const Text(
+                                          '⚡ Ước tính AI',
+                                          style: TextStyle(fontSize: 10),
+                                        ),
+                                      ),
+                                    ],
+                                  ],
                                 ),
                                 const SizedBox(height: 2),
                                 Text(
-                                  '${c.foodItem.calorieKcal.round()} kcal/100g'
-                                  '  •  P:${c.foodItem.proteinG.round()}g'
-                                  '  C:${c.foodItem.carbG.round()}g'
-                                  '  F:${c.foodItem.fatG.round()}g',
+                                  '${item.foodItem.calorieKcal.round()} kcal/100g'
+                                  '  •  P:${item.foodItem.proteinG.round()}g'
+                                  '  C:${item.foodItem.carbG.round()}g'
+                                  '  F:${item.foodItem.fatG.round()}g',
                                   style: Theme.of(context).textTheme.bodySmall,
                                 ),
                               ],
@@ -217,7 +234,7 @@ class _PhotoScanPageState extends State<PhotoScanPage> {
                           ),
                           Chip(
                             label: Text(
-                              '${(c.confidence * 100).round()}%',
+                              '${(item.confidence * 100).round()}%',
                               style: const TextStyle(fontSize: 11),
                             ),
                             backgroundColor: colorScheme.primaryContainer,

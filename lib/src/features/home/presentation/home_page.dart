@@ -15,8 +15,6 @@ import 'package:smartnutri/src/features/meal_log/presentation/add_meal_bottom_sh
 import 'package:smartnutri/src/features/meal_log/presentation/custom_meal_sheet.dart';
 import 'package:smartnutri/src/features/nutrition/domain/nutrition_goal.dart';
 
-import 'package:smartnutri/src/features/scan/presentation/barcode_scan_page.dart';
-import 'package:smartnutri/src/features/scan/presentation/photo_scan_page.dart';
 import 'widgets/water_card.dart';
 import 'widgets/streak_badge.dart';
 import 'widgets/calorie_summary_card.dart';
@@ -124,7 +122,7 @@ class _HomePageContent extends StatelessWidget {
                 child: FilledButton.icon(
                   onPressed: () => showAddMealSheet(
                     context,
-                    initialMealType: homeSuggestMealType(),
+                    initialMealType: mealTypeForNow(),
                   ),
                   icon: const Icon(Icons.search),
                   label: const Text('Tìm món'),
@@ -135,40 +133,10 @@ class _HomePageContent extends StatelessWidget {
                 child: OutlinedButton.icon(
                   onPressed: () => showCustomMealSheet(
                     context,
-                    initialMealType: homeSuggestMealType(),
+                    initialMealType: mealTypeForNow(),
                   ),
                   icon: const Icon(Icons.edit_note),
                   label: const Text('Nhập thủ công'),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.sm),
-          Row(
-            children: [
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: () => Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const PhotoScanPage()),
-                  ),
-                  icon: const Icon(Icons.camera_alt, size: 18),
-                  label: const Text('Chụp ảnh'),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                  ),
-                ),
-              ),
-              const SizedBox(width: AppSpacing.sm),
-              Expanded(
-                child: OutlinedButton.icon(
-                  onPressed: () => Navigator.of(context).push(
-                    MaterialPageRoute(builder: (_) => const BarcodeScanPage()),
-                  ),
-                  icon: const Icon(Icons.qr_code_scanner, size: 18),
-                  label: const Text('Quét mã vạch'),
-                  style: OutlinedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 8),
-                  ),
                 ),
               ),
             ],
@@ -195,10 +163,3 @@ String homeGreetingSubtitle(String? displayName) {
   return '$greeting! Theo dõi dinh dưỡng của bạn hôm nay.';
 }
 
-MealType homeSuggestMealType() {
-  final hour = DateTime.now().hour;
-  if (hour < 10) return MealType.breakfast;
-  if (hour < 14) return MealType.lunch;
-  if (hour < 19) return MealType.dinner;
-  return MealType.snack;
-}
