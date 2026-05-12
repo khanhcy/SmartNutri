@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:smartnutri/src/core/ui/components/sn_card.dart';
 import 'package:smartnutri/src/core/ui/theme/app_spacing.dart';
 import 'package:smartnutri/src/features/profile/domain/user_profile.dart';
 
