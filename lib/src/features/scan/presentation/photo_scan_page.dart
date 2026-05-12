@@ -42,6 +42,7 @@ class _PhotoScanPageState extends State<PhotoScanPage> {
     });
 
     final connectivity = context.read<ConnectivityService>();
+    final ai = context.read<AiFoodService>();
     final online = await connectivity.isOnline;
     if (!online) {
       if (mounted) {
@@ -54,18 +55,35 @@ class _PhotoScanPageState extends State<PhotoScanPage> {
     }
 
     final base64 = base64Encode(bytes);
-    final ai = context.read<AiFoodService>();
-    final result = await ai.identifyFood(base64);
-
-    if (mounted) {
-      setState(() {
-        _analyzing = false;
-        _scanResult = result;
-        if (result.items.isEmpty) {
-          _error = 'AI không nhận diện được món ăn trong ảnh. '
-              'Thử lại với ảnh khác hoặc tìm thủ công.';
-        }
-      });
+    try {
+      final result = await ai.identifyFood(base64);
+      if (mounted) {
+        setState(() {
+          _analyzing = false;
+          _scanResult = result;
+          if (result.items.isEmpty) {
+            _error =
+                'AI không nhận diện được món ăn trong ảnh. '
+                'Thử lại với ảnh khác hoặc tìm thủ công.';
+          }
+        });
+      }
+    } on AiFoodServiceException catch (e) {
+      if (mounted) {
+        setState(() {
+          _analyzing = false;
+          _scanResult = null;
+          _error = e.userMessage;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _analyzing = false;
+          _scanResult = null;
+          _error = 'Không thể phân tích ảnh lúc này. Vui lòng thử lại.';
+        });
+      }
     }
   }
 
@@ -103,8 +121,9 @@ class _PhotoScanPageState extends State<PhotoScanPage> {
                     icon: Icons.camera_alt,
                     label: 'Chụp ảnh',
                     color: colorScheme.primary,
-                    onTap:
-                        _analyzing ? null : () => _pickAndAnalyze(ImageSource.camera),
+                    onTap: _analyzing
+                        ? null
+                        : () => _pickAndAnalyze(ImageSource.camera),
                   ),
                 ),
                 const SizedBox(width: AppSpacing.md),
@@ -186,8 +205,11 @@ class _PhotoScanPageState extends State<PhotoScanPage> {
                         children: [
                           CircleAvatar(
                             backgroundColor: colorScheme.primaryContainer,
-                            child: Icon(Icons.restaurant,
-                                color: colorScheme.primary, size: 20),
+                            child: Icon(
+                              Icons.restaurant,
+                              color: colorScheme.primary,
+                              size: 20,
+                            ),
                           ),
                           const SizedBox(width: AppSpacing.md),
                           Expanded(
@@ -199,7 +221,9 @@ class _PhotoScanPageState extends State<PhotoScanPage> {
                                     Flexible(
                                       child: Text(
                                         item.foodItem.name,
-                                        style: Theme.of(context).textTheme.titleSmall,
+                                        style: Theme.of(
+                                          context,
+                                        ).textTheme.titleSmall,
                                       ),
                                     ),
                                     if (item.isAiEstimated) ...[
@@ -210,8 +234,12 @@ class _PhotoScanPageState extends State<PhotoScanPage> {
                                           vertical: 2,
                                         ),
                                         decoration: BoxDecoration(
-                                          color: Colors.amber.withValues(alpha: 0.2),
-                                          borderRadius: BorderRadius.circular(4),
+                                          color: Colors.amber.withValues(
+                                            alpha: 0.2,
+                                          ),
+                                          borderRadius: BorderRadius.circular(
+                                            4,
+                                          ),
                                         ),
                                         child: const Text(
                                           '⚡ Ước tính AI',
