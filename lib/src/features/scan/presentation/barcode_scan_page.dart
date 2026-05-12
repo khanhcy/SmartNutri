@@ -39,6 +39,7 @@ class _BarcodeScanPageState extends State<BarcodeScanPage> {
     });
 
     final connectivity = context.read<ConnectivityService>();
+    final barcodeService = context.read<BarcodeService>();
     final online = await connectivity.isOnline;
     if (!online) {
       if (mounted) {
@@ -50,15 +51,33 @@ class _BarcodeScanPageState extends State<BarcodeScanPage> {
       return;
     }
 
-    final result = await context.read<BarcodeService>().lookupBarcode(code);
-    if (mounted) {
-      setState(() {
-        _lookingUp = false;
-        _found = result;
-        if (result == null) {
-          _error = 'Không tìm thấy sản phẩm với mã vạch này.';
-        }
-      });
+    try {
+      final result = await barcodeService.lookupBarcode(code);
+      if (mounted) {
+        setState(() {
+          _lookingUp = false;
+          _found = result;
+          if (result == null) {
+            _error = 'Không tìm thấy sản phẩm với mã vạch này.';
+          }
+        });
+      }
+    } on BarcodeLookupException catch (e) {
+      if (mounted) {
+        setState(() {
+          _lookingUp = false;
+          _found = null;
+          _error = e.userMessage;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _lookingUp = false;
+          _found = null;
+          _error = 'Không thể tra cứu mã vạch lúc này. Vui lòng thử lại.';
+        });
+      }
     }
   }
 
@@ -97,12 +116,8 @@ class _BarcodeScanPageState extends State<BarcodeScanPage> {
             child: Stack(
               children: [
                 if (!_paused)
-                  MobileScanner(
-                    controller: _controller,
-                    onDetect: _onDetect,
-                  ),
-                if (_paused)
-                  Container(color: Colors.black87),
+                  MobileScanner(controller: _controller, onDetect: _onDetect),
+                if (_paused) Container(color: Colors.black87),
                 // Scan overlay border
                 Center(
                   child: Container(
@@ -124,10 +139,7 @@ class _BarcodeScanPageState extends State<BarcodeScanPage> {
                   child: FloatingActionButton.small(
                     heroTag: 'torch',
                     onPressed: () => _controller.toggleTorch(),
-                    child: Icon(
-                      Icons.flash_on,
-                      color: colorScheme.primary,
-                    ),
+                    child: Icon(Icons.flash_on, color: colorScheme.primary),
                   ),
                 ),
               ],
@@ -135,10 +147,7 @@ class _BarcodeScanPageState extends State<BarcodeScanPage> {
           ),
 
           // Result / loading area
-          SizedBox(
-            height: 200,
-            child: _buildResultArea(colorScheme),
-          ),
+          SizedBox(height: 200, child: _buildResultArea(colorScheme)),
         ],
       ),
     );
@@ -176,7 +185,12 @@ class _BarcodeScanPageState extends State<BarcodeScanPage> {
                   ),
                 ),
                 if (food.brand != null)
-                  Chip(label: Text(food.brand!, style: const TextStyle(fontSize: 11))),
+                  Chip(
+                    label: Text(
+                      food.brand!,
+                      style: const TextStyle(fontSize: 11),
+                    ),
+                  ),
               ],
             ),
             const SizedBox(height: AppSpacing.xs),
