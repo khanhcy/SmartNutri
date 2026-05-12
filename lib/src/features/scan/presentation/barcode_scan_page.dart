@@ -38,7 +38,8 @@ class _BarcodeScanPageState extends State<BarcodeScanPage> {
       _error = null;
     });
 
-    final online = context.read<ConnectivityService>().isOnline;
+    final connectivity = context.read<ConnectivityService>();
+    final online = await connectivity.isOnline;
     if (!online) {
       if (mounted) {
         setState(() {

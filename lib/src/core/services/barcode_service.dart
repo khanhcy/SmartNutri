@@ -1,21 +1,37 @@
-import 'package:cloud_functions/cloud_functions.dart';
+import 'dart:convert';
+
+import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
 import 'package:smartnutri/src/features/search/domain/food_item.dart';
 import 'package:uuid/uuid.dart';
 
+String _functionUrl(String name) {
+  if (kDebugMode) {
+    final host = defaultTargetPlatform == TargetPlatform.android
+        ? '10.0.2.2'
+        : '127.0.0.1';
+    return 'http://$host:5001/smartnutri-dev-2e67b/us-central1/$name';
+  }
+  return 'https://us-central1-smartnutri-dev-2e67b.cloudfunctions.net/$name';
+}
+
 class BarcodeService {
-  BarcodeService({FirebaseFunctions? functions})
-      : _functions = functions ?? FirebaseFunctions.instance;
-
-  final FirebaseFunctions _functions;
-
   Future<FoodItem?> lookupBarcode(String barcode) async {
     try {
-      final callable = _functions.httpsCallable('barcodeLookup');
-      final result = await callable.call<String, dynamic>({
-        'barcode': barcode,
-      });
+      final url = Uri.parse(_functionUrl('barcodeLookup'));
+      final response = await http.post(
+        url,
+        headers: {'Content-Type': 'application/json'},
+        body: jsonEncode({
+          'data': {'barcode': barcode},
+        }),
+      );
 
-      final product = result.data['product'] as Map<String, dynamic>?;
+      if (response.statusCode != 200) return null;
+
+      final body = jsonDecode(response.body) as Map<String, dynamic>;
+      final result = body['result'] as Map<String, dynamic>? ?? {};
+      final product = result['product'] as Map<String, dynamic>?;
       if (product == null) return null;
 
       return FoodItem(

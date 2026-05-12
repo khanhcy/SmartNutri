@@ -275,11 +275,12 @@ class _OnboardingPageState extends State<OnboardingPage>
     required Widget input,
   }) {
     final colorScheme = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xl),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
           // Pulsing icon with glow
           AnimatedBuilder(
             animation: _pulseAnim,
@@ -330,7 +331,7 @@ class _OnboardingPageState extends State<OnboardingPage>
           const SizedBox(height: AppSpacing.xxl),
         ],
       ),
-    );
+    ));
   }
 
   Widget _buildLargeInput({

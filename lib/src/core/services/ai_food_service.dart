@@ -1,4 +1,7 @@
-import 'package:cloud_functions/cloud_functions.dart';
+import 'dart:convert';
+
+import 'package:flutter/foundation.dart';
+import 'package:http/http.dart' as http;
 import 'package:smartnutri/src/core/services/food_service.dart';
 import 'package:smartnutri/src/features/search/domain/food_item.dart';
 
@@ -23,24 +26,48 @@ class FoodSuggestion {
   final String reason;
 }
 
-class AiFoodService {
-  AiFoodService({
-    FirebaseFunctions? functions,
-    required FoodService foodService,
-  })  : _functions = functions ?? FirebaseFunctions.instance,
-        _foodService = foodService;
+String _functionUrl(String name) {
+  if (kDebugMode) {
+    final host = defaultTargetPlatform == TargetPlatform.android
+        ? '10.0.2.2'
+        : '127.0.0.1';
+    return 'http://$host:5001/smartnutri-dev-2e67b/us-central1/$name';
+  }
+  return 'https://us-central1-smartnutri-dev-2e67b.cloudfunctions.net/$name';
+}
 
-  final FirebaseFunctions _functions;
+Future<Map<String, dynamic>> _callFunction(
+  String name,
+  Map<String, dynamic> data,
+) async {
+  final url = Uri.parse(_functionUrl(name));
+  final response = await http.post(
+    url,
+    headers: {'Content-Type': 'application/json'},
+    body: jsonEncode({'data': data}),
+  );
+
+  if (response.statusCode != 200) {
+    throw Exception('Functions returned ${response.statusCode}: ${response.body}');
+  }
+
+  final body = jsonDecode(response.body) as Map<String, dynamic>;
+  return body['result'] as Map<String, dynamic>? ?? {};
+}
+
+class AiFoodService {
+  AiFoodService({required FoodService foodService})
+      : _foodService = foodService;
+
   final FoodService _foodService;
 
   Future<List<AiFoodCandidate>> identifyFood(String imageBase64) async {
     try {
-      final callable = _functions.httpsCallable('identifyFoodImage');
-      final result = await callable.call<String, dynamic>({
+      final result = await _callFunction('identifyFoodImage', {
         'imageBase64': imageBase64,
       });
 
-      final items = result.data['items'] as List<dynamic>? ?? [];
+      final items = result['items'] as List<dynamic>? ?? [];
       final candidates = <AiFoodCandidate>[];
       final allFoods = await _foodService.getAll();
 
@@ -62,7 +89,8 @@ class AiFoodService {
       }
 
       return candidates;
-    } catch (_) {
+    } catch (e) {
+      debugPrint('❌ identifyFood error: $e');
       return [];
     }
   }
@@ -76,8 +104,7 @@ class AiFoodService {
     required String mealTime,
   }) async {
     try {
-      final callable = _functions.httpsCallable('suggestMeals');
-      final result = await callable.call<String, dynamic>({
+      final result = await _callFunction('suggestMeals', {
         'remainingKcal': remainingKcal.round(),
         'proteinG': proteinG.round(),
         'carbG': carbG.round(),
@@ -87,7 +114,7 @@ class AiFoodService {
       });
 
       final suggestions =
-          result.data['suggestions'] as List<dynamic>? ?? [];
+          result['suggestions'] as List<dynamic>? ?? [];
       final allFoods = await _foodService.getAll();
 
       return suggestions.map((s) {
@@ -125,7 +152,7 @@ class AiFoodService {
   }
 
   static String _stripDiacritics(String input) {
-    const _map = {
+    const diacritics = {
       'à': 'a', 'á': 'a', 'ả': 'a', 'ã': 'a', 'ạ': 'a',
       'ă': 'a', 'ằ': 'a', 'ắ': 'a', 'ẳ': 'a', 'ẵ': 'a', 'ặ': 'a',
       'â': 'a', 'ầ': 'a', 'ấ': 'a', 'ẩ': 'a', 'ẫ': 'a', 'ậ': 'a',
@@ -140,6 +167,6 @@ class AiFoodService {
       'ỳ': 'y', 'ý': 'y', 'ỷ': 'y', 'ỹ': 'y', 'ỵ': 'y',
       'đ': 'd',
     };
-    return input.split('').map((c) => _map[c] ?? c).join();
+    return input.split('').map((c) => diacritics[c] ?? c).join();
   }
 }

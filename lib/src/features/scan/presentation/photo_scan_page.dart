@@ -42,7 +42,8 @@ class _PhotoScanPageState extends State<PhotoScanPage> {
     });
 
     // Check connectivity
-    final online = context.read<ConnectivityService>().isOnline;
+    final connectivity = context.read<ConnectivityService>();
+    final online = await connectivity.isOnline;
     if (!online) {
       if (mounted) {
         setState(() {

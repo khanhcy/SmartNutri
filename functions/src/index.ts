@@ -4,7 +4,12 @@ import {GoogleGenerativeAI} from "@google/generative-ai";
 
 admin.initializeApp();
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || "");
+function geminiModel() {
+  const key = process.env.GEMINI_API_KEY;
+  if (!key) throw new Error("Thiếu GEMINI_API_KEY trong .env");
+  return new GoogleGenerativeAI(key)
+    .getGenerativeModel({model: "gemini-2.0-flash"});
+}
 
 // Helper: convert image base64 to a Gemini Part
 function base64ToPart(base64: string, mimeType: string) {
@@ -22,9 +27,6 @@ export const health = onRequest((request, response) => {
 });
 
 // ── Admin role management ─────────────────────────────────────────────────
-// Called by existing admin to grant admin claims to another user.
-// Bootstrap: first admin sets their own claim via Firebase Console
-// (Authentication → Custom Claims → {"admin": true}).
 export const setAdminRole = onCall(async (request) => {
   const callerUid = request.auth?.uid;
   if (!callerUid) {
@@ -42,17 +44,13 @@ export const setAdminRole = onCall(async (request) => {
   }
 
   await admin.auth().setCustomUserClaims(targetUid, {admin: true});
-  // Force token refresh so new claims take effect immediately
   await admin.auth().revokeRefreshTokens(targetUid);
 
   return {success: true, targetUid};
 });
 
 // ── Seed foods into Firestore ─────────────────────────────────────────────
-// POST JSON body: { foods: [{id: "...", name: "...", ...}, ...] }
-// Requires admin auth (caller must have admin custom claim).
 export const seedFoods = onRequest(async (request, response) => {
-  // Parse auth token from Authorization header
   const authHeader = request.headers.authorization;
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     response.status(401).json({error: "missing_token"});
@@ -101,12 +99,22 @@ export const seedFoods = onRequest(async (request, response) => {
 
 // ── AI: Identify food from photo ──────────────────────────────────────────
 export const identifyFoodImage = onCall(async (request) => {
-  const imageBase64 = request.data?.imageBase64 as string | undefined;
-  if (!imageBase64) throw new Error("missing_image");
+    console.log("📷 identifyFoodImage called");
 
-  const model = genAI.getGenerativeModel({model: "gemini-2.0-flash"});
+    const imageBase64 = request.data?.imageBase64 as string | undefined;
+    if (!imageBase64) throw new Error("missing_image");
 
-  const prompt = `Phân tích ảnh món ăn Việt Nam này. Trả về danh sách JSON array các món ăn có trong ảnh, mỗi món gồm:
+    console.log("   image size:", imageBase64.length, "chars");
+
+    if (!process.env.GEMINI_API_KEY) {
+      console.error("❌ GEMINI_API_KEY not set in .env");
+      throw new Error("missing_api_key");
+    }
+
+    const model = geminiModel();
+    console.log("   sending to Gemini...");
+
+    const prompt = `Phân tích ảnh món ăn Việt Nam này. Trả về danh sách JSON array các món ăn có trong ảnh, mỗi món gồm:
 - "name": tên món (tiếng Việt)
 - "estimatedKcal": calo ước tính trên 100g (số nguyên)
 - "confidence": độ tự tin 0-1
@@ -114,50 +122,52 @@ export const identifyFoodImage = onCall(async (request) => {
 Chỉ trả về JSON array, không thêm text khác.
 Ví dụ: [{"name":"Phở bò","estimatedKcal":200,"confidence":0.9}]`;
 
-  const result = await model.generateContent([
-    prompt,
-    base64ToPart(imageBase64, "image/jpeg"),
-  ]);
+    const result = await model.generateContent([
+      prompt,
+      base64ToPart(imageBase64, "image/jpeg"),
+    ]);
 
-  const text = result.response.text();
-  // Parse JSON from response (strip possible markdown fences)
-  const jsonStr = text.replace(/```json|```/g, "").trim();
-  const items = JSON.parse(jsonStr);
+    const text = result.response.text();
+    console.log("   Gemini response:", text.substring(0, 200));
 
-  return {items};
+    const jsonStr = text.replace(/```json|```/g, "").trim();
+    const items = JSON.parse(jsonStr);
+    console.log("✅ parsed", items.length, "items");
+
+    return {items};
 });
 
 // ── AI: Suggest meals based on remaining macros ──────────────────────────
 export const suggestMeals = onCall(async (request) => {
-  const {remainingKcal, proteinG, carbG, fatG} = request.data as Record<string, number>;
-  const recentFoodNames = (request.data?.recentFoodNames as string[]) ?? [];
-  const mealTime = (request.data?.mealTime as string) ?? "bất kỳ";
+    const {remainingKcal, proteinG, carbG, fatG} = request.data as Record<string, number>;
+    const recentFoodNames = (request.data?.recentFoodNames as string[]) ?? [];
+    const mealTime = (request.data?.mealTime as string) ?? "bất kỳ";
 
-  // Fetch all foods from Firestore to provide as context
-  const foodsSnap = await admin.firestore().collection("foods").get();
-  const foodList = foodsSnap.docs.map((d) => {
-    const data = d.data();
-    return {
-      id: d.id,
-      name: data.name,
-      calorieKcal: data.calories ?? 0,
-      proteinG: data.protein ?? 0,
-      carbG: data.carbs ?? 0,
-      fatG: data.fat ?? 0,
-      category: data.category ?? "",
-    };
-  });
+    // Fetch all foods from Firestore to provide as context
+    const foodsSnap = await admin.firestore().collection("foods").get();
+    const foodList = foodsSnap.docs.map((d) => {
+      const data = d.data();
+      return {
+        id: d.id,
+        name: data.name,
+        calorieKcal: data.calories ?? 0,
+        proteinG: data.protein ?? 0,
+        carbG: data.carbs ?? 0,
+        fatG: data.fat ?? 0,
+        category: data.category ?? "",
+      };
+    });
 
-  if (foodList.length === 0) return {suggestions: []};
+    if (foodList.length === 0) return {suggestions: []};
 
-  const avoidSet = new Set(recentFoodNames.map((n) => n.toLowerCase()));
-  const available = foodList.filter(
-    (f) => !avoidSet.has(f.name.toLowerCase())
-  );
+    const avoidSet = new Set(recentFoodNames.map((n) => n.toLowerCase()));
+    const available = foodList.filter(
+      (f) => !avoidSet.has(f.name.toLowerCase())
+    );
 
-  const model = genAI.getGenerativeModel({model: "gemini-2.0-flash"});
+    const model = geminiModel();
 
-  const prompt = `Bạn là chuyên gia dinh dưỡng. Chọn 3-5 món từ danh sách thực phẩm bên dưới phù hợp nhất với:
+    const prompt = `Bạn là chuyên gia dinh dưỡng. Chọn 3-5 món từ danh sách thực phẩm bên dưới phù hợp nhất với:
 - Calo còn lại: ${remainingKcal} kcal
 - Protein còn: ${proteinG}g
 - Carb còn: ${carbG}g
@@ -174,12 +184,12 @@ Chỉ trả về JSON array, mỗi phần tử:
 Ví dụ: [{"foodId":"abc123","reason":"Giàu protein, phù hợp bữa sáng"}]
 Chỉ trả JSON array, không thêm text khác.`;
 
-  const result = await model.generateContent(prompt);
-  const text = result.response.text();
-  const jsonStr = text.replace(/```json|```/g, "").trim();
-  const suggestions = JSON.parse(jsonStr);
+    const result = await model.generateContent(prompt);
+    const text = result.response.text();
+    const jsonStr = text.replace(/```json|```/g, "").trim();
+    const suggestions = JSON.parse(jsonStr);
 
-  return {suggestions};
+    return {suggestions};
 });
 
 // ── Barcode lookup via OpenFoodFacts ──────────────────────────────────────

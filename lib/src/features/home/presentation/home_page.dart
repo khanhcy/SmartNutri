@@ -15,11 +15,15 @@ import 'package:smartnutri/src/features/meal_log/presentation/add_meal_bottom_sh
 import 'package:smartnutri/src/features/meal_log/presentation/custom_meal_sheet.dart';
 import 'package:smartnutri/src/features/nutrition/domain/nutrition_goal.dart';
 
+import 'package:smartnutri/src/features/scan/presentation/barcode_scan_page.dart';
+import 'package:smartnutri/src/features/scan/presentation/photo_scan_page.dart';
 import 'widgets/water_card.dart';
 import 'widgets/streak_badge.dart';
 import 'widgets/calorie_summary_card.dart';
 import 'widgets/macro_progress_card.dart';
 import 'widgets/today_meals_section.dart';
+import 'widgets/ai_suggestions_card.dart';
+import 'widgets/quick_add_recents.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -103,7 +107,16 @@ class _HomePageContent extends StatelessWidget {
           const SizedBox(height: AppSpacing.md),
           const RepaintBoundary(child: MacroTrendCard()),
           const SizedBox(height: AppSpacing.md),
+          AiSuggestionsCard(
+            remainingKcal: goal.calorieTarget - consumed,
+            proteinG: goal.proteinG - proteinConsumed,
+            carbG: goal.carbG - carbConsumed,
+            fatG: goal.fatG - fatConsumed,
+          ),
+          const SizedBox(height: AppSpacing.md),
           TodayMealsSection(entries: entries, uid: uid),
+          const SizedBox(height: AppSpacing.md),
+          const QuickAddRecents(),
           const SizedBox(height: AppSpacing.md),
           Row(
             children: [
@@ -126,6 +139,36 @@ class _HomePageContent extends StatelessWidget {
                   ),
                   icon: const Icon(Icons.edit_note),
                   label: const Text('Nhập thủ công'),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const PhotoScanPage()),
+                  ),
+                  icon: const Icon(Icons.camera_alt, size: 18),
+                  label: const Text('Chụp ảnh'),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                  ),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: () => Navigator.of(context).push(
+                    MaterialPageRoute(builder: (_) => const BarcodeScanPage()),
+                  ),
+                  icon: const Icon(Icons.qr_code_scanner, size: 18),
+                  label: const Text('Quét mã vạch'),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                  ),
                 ),
               ),
             ],
