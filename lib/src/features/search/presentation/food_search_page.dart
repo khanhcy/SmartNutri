@@ -23,15 +23,29 @@ class _FoodSearchPageState extends State<FoodSearchPage> {
   final _queryController = TextEditingController();
   Timer? _debounce;
   List<FoodItem> _results = [];
-  late final List<String> _categories;
+  List<String> _categories = ['Tất cả'];
   String _selectedCategory = 'Tất cả';
 
   @override
   void initState() {
     super.initState();
-    _categories = ['Tất cả', ...FoodService.categories];
-    _results = context.read<FoodService>().getAll();
+    _initCategories();
+    _initResults();
     _queryController.addListener(_onQueryChanged);
+  }
+
+  Future<void> _initCategories() async {
+    final cats = await context.read<FoodService>().getCategories();
+    if (mounted) {
+      setState(() => _categories = ['Tất cả', ...cats]);
+    }
+  }
+
+  Future<void> _initResults() async {
+    final foods = await context.read<FoodService>().getAll();
+    if (mounted) {
+      setState(() => _results = foods);
+    }
   }
 
   @override
@@ -44,14 +58,14 @@ class _FoodSearchPageState extends State<FoodSearchPage> {
 
   void _onQueryChanged() {
     _debounce?.cancel();
-    _debounce = Timer(const Duration(milliseconds: 280), () {
+    _debounce = Timer(const Duration(milliseconds: 280), () async {
       if (!mounted) return;
       final q = _queryController.text.trim();
-      setState(() {
-        _results = q.isEmpty
-            ? _filterByCategory(context.read<FoodService>().getAll())
-            : _filterByCategory(context.read<FoodService>().search(q));
-      });
+      final service = context.read<FoodService>();
+      final items = q.isEmpty ? await service.getAll() : await service.search(q);
+      if (mounted) {
+        setState(() => _results = _filterByCategory(items));
+      }
     });
   }
 
@@ -253,13 +267,24 @@ class _FoodSearchPageState extends State<FoodSearchPage> {
   }
 
   List<Widget> _suggestionTiles(BuildContext context) {
-    final foods = context.read<FoodService>().suggestedForCurrentMealtime();
-    if (foods.isEmpty) return [];
+    // synchronous cache-read — suggestions are pre-loaded
+    final foodService = context.read<FoodService>();
     return [
-      for (int i = 0; i < foods.length; i++) ...[
-        FoodTile(food: foods[i]),
-        if (i < foods.length - 1) const Divider(height: 1),
-      ],
+      FutureBuilder<List<FoodItem>>(
+        future: foodService.suggestedForCurrentMealtime(),
+        builder: (context, snap) {
+          final foods = snap.data ?? [];
+          if (foods.isEmpty) return const SizedBox.shrink();
+          return Column(
+            children: [
+              for (int i = 0; i < foods.length; i++) ...[
+                FoodTile(food: foods[i]),
+                if (i < foods.length - 1) const Divider(height: 1),
+              ],
+            ],
+          );
+        },
+      ),
     ];
   }
 }

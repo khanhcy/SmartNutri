@@ -1,9 +1,10 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:smartnutri/src/core/ui/components/sn_card.dart';
 import 'package:smartnutri/src/core/ui/theme/app_spacing.dart';
 
-class CalorieSummaryCard extends StatelessWidget {
+class CalorieSummaryCard extends StatefulWidget {
   const CalorieSummaryCard({
     super.key,
     required this.consumed,
@@ -14,16 +15,52 @@ class CalorieSummaryCard extends StatelessWidget {
   final double goal;
 
   @override
+  State<CalorieSummaryCard> createState() => _CalorieSummaryCardState();
+}
+
+class _CalorieSummaryCardState extends State<CalorieSummaryCard> {
+  bool _hapticTriggered = false;
+
+  @override
+  void didUpdateWidget(covariant CalorieSummaryCard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.consumed != widget.consumed ||
+        oldWidget.goal != widget.goal) {
+      _checkHaptic();
+    }
+  }
+
+  void _checkHaptic() {
+    if (widget.goal <= 0) return;
+    final overGoal = widget.consumed >= widget.goal;
+    if (overGoal && !_hapticTriggered) {
+      _hapticTriggered = true;
+      HapticFeedback.heavyImpact();
+    } else if (!overGoal) {
+      _hapticTriggered = false;
+    }
+  }
+
+  Color _progressColor(double progress, ColorScheme cs) {
+    if (progress >= 1.0) return Colors.red;
+    if (progress >= 0.8) return Colors.orange;
+    return cs.primary;
+  }
+
+  @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final progress = goal > 0 ? (consumed / goal).clamp(0.0, 1.0) : 0.0;
-    final isOver = consumed > goal;
-    final remaining = (goal - consumed).clamp(0.0, goal);
+    final progress = widget.goal > 0
+        ? (widget.consumed / widget.goal).clamp(0.0, 1.0)
+        : 0.0;
+    final isOver = widget.consumed > widget.goal;
+    final remaining =
+        (widget.goal - widget.consumed).clamp(0.0, widget.goal);
+    final ringColor = _progressColor(progress, colorScheme);
 
     return SNCard(
       child: Column(
         children: [
-          // Header
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -32,11 +69,10 @@ class CalorieSummaryCard extends StatelessWidget {
                 style: Theme.of(context).textTheme.titleMedium,
               ),
               Icon(Icons.local_fire_department_outlined,
-                  color: colorScheme.primary),
+                  color: ringColor),
             ],
           ),
           const SizedBox(height: AppSpacing.xl),
-          // Donut Chart
           Center(
             child: SizedBox(
               width: 180,
@@ -46,7 +82,7 @@ class CalorieSummaryCard extends StatelessWidget {
                 children: [
                   TweenAnimationBuilder<double>(
                     tween: Tween<double>(begin: 0, end: progress),
-                    duration: const Duration(milliseconds: 1000),
+                    duration: const Duration(milliseconds: 800),
                     curve: Curves.easeOutCubic,
                     builder: (context, value, _) {
                       return SizedBox(
@@ -55,10 +91,11 @@ class CalorieSummaryCard extends StatelessWidget {
                         child: CustomPaint(
                           painter: _DonutPainter(
                             progress: value,
-                            isOver: isOver,
-                            backgroundColor: colorScheme.surfaceContainerHighest,
-                            progressColor:
-                                isOver ? Colors.red : colorScheme.primary,
+                            isOver: value >= 1.0,
+                            backgroundColor:
+                                colorScheme.surfaceContainerHighest,
+                            progressColor: _progressColor(
+                                value, colorScheme),
                             strokeWidth: 16,
                           ),
                         ),
@@ -69,22 +106,23 @@ class CalorieSummaryCard extends StatelessWidget {
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Text(
-                        '${consumed.round()}',
+                        '${widget.consumed.round()}',
                         style: Theme.of(context)
                             .textTheme
                             .headlineSmall
                             ?.copyWith(
                               fontSize: 36,
                               fontWeight: FontWeight.w800,
-                              color: isOver ? Colors.red : colorScheme.primary,
+                              color: ringColor,
                               height: 1.1,
                             ),
                       ),
                       Text(
                         'kcal nạp',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              fontWeight: FontWeight.bold,
-                            ),
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodySmall
+                            ?.copyWith(fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
@@ -93,24 +131,24 @@ class CalorieSummaryCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AppSpacing.xl),
-          // Footer Stats
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               _StatItem(
                 label: 'Mục tiêu',
-                value: '${goal.round()}',
+                value: '${widget.goal.round()}',
                 unit: 'kcal',
               ),
               Container(
                 width: 1,
                 height: 30,
-                color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+                color:
+                    colorScheme.outlineVariant.withValues(alpha: 0.5),
               ),
               _StatItem(
                 label: isOver ? 'Đã vượt' : 'Còn lại',
                 value: isOver
-                    ? '${(consumed - goal).round()}'
+                    ? '${(widget.consumed - widget.goal).round()}'
                     : '${remaining.round()}',
                 unit: 'kcal',
                 valueColor: isOver ? Colors.red : null,
@@ -197,10 +235,8 @@ class _DonutPainter extends CustomPainter {
       ..strokeWidth = strokeWidth
       ..strokeCap = StrokeCap.round;
 
-    // Draw background
     canvas.drawCircle(center, radius, bgPaint);
 
-    // Draw progress (starts from top: -pi/2)
     final startAngle = -pi / 2;
     final sweepAngle = 2 * pi * progress;
 

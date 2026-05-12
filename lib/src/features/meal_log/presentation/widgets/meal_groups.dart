@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:smartnutri/src/core/services/meal_service.dart';
 import 'package:smartnutri/src/core/ui/components/sn_card.dart';
@@ -190,6 +191,7 @@ class _EntryRow extends StatelessWidget {
         if (confirmed != true) return false;
         try {
           await mealService.deleteEntry(uid, entry.id);
+          HapticFeedback.mediumImpact();
           return true;
         } on FirebaseException catch (e) {
           if (!context.mounted) return false;

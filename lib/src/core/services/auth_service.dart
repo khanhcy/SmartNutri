@@ -1,4 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart' as fb;
+import 'package:flutter/foundation.dart';
+import 'package:google_sign_in/google_sign_in.dart';
+import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 
 class AuthUser {
   AuthUser({
@@ -13,9 +16,12 @@ class AuthUser {
 }
 
 class AuthService {
-  AuthService({fb.FirebaseAuth? auth}) : _auth = auth ?? fb.FirebaseAuth.instance;
+  AuthService({fb.FirebaseAuth? auth, GoogleSignIn? googleSignIn})
+      : _auth = auth ?? fb.FirebaseAuth.instance,
+        _googleSignIn = googleSignIn ?? GoogleSignIn();
 
   final fb.FirebaseAuth _auth;
+  final GoogleSignIn _googleSignIn;
 
   Stream<AuthUser?> authStateChanges() {
     return _auth.authStateChanges().map(_mapFirebaseUser);
@@ -64,7 +70,46 @@ class AuthService {
   }
 
   Future<void> signInWithGoogle() async {
-    throw Exception('Google Sign-In chưa được cấu hình trong bản này.');
+    try {
+      final GoogleSignInAccount? googleUser = await _googleSignIn.signIn();
+      if (googleUser == null) return;
+
+      final GoogleSignInAuthentication googleAuth =
+          await googleUser.authentication;
+
+      final credential = fb.GoogleAuthProvider.credential(
+        accessToken: googleAuth.accessToken,
+        idToken: googleAuth.idToken,
+      );
+
+      await _auth.signInWithCredential(credential);
+    } on fb.FirebaseAuthException catch (e) {
+      throw Exception(_friendlyAuthError(e));
+    } catch (_) {
+      throw Exception('Đăng nhập Google thất bại. Vui lòng thử lại.');
+    }
+  }
+
+  Future<void> signInWithApple() async {
+    try {
+      final appleCredential = await SignInWithApple.getAppleIDCredential(
+        scopes: [
+          AppleIDAuthorizationScopes.email,
+          AppleIDAuthorizationScopes.fullName,
+        ],
+      );
+
+      final oauthCredential = fb.OAuthProvider('apple.com').credential(
+        idToken: appleCredential.identityToken,
+        accessToken: appleCredential.authorizationCode,
+      );
+
+      await _auth.signInWithCredential(oauthCredential);
+    } on fb.FirebaseAuthException catch (e) {
+      throw Exception(_friendlyAuthError(e));
+    } catch (_) {
+      throw Exception('Đăng nhập Apple thất bại. Vui lòng thử lại.');
+    }
   }
 
   Future<void> signInWithFacebook() async {
@@ -72,6 +117,7 @@ class AuthService {
   }
 
   Future<void> signOut() async {
+    await _googleSignIn.signOut();
     await _auth.signOut();
   }
 
@@ -94,6 +140,7 @@ class AuthService {
       case 'invalid-credential':
         return 'Sai email hoặc mật khẩu';
       case 'email-already-in-use':
+      case 'account-exists-with-different-credential':
         return 'Email đã được sử dụng';
       case 'weak-password':
         return 'Mật khẩu quá yếu (tối thiểu 6 ký tự)';

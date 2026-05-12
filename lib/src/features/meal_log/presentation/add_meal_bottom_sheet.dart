@@ -11,10 +11,13 @@ import 'package:smartnutri/src/features/meal_log/domain/meal_entry.dart';
 import 'package:smartnutri/src/features/search/domain/food_item.dart';
 
 /// Call [showAddMealSheet] to open the bottom sheet.
+/// Pass [preselectedFood] to skip search and go directly to confirm step
+/// (used by AI scan / barcode / suggestions / quick-add).
 Future<void> showAddMealSheet(
   BuildContext context, {
   MealType initialMealType = MealType.lunch,
   DateTime? logDate,
+  FoodItem? preselectedFood,
 }) {
   final day = logDate ?? DateTime.now();
   return showModalBottomSheet<void>(
@@ -33,6 +36,7 @@ Future<void> showAddMealSheet(
       child: _AddMealSheet(
         initialMealType: initialMealType,
         logDate: day,
+        preselectedFood: preselectedFood,
       ),
     ),
   );
@@ -42,10 +46,12 @@ class _AddMealSheet extends StatefulWidget {
   const _AddMealSheet({
     required this.initialMealType,
     required this.logDate,
+    this.preselectedFood,
   });
   final MealType initialMealType;
   /// Calendar day stored on the meal entry (`date` field).
   final DateTime logDate;
+  final FoodItem? preselectedFood;
 
   @override
   State<_AddMealSheet> createState() => _AddMealSheetState();
@@ -65,8 +71,19 @@ class _AddMealSheetState extends State<_AddMealSheet> {
   void initState() {
     super.initState();
     _selectedMealType = widget.initialMealType;
-    _results = context.read<FoodService>().getAll().take(10).toList();
+    if (widget.preselectedFood != null) {
+      _selectedFood = widget.preselectedFood;
+      _portionController.text =
+          widget.preselectedFood!.defaultPortionG.round().toString();
+    } else {
+      _initResults();
+    }
     _searchController.addListener(_onSearch);
+  }
+
+  Future<void> _initResults() async {
+    final foods = await context.read<FoodService>().getAll();
+    if (mounted) setState(() => _results = foods.take(10).toList());
   }
 
   @override
@@ -79,12 +96,22 @@ class _AddMealSheetState extends State<_AddMealSheet> {
 
   void _onSearch() {
     final q = _searchController.text;
-    setState(() {
-      _selectedFood = null;
-      _results = q.trim().isEmpty
-          ? context.read<FoodService>().getAll().take(10).toList()
-          : context.read<FoodService>().search(q);
-    });
+    final service = context.read<FoodService>();
+    if (q.trim().isEmpty) {
+      service.getAll().then((foods) {
+        if (mounted) setState(() {
+          _selectedFood = null;
+          _results = foods.take(10).toList();
+        });
+      });
+    } else {
+      service.search(q).then((results) {
+        if (mounted) setState(() {
+          _selectedFood = null;
+          _results = results;
+        });
+      });
+    }
   }
 
   @override
