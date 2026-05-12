@@ -57,6 +57,11 @@ class BarcodeService {
 
   String _barcodeErrorMessage(Object error) {
     if (error is FunctionsException) {
+      if (error.message == 'network_error') {
+        return 'Không thể kết nối máy chủ tra cứu. '
+            'Kiểm tra Firebase Emulators đã chạy chưa, '
+            'hoặc thử lại sau.';
+      }
       if (error.message == 'invalid_response') {
         return 'Dữ liệu mã vạch trả về không hợp lệ. Vui lòng thử lại.';
       }

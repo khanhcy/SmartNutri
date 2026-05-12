@@ -41,6 +41,28 @@ void main() {
     });
 
     test(
+      'lookupBarcode shows network error when connection times out',
+      () async {
+        final service = BarcodeService(
+          functions: _FakeFunctions((_, _) {
+            throw FunctionsException('network_error');
+          }),
+        );
+
+        expect(
+          () => service.lookupBarcode('8930000000000'),
+          throwsA(
+            isA<BarcodeLookupException>().having(
+              (e) => e.userMessage,
+              'userMessage',
+              contains('Firebase Emulators'),
+            ),
+          ),
+        );
+      },
+    );
+
+    test(
       'lookupBarcode throws user-facing exception when function fails',
       () async {
         final service = BarcodeService(

@@ -45,6 +45,29 @@ void main() {
       },
     );
 
+    test(
+      'identifyFood shows network error when connection times out',
+      () async {
+        final service = AiFoodService(
+          foodService: _FakeFoodCatalog(_foods),
+          functions: _FakeFunctions((_, _) {
+            throw FunctionsException('network_error');
+          }),
+        );
+
+        expect(
+          () => service.identifyFood('image-base64'),
+          throwsA(
+            isA<AiFoodServiceException>().having(
+              (e) => e.userMessage,
+              'userMessage',
+              contains('Firebase Emulators'),
+            ),
+          ),
+        );
+      },
+    );
+
     test('suggestMeals ignores unknown food ids from AI response', () async {
       final service = AiFoodService(
         foodService: _FakeFoodCatalog(_foods),
