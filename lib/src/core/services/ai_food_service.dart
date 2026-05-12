@@ -13,15 +13,23 @@ class FoodSuggestion {
   final String reason;
 }
 
-class AiFoodService {
-  AiFoodService({
-    required FoodService foodService,
-    CloudFunctionClient? functions,
-  })  : _foodService = foodService,
-        _functions = functions ?? CloudFunctionClient();
+class AiFoodServiceException implements Exception {
+  AiFoodServiceException(this.userMessage, this.cause);
 
-  final FoodService _foodService;
-  final CloudFunctionClient _functions;
+  final String userMessage;
+  final Object cause;
+
+  @override
+  String toString() => 'AiFoodServiceException: $userMessage';
+}
+
+class AiFoodService {
+  AiFoodService({required FoodCatalog foodService, FunctionCaller? functions})
+    : _foodService = foodService,
+      _functions = functions ?? CloudFunctionClient();
+
+  final FoodCatalog _foodService;
+  final FunctionCaller _functions;
 
   Future<ScanResult> identifyFood(String imageBase64) async {
     try {
@@ -48,11 +56,13 @@ class AiFoodService {
 
         final matched = _fuzzyMatch(name, allFoods);
         if (matched != null) {
-          scanned.add(ScannedFoodItem(
-            foodItem: matched,
-            confidence: confidence,
-            rawName: name,
-          ));
+          scanned.add(
+            ScannedFoodItem(
+              foodItem: matched,
+              confidence: confidence,
+              rawName: name,
+            ),
+          );
         } else if (name.isNotEmpty && aiKcal > 0) {
           final aiFood = FoodItem(
             id: 'ai_${const Uuid().v4().substring(0, 8)}',
@@ -64,12 +74,14 @@ class AiFoodService {
             category: 'AI ước tính',
             defaultPortionG: aiPortion.toDouble(),
           );
-          scanned.add(ScannedFoodItem(
-            foodItem: aiFood,
-            confidence: confidence,
-            rawName: name,
-            isAiEstimated: true,
-          ));
+          scanned.add(
+            ScannedFoodItem(
+              foodItem: aiFood,
+              confidence: confidence,
+              rawName: name,
+              isAiEstimated: true,
+            ),
+          );
         }
       }
 
@@ -81,12 +93,7 @@ class AiFoodService {
       );
     } catch (e) {
       debugPrint('❌ identifyFood error: $e');
-      return ScanResult(
-        id: const Uuid().v4(),
-        items: [],
-        source: ScanSource.photo,
-        scannedAt: DateTime.now(),
-      );
+      throw AiFoodServiceException(_aiErrorMessage(e), e);
     }
   }
 
@@ -101,17 +108,18 @@ class AiFoodService {
     try {
       // Send food catalog as fallback in case Firestore is empty
       final foodCatalog = _foodService.foods
-          .map((f) => <String, dynamic>{
-                'id': f.id,
-                'name': f.name,
-                'calorieKcal': f.calorieKcal,
-                'proteinG': f.proteinG,
-                'carbG': f.carbG,
-                'fatG': f.fatG,
-                'category': f.category,
-              })
+          .map(
+            (f) => <String, dynamic>{
+              'id': f.id,
+              'name': f.name,
+              'calorieKcal': f.calorieKcal,
+              'proteinG': f.proteinG,
+              'carbG': f.carbG,
+              'fatG': f.fatG,
+              'category': f.category,
+            },
+          )
           .toList();
-
 
       final result = await _functions.call('suggestMeals', {
         'remainingKcal': remainingKcal.round(),
@@ -123,23 +131,43 @@ class AiFoodService {
         'foodCatalog': foodCatalog,
       });
 
-      final suggestions =
-          result['suggestions'] as List<dynamic>? ?? [];
+      final suggestions = result['suggestions'] as List<dynamic>? ?? [];
       final allFoods = await _foodService.getAll();
 
-      return suggestions.map((s) {
-        final foodId = s['foodId'] as String? ?? '';
-        final reason = s['reason'] as String? ?? '';
-        final food = allFoods.cast<FoodItem?>().firstWhere(
+      return suggestions
+          .whereType<Map>()
+          .map((s) {
+            final foodId = s['foodId'] as String? ?? '';
+            final reason = s['reason'] as String? ?? '';
+            final food = allFoods.cast<FoodItem?>().firstWhere(
               (f) => f?.id == foodId,
               orElse: () => null,
             );
-        return FoodSuggestion(foodItem: food!, reason: reason);
-      }).where((s) => s.foodItem.id.isNotEmpty).toList();
+            if (food == null || food.id.isEmpty) return null;
+            return FoodSuggestion(foodItem: food, reason: reason);
+          })
+          .whereType<FoodSuggestion>()
+          .toList();
     } catch (e) {
       debugPrint('❌ suggestMeals error: $e');
-      return [];
+      throw AiFoodServiceException(_aiErrorMessage(e), e);
     }
+  }
+
+  String _aiErrorMessage(Object error) {
+    if (error is FunctionsException) {
+      if (error.message == 'invalid_response') {
+        return 'Dữ liệu AI trả về không hợp lệ. Vui lòng thử lại.';
+      }
+      if (error.statusCode == 401 || error.statusCode == 403) {
+        return 'Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại.';
+      }
+      if ((error.statusCode ?? 0) >= 500) {
+        return 'Máy chủ AI đang gặp sự cố. Vui lòng thử lại sau.';
+      }
+      return 'Không thể xử lý yêu cầu AI lúc này. Vui lòng thử lại.';
+    }
+    return 'Không thể kết nối dịch vụ AI. Vui lòng kiểm tra mạng và thử lại.';
   }
 
   /// Levenshtein-based fuzzy match with diacritics stripping.
@@ -232,8 +260,9 @@ class AiFoodService {
     if (allFoods.isEmpty) return [];
 
     final avoidSet = recentFoodNames.map((n) => n.toLowerCase()).toSet();
-    final available =
-        allFoods.where((f) => !avoidSet.contains(f.name.toLowerCase())).toList();
+    final available = allFoods
+        .where((f) => !avoidSet.contains(f.name.toLowerCase()))
+        .toList();
     if (available.isEmpty) return [];
 
     // Score each food based on how well it fits remaining macros
@@ -285,18 +314,72 @@ class AiFoodService {
 
   static String _stripDiacritics(String input) {
     const diacritics = {
-      'à': 'a', 'á': 'a', 'ả': 'a', 'ã': 'a', 'ạ': 'a',
-      'ă': 'a', 'ằ': 'a', 'ắ': 'a', 'ẳ': 'a', 'ẵ': 'a', 'ặ': 'a',
-      'â': 'a', 'ầ': 'a', 'ấ': 'a', 'ẩ': 'a', 'ẫ': 'a', 'ậ': 'a',
-      'è': 'e', 'é': 'e', 'ẻ': 'e', 'ẽ': 'e', 'ẹ': 'e',
-      'ê': 'e', 'ề': 'e', 'ế': 'e', 'ể': 'e', 'ễ': 'e', 'ệ': 'e',
-      'ì': 'i', 'í': 'i', 'ỉ': 'i', 'ĩ': 'i', 'ị': 'i',
-      'ò': 'o', 'ó': 'o', 'ỏ': 'o', 'õ': 'o', 'ọ': 'o',
-      'ô': 'o', 'ồ': 'o', 'ố': 'o', 'ổ': 'o', 'ỗ': 'o', 'ộ': 'o',
-      'ơ': 'o', 'ờ': 'o', 'ớ': 'o', 'ở': 'o', 'ỡ': 'o', 'ợ': 'o',
-      'ù': 'u', 'ú': 'u', 'ủ': 'u', 'ũ': 'u', 'ụ': 'u',
-      'ư': 'u', 'ừ': 'u', 'ứ': 'u', 'ử': 'u', 'ữ': 'u', 'ự': 'u',
-      'ỳ': 'y', 'ý': 'y', 'ỷ': 'y', 'ỹ': 'y', 'ỵ': 'y',
+      'à': 'a',
+      'á': 'a',
+      'ả': 'a',
+      'ã': 'a',
+      'ạ': 'a',
+      'ă': 'a',
+      'ằ': 'a',
+      'ắ': 'a',
+      'ẳ': 'a',
+      'ẵ': 'a',
+      'ặ': 'a',
+      'â': 'a',
+      'ầ': 'a',
+      'ấ': 'a',
+      'ẩ': 'a',
+      'ẫ': 'a',
+      'ậ': 'a',
+      'è': 'e',
+      'é': 'e',
+      'ẻ': 'e',
+      'ẽ': 'e',
+      'ẹ': 'e',
+      'ê': 'e',
+      'ề': 'e',
+      'ế': 'e',
+      'ể': 'e',
+      'ễ': 'e',
+      'ệ': 'e',
+      'ì': 'i',
+      'í': 'i',
+      'ỉ': 'i',
+      'ĩ': 'i',
+      'ị': 'i',
+      'ò': 'o',
+      'ó': 'o',
+      'ỏ': 'o',
+      'õ': 'o',
+      'ọ': 'o',
+      'ô': 'o',
+      'ồ': 'o',
+      'ố': 'o',
+      'ổ': 'o',
+      'ỗ': 'o',
+      'ộ': 'o',
+      'ơ': 'o',
+      'ờ': 'o',
+      'ớ': 'o',
+      'ở': 'o',
+      'ỡ': 'o',
+      'ợ': 'o',
+      'ù': 'u',
+      'ú': 'u',
+      'ủ': 'u',
+      'ũ': 'u',
+      'ụ': 'u',
+      'ư': 'u',
+      'ừ': 'u',
+      'ứ': 'u',
+      'ử': 'u',
+      'ữ': 'u',
+      'ự': 'u',
+      'ỳ': 'y',
+      'ý': 'y',
+      'ỷ': 'y',
+      'ỹ': 'y',
+      'ỵ': 'y',
       'đ': 'd',
     };
     return input.split('').map((c) => diacritics[c] ?? c).join();
