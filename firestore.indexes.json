@@ -1,4 +1,12 @@
 {
-  "indexes": [],
+  "indexes": [
+    {
+      "collectionGroup": "meal_entries",
+      "queryScope": "COLLECTION_GROUP",
+      "fields": [
+        {"fieldPath": "date", "order": "ASCENDING"}
+      ]
+    }
+  ],
   "fieldOverrides": []
 }

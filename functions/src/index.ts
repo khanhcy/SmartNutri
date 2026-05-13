@@ -2,6 +2,8 @@ import * as admin from "firebase-admin";
 import {onRequest} from "firebase-functions/v2/https";
 import {GoogleGenerativeAI} from "@google/generative-ai";
 
+export {onMealEntryChanged} from "./meal_triggers.js";
+
 admin.initializeApp();
 
 function geminiModel() {

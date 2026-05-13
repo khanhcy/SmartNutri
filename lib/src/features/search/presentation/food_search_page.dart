@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:smartnutri/src/core/services/auth_service.dart';
+import 'package:smartnutri/src/core/services/favorites_service.dart';
 import 'package:smartnutri/src/core/services/food_service.dart';
 import 'package:smartnutri/src/core/services/recent_foods_service.dart';
 import 'package:smartnutri/src/core/ui/components/sn_card.dart';
@@ -25,13 +27,22 @@ class _FoodSearchPageState extends State<FoodSearchPage> {
   List<FoodItem> _results = [];
   List<String> _categories = ['Tất cả'];
   String _selectedCategory = 'Tất cả';
+  Set<String> _favoriteIds = {};
 
   @override
   void initState() {
     super.initState();
     _initCategories();
     _initResults();
+    _loadFavorites();
     _queryController.addListener(_onQueryChanged);
+  }
+
+  void _loadFavorites() {
+    final uid = context.read<AuthService>().currentUser?.uid;
+    if (uid == null) return;
+    final favs = context.read<FavoriteFoodsService>().favorites;
+    _favoriteIds = favs.map((f) => f.id).toSet();
   }
 
   Future<void> _initCategories() async {
@@ -72,6 +83,19 @@ class _FoodSearchPageState extends State<FoodSearchPage> {
   List<FoodItem> _filterByCategory(List<FoodItem> items) {
     if (_selectedCategory == 'Tất cả') return items;
     return items.where((f) => f.category == _selectedCategory).toList();
+  }
+
+  void _toggleFavorite(String foodId) {
+    final uid = context.read<AuthService>().currentUser?.uid;
+    if (uid == null) return;
+    context.read<FavoriteFoodsService>().toggle(uid, foodId);
+    setState(() {
+      if (_favoriteIds.contains(foodId)) {
+        _favoriteIds.remove(foodId);
+      } else {
+        _favoriteIds.add(foodId);
+      }
+    });
   }
 
   void _selectCategory(String cat) {
@@ -151,6 +175,48 @@ class _FoodSearchPageState extends State<FoodSearchPage> {
           const SizedBox(height: AppSpacing.sm),
 
           if (_queryController.text.isEmpty && _selectedCategory == 'Tất cả') ...[
+            // Favorites section
+            Consumer<FavoriteFoodsService>(
+              builder: (context, favsService, _) {
+                final favs = favsService.favorites;
+                if (favs.isEmpty) return const SizedBox.shrink();
+                _favoriteIds = favs.map((f) => f.id).toSet();
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        const Icon(Icons.favorite, size: 16, color: Colors.red),
+                        const SizedBox(width: 6),
+                        Text(
+                          'Yêu thích',
+                          style: Theme.of(context)
+                              .textTheme
+                              .labelLarge
+                              ?.copyWith(color: colorScheme.primary),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: AppSpacing.xs),
+                    SNCard(
+                      child: Column(
+                        children: [
+                          for (int i = 0; i < favs.length; i++) ...[
+                            FoodTile(
+                              food: favs[i],
+                              isFavorite: true,
+                              onFavoriteToggle: () => _toggleFavorite(favs[i].id),
+                            ),
+                            if (i < favs.length - 1) const Divider(height: 1),
+                          ],
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.md),
+                  ],
+                );
+              },
+            ),
             Consumer<RecentFoodsService>(
               builder: (context, recents, _) {
                 if (recents.recents.isEmpty) return const SizedBox.shrink();
@@ -169,7 +235,12 @@ class _FoodSearchPageState extends State<FoodSearchPage> {
                       child: Column(
                         children: [
                           for (int i = 0; i < recents.recents.length; i++) ...[
-                            FoodTile(food: recents.recents[i]),
+                            FoodTile(
+                              food: recents.recents[i],
+                              isFavorite: _favoriteIds.contains(recents.recents[i].id),
+                              onFavoriteToggle: () =>
+                                  _toggleFavorite(recents.recents[i].id),
+                            ),
                             if (i < recents.recents.length - 1)
                               const Divider(height: 1),
                           ],
@@ -255,7 +326,11 @@ class _FoodSearchPageState extends State<FoodSearchPage> {
               child: Column(
                 children: [
                   for (int i = 0; i < _results.length; i++) ...[
-                    FoodTile(food: _results[i]),
+                    FoodTile(
+                      food: _results[i],
+                      isFavorite: _favoriteIds.contains(_results[i].id),
+                      onFavoriteToggle: () => _toggleFavorite(_results[i].id),
+                    ),
                     if (i < _results.length - 1) const Divider(height: 1),
                   ],
                 ],

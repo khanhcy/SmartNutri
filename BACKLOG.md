@@ -2,20 +2,19 @@
 
 ## In progress
 
-- Giai đoạn 1 — Ổn định production foundation: chạy manual UI core flow verification trên emulator/thiết bị thật theo `docs/test-checklist.md`.
+- Giai đoạn 1 — Ổn định production foundation: đã hoàn thành 3 high-priority items backend. Chuẩn bị chuyển qua medium priority.
+
+## Deferred
+
+- Manual test auth/onboarding trên emulator (để làm sau khi test coverage khá hơn).
 
 ## High priority
 
 - Chạy tiếp manual test checklist cho auth/onboarding (flow thêm meal thực tế đã pass; barcode UI và AI picker đã verify).
-- Verify happy-path AI scan/barcode với backend sẵn sàng để xác nhận end-to-end trả kết quả thành công.
-- Cleanup dữ liệu `goals/{uid}` lỗi (nếu còn) sau khi đã có fallback guard trong app.
-- Kiểm tra dữ liệu Firestore `foods` thật và lập migration/cleanup riêng nếu còn legacy fields.
 - Dùng Firestore `foods` làm source of truth chính, seed local chỉ là fallback.
 
 ## Medium priority
 
-- Tối ưu admin users/dashboard để tránh N+1 query khi dữ liệu tăng.
-- Thêm favorite foods.
 - Cải thiện quick add từ recent foods.
 - Thêm copy meal từ hôm qua hoặc ngày khác.
 - Thêm portion selector theo gram, khẩu phần, chén, tô hoặc đơn vị phổ biến.
@@ -58,6 +57,13 @@
 - Manual barcode flow verification (UI-level) pass trên emulator: mở được `Quét mã vạch`, hiển thị scan frame, hint text và torch button.
 - Manual AI gallery entrypoint verification pass: mở `Chụp ảnh món ăn` và Android Photo Picker thành công.
 - Fix blocker AI scan treo loading: thêm timeout 20 giây trong `CloudFunctionClient.call`, re-test cho thấy sau khi chọn ảnh app hiển thị lỗi mạng rõ ràng thay vì treo `AI đang phân tích...` vô hạn.
+- Thêm `user_profile_test.dart` (6 tests): kiểm tra `UserProfile.fromMap` đọc đủ field, giá trị mặc định, cast numeric, updatedAt lỗi; `toMap` xuất đúng và roundtrip toMap/fromMap giữ nguyên giá trị. Flutter 58 tests pass, analyze sạch (2026-05-14).
+- Thêm `meal_entry_test.dart` (9 tests): kiểm tra `MealTypeX` label tiếng Việt + icon; `MealEntry.fromMap` đọc đủ field, mặc định, fallback mealType, cast numeric, loggedAt lỗi; `toMap` xuất đúng và roundtrip. Flutter 58 tests pass, analyze sạch (2026-05-14).
+- Verify Cloud Functions trên emulator: `health`, `barcodeLookup` (Coca-Cola OK), `identifyFoodImage` (pipeline OK), `suggestMeals` (gợi ý tiếng Việt OK). Tất cả function đều hoạt động (2026-05-14).
+- Viết & test script cleanup `goals/{uid}`: phát hiện goal bất thường (153440 kcal, 500 kcal) và fix về default. Verify 3/3 goal hợp lệ sau cleanup (2026-05-14).
+- Viết & test script migrate `foods` legacy→canonical: phát hiện legacy-only, mixed, empty food; migrate thành công 4/4 docs sạch canonical, 0 legacy fields (2026-05-14).
+- Tối ưu admin N+1 query: Cloud Function trigger `onMealEntryChanged` duy trì `mealCount` + `lastMealDate` trên `users/{uid}`; admin web `loadUsers()` giảm N+1→1 query, `getDashboardStats().todayMeals` dùng collection group query. Thêm index `meal_entries.date`. Functions build/lint pass, admin build pass, trigger đã test (2026-05-14).
+- Implement favorite foods: `FavoriteFoodsService` (Firestore subcollection + ChangeNotifier), `FoodCatalog` DI, heart toggle trên `FoodTile`, favorites section trên FoodSearchPage, `QuickAddFavorites` chips trên HomePage, `firestore.rules` cập nhật. Flutter 62 tests pass, analyze sạch, Functions/admin build pass (2026-05-14).
 
 ## Cancelled / not doing
 

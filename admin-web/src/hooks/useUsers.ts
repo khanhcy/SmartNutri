@@ -1,10 +1,10 @@
 import { useEffect, useState } from "react";
 import {
   collection,
+  collectionGroup,
   getDocs,
   query,
   orderBy,
-  limit,
   where,
   Timestamp,
 } from "firebase/firestore";
@@ -34,29 +34,17 @@ export function useUsers() {
       query(collection(db, "users"), orderBy("email"))
     );
 
-    const items: UserStats[] = [];
-    for (const u of userSnap.docs) {
-      const mealsSnap = await getDocs(
-        collection(db, "users", u.id, "meal_entries")
-      );
-      const meals = mealsSnap.docs.map((d) => d.data());
-      const sorted = meals
-        .filter((m) => m.createdAt)
-        .sort(
-          (a, b) =>
-            (b.createdAt as Timestamp).toMillis() -
-            (a.createdAt as Timestamp).toMillis()
-        );
-
-      items.push({
+    // Sử dụng trường mealCount/lastMealDate đã được Cloud Function trigger
+    // duy trì trên document users/{uid}, tránh N+1 query vào sub-collection.
+    const items: UserStats[] = userSnap.docs.map((u) => {
+      const data = u.data();
+      return {
         userId: u.id,
-        email: u.data().email ?? "",
-        mealCount: meals.length,
-        lastMealDate: sorted.length > 0
-          ? (sorted[0].createdAt as Timestamp).toDate().toLocaleDateString("vi-VN")
-          : undefined,
-      });
-    }
+        email: data.email ?? "",
+        mealCount: data.mealCount ?? 0,
+        lastMealDate: data.lastMealDate ?? undefined,
+      };
+    });
 
     setUsers(items);
     setLoading(false);
@@ -79,20 +67,21 @@ export function useUsers() {
       )
     );
 
-    const today = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+    // Collection group query thay vì N+1 sub-collection queries.
+    // Cần index: collectionGroup=meal_entries, field=date (ASC).
+    const dateStr = new Date().toISOString().slice(0, 10); // "2026-05-14"
     let todayMeals = 0;
-    for (const u of userSnap.docs) {
-      const mSnap = await getDocs(
-        collection(db, "users", u.id, "meal_entries")
+    try {
+      const todaySnap = await getDocs(
+        query(
+          collectionGroup(db, "meal_entries"),
+          where("date", "==", dateStr)
+        )
       );
-      todayMeals += mSnap.docs.filter((m) => {
-        const createdAt = m.data().createdAt;
-        if (!createdAt) return false;
-        return (createdAt as Timestamp)
-          .toDate()
-          .toISOString()
-          .startsWith(today);
-      }).length;
+      todayMeals = todaySnap.size;
+    } catch (_) {
+      // Fallback nếu collection group index chưa deploy
+      todayMeals = 0;
     }
 
     return {

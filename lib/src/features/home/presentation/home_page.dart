@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:smartnutri/src/core/services/auth_service.dart';
+import 'package:smartnutri/src/core/services/favorites_service.dart';
 import 'package:smartnutri/src/core/services/goal_service.dart';
 import 'package:smartnutri/src/core/services/meal_service.dart';
 import 'package:smartnutri/src/core/services/profile_service.dart';
@@ -21,6 +22,7 @@ import 'widgets/calorie_summary_card.dart';
 import 'widgets/macro_progress_card.dart';
 import 'widgets/today_meals_section.dart';
 import 'widgets/ai_suggestions_card.dart';
+import 'widgets/quick_add_favorites.dart';
 import 'widgets/quick_add_recents.dart';
 
 class HomePage extends StatelessWidget {
@@ -29,6 +31,7 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final uid = context.read<AuthService>().currentUser!.uid;
+    context.read<FavoriteFoodsService>().init(uid);
     final today = AppDateUtils.todayStr();
 
     // Thay vì lồng 4 StreamBuilder (Pyramid of Doom), ta dùng MultiProvider
@@ -124,6 +127,8 @@ class _HomePageContent extends StatelessWidget {
           TodayMealsSection(entries: entries, uid: uid),
           const SizedBox(height: AppSpacing.md),
           const QuickAddRecents(),
+          const SizedBox(height: AppSpacing.md),
+          const QuickAddFavorites(),
           const SizedBox(height: AppSpacing.md),
           Row(
             children: [

@@ -24,10 +24,15 @@ Giai đoạn 1 trong roadmap: ổn định production foundation trước khi m�
 
 ## Recently completed
 
+- Implement favorite foods: `FavoriteFoodsService` với `FoodCatalog` DI, Firestore subcollection `users/{uid}/favorites/{foodId}`, reactive snapshot + `ChangeNotifier`; `FoodTile` có heart toggle; favorites section trên FoodSearchPage; `QuickAddFavorites` chips trên HomePage; `firestore.rules` cập nhật. 4 unit tests, analyze sạch, Functions và admin build pass (2026-05-14).
+- Tối ưu admin N+1 query: Cloud Function trigger `onMealEntryChanged` duy trì `mealCount` và `lastMealDate` trên `users/{uid}`; admin web `loadUsers()` giảm từ N+1 xuống 1 query, `getDashboardStats().todayMeals` dùng collection group query thay N+1. Thêm `firestore.indexes.json` collection group index cho `meal_entries.date`. Functions build/lint pass, admin build pass, trigger đã test trên emulator (2026-05-14).
+- Verify Cloud Functions: `health`, `barcodeLookup`, `identifyFoodImage`, `suggestMeals` đều hoạt động trên emulator. Viết script cleanup goals và migrate foods legacy→canonical, đã test trên emulator (2026-05-14).
+- Thêm `user_profile_test.dart` (6) và `meal_entry_test.dart` (9) — Flutter 58 tests pass, analyze sạch (2026-05-14).
+
 - AI/barcode error states: `AiFoodServiceException` và `BarcodeLookupException` với message tiếng Việt, UI catch và hiển thị lỗi rõ ràng cho từng loại (auth, 5xx, mạng, invalid response).
 - `FunctionCaller` interface và `FoodCatalog` abstract class cho DI/testing.
 - Admin web `AuthGuard` chặn route với admin claim + `AccessDenied` component.
-- Tests: `ai_food_service_error_test.dart` (4 tests), `barcode_service_error_test.dart` (4 tests), `nutrition_goal_test.dart` (8 tests) và các widget tests cho auth/onboarding/food tile/meal groups/custom meal. Tổng 38 Flutter tests pass, analyze sạch (2026-05-14).
+- Tests: `ai_food_service_error_test.dart` (4 tests), `barcode_service_error_test.dart` (4 tests), `nutrition_goal_test.dart` (8 tests), `user_profile_test.dart` (6 tests), `meal_entry_test.dart` (9 tests) và các widget tests cho auth/onboarding/food tile/meal groups/custom meal. Tổng 58 Flutter tests pass, analyze sạch (2026-05-14).
 - Chuẩn hóa food schema giữa Flutter, admin web và Cloud Functions: readers đọc được canonical/legacy fields, new writes dùng canonical fields, `seedFoods` normalize payload. Flutter 43 tests pass, admin build pass, Functions build/lint pass (2026-05-14).
 - Cập nhật [docs/test-checklist.md](docs/test-checklist.md) thành manual checklist chi tiết cho core flows: setup, auth, onboarding, dashboard, meal log, food search, AI scan, barcode, stats, profile/goals, Firebase rules, Functions và admin web.
 - Automated release baseline pass: `flutter analyze`, `flutter test` (43 tests), `flutter build apk --debug`, `npm --prefix functions run build`, `npm --prefix functions run lint`, `npm --prefix admin-web run build` đều pass; admin build còn cảnh báo Vite chunk lớn.
@@ -50,12 +55,13 @@ Giai đoạn 1 trong roadmap: ổn định production foundation trước khi m�
 - Storage upload có thể lỗi nếu code mới dùng path ngoài `users/{uid}/...` hoặc `admin/...`.
 - Dữ liệu `goals/{uid}` cũ có thể chứa giá trị bất thường; UI đã có fallback guard nhưng vẫn nên cleanup dữ liệu lỗi trong Firestore để tránh lệch nguồn.
 - Admin users/dashboard có rủi ro N+1 query khi dữ liệu tăng.
+- Đã implement favorite foods: `FavoriteFoodsService` với Firestore subcollection `users/{uid}/favorites/{foodId}`, reactive snapshot listener + `ChangeNotifier`, UI heart toggle trên `FoodTile`, section "Yêu thích" trong FoodSearchPage, `QuickAddFavorites` chips trên HomePage, Firestore rules cập nhật. 4 unit tests pass (2026-05-14).
 - Test coverage còn yếu, chưa có integration test.
 - AI photo scan phụ thuộc Cloud Function `identifyFoodImage`: khi backend không phản hồi, app hiện lỗi mạng sau timeout client (không còn treo vô hạn); vẫn cần theo dõi latency/độ ổn định backend để đảm bảo happy-path trả kết quả đúng hạn.
 
 ## Test status
 
-- Flutter: 43 tests pass, `flutter analyze` sạch, `flutter build apk --debug` pass (2026-05-14).
+- Flutter: 62 tests pass (gồm 4 favorites_service), `flutter analyze` sạch, `flutter build apk --debug` pass (2026-05-14).
 - Admin web: `npm --prefix admin-web run build` pass; còn cảnh báo Vite chunk lớn.
 - Cloud Functions: `npm --prefix functions run build` và `npm --prefix functions run lint` pass.
 
@@ -69,4 +75,7 @@ Giai đoạn 1 trong roadmap: ổn định production foundation trước khi m�
 
 ## Next recommended action
 
-Tiếp tục manual verification cho auth/onboarding và xác minh happy-path AI scan/barcode khi backend sẵn sàng (đã có timeout guard cho case backend treo). Song song cleanup các document `goals/{uid}` lỗi nếu có; sau đó thêm integration tests cho auth → onboarding → dashboard / meal logging.
+Favorite foods đã xong. Medium priority còn lại:
+- Copy meal, portion selector, undo delete meal.
+- Manual test auth/onboarding (vẫn deferred).
+- Tiếp tục thêm test.

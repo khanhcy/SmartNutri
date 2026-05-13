@@ -9,8 +9,15 @@ import 'package:smartnutri/src/features/search/domain/food_item.dart';
 import 'food_detail_sheet.dart';
 
 class FoodTile extends StatelessWidget {
-  const FoodTile({super.key, required this.food});
+  const FoodTile({
+    super.key,
+    required this.food,
+    this.isFavorite = false,
+    this.onFavoriteToggle,
+  });
   final FoodItem food;
+  final bool isFavorite;
+  final VoidCallback? onFavoriteToggle;
 
   @override
   Widget build(BuildContext context) {
@@ -32,10 +39,26 @@ class FoodTile extends StatelessWidget {
         'F:${food.fatG.round()}g',
         style: Theme.of(context).textTheme.bodySmall,
       ),
-      trailing: IconButton(
-        onPressed: () => _showDetailSheet(context),
-        icon: Icon(Icons.add_circle_outline, color: colorScheme.primary),
-        tooltip: 'Thêm vào nhật ký',
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (onFavoriteToggle != null)
+            IconButton(
+              icon: Icon(
+                isFavorite ? Icons.favorite : Icons.favorite_border,
+                color: isFavorite ? Colors.red : colorScheme.onSurfaceVariant,
+                size: 20,
+              ),
+              onPressed: onFavoriteToggle,
+              tooltip: isFavorite ? 'Bỏ yêu thích' : 'Thêm yêu thích',
+              visualDensity: VisualDensity.compact,
+            ),
+          IconButton(
+            onPressed: () => _showDetailSheet(context),
+            icon: Icon(Icons.add_circle_outline, color: colorScheme.primary),
+            tooltip: 'Thêm vào nhật ký',
+          ),
+        ],
       ),
       onTap: () => _showDetailSheet(context),
     );

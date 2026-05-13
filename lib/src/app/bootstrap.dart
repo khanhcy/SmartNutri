@@ -14,6 +14,7 @@ import 'package:smartnutri/src/core/services/auth_service.dart';
 import 'package:smartnutri/src/core/services/barcode_service.dart';
 import 'package:smartnutri/src/core/services/cloud_function_client.dart';
 import 'package:smartnutri/src/core/services/connectivity_service.dart';
+import 'package:smartnutri/src/core/services/favorites_service.dart';
 import 'package:smartnutri/src/core/services/food_service.dart';
 import 'package:smartnutri/src/core/services/goal_service.dart';
 import 'package:smartnutri/src/core/services/meal_service.dart';
@@ -61,6 +62,7 @@ Future<void> bootstrap() async {
   final authService = AuthService();
   final profileService = ProfileService();
   final foodService = FoodService();
+  final favoritesService = FavoriteFoodsService(foodCatalog: foodService);
 
   final notificationService = NotificationService();
   await notificationService.init();
@@ -72,6 +74,7 @@ Future<void> bootstrap() async {
         Provider.value(value: authService),
         Provider.value(value: profileService),
         Provider.value(value: foodService),
+        Provider.value(value: favoritesService),
         Provider(create: (_) => GoalService()),
         Provider(create: (_) => MealService()),
         Provider(create: (_) => WaterService()),
