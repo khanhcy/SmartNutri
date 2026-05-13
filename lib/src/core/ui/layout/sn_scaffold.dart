@@ -6,11 +6,13 @@ class SNScaffold extends StatelessWidget {
     this.appBar,
     required this.body,
     this.bottomNavigationBar,
+    this.floatingActionButton,
   });
 
   final PreferredSizeWidget? appBar;
   final Widget body;
   final Widget? bottomNavigationBar;
+  final Widget? floatingActionButton;
 
   @override
   Widget build(BuildContext context) {
@@ -18,6 +20,7 @@ class SNScaffold extends StatelessWidget {
       appBar: appBar,
       body: SafeArea(child: body),
       bottomNavigationBar: bottomNavigationBar,
+      floatingActionButton: floatingActionButton,
     );
   }
 }

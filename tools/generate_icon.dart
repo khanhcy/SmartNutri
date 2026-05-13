@@ -2,7 +2,7 @@
 // Requires: image package (already in pubspec via flutter_launcher_icons)
 // Generates assets/icons/app_icon.png (1024x1024)
 import 'dart:io';
-import 'dart:math' as math;
+// ignore: depend_on_referenced_packages
 import 'package:image/image.dart' as img;
 
 void main() {
@@ -75,7 +75,5 @@ void main() {
 
   final outFile = File('assets/icons/app_icon.png');
   outFile.writeAsBytesSync(img.encodePng(image));
-  print('Icon generated: ${outFile.path} (${size}x$size)');
-  // Suppress unused import
-  math.sqrt(0);
+  stdout.writeln('Icon generated: ${outFile.path} (${size}x$size)');
 }

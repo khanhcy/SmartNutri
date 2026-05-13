@@ -99,17 +99,21 @@ class _AddMealSheetState extends State<_AddMealSheet> {
     final service = context.read<FoodService>();
     if (q.trim().isEmpty) {
       service.getAll().then((foods) {
-        if (mounted) setState(() {
-          _selectedFood = null;
-          _results = foods.take(10).toList();
-        });
+        if (mounted) {
+          setState(() {
+            _selectedFood = null;
+            _results = foods.take(10).toList();
+          });
+        }
       });
     } else {
       service.search(q).then((results) {
-        if (mounted) setState(() {
-          _selectedFood = null;
-          _results = results;
-        });
+        if (mounted) {
+          setState(() {
+            _selectedFood = null;
+            _results = results;
+          });
+        }
       });
     }
   }

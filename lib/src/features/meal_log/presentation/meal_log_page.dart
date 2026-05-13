@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:smartnutri/src/core/services/auth_service.dart';
 import 'package:smartnutri/src/core/services/goal_service.dart';
 import 'package:smartnutri/src/core/services/meal_service.dart';
+import 'package:smartnutri/src/core/services/profile_service.dart';
 import 'package:smartnutri/src/core/ui/layout/page_template.dart';
 import 'package:smartnutri/src/core/ui/theme/app_spacing.dart';
 import 'package:smartnutri/src/core/utils/date_utils.dart';
@@ -11,6 +12,7 @@ import 'package:smartnutri/src/features/meal_log/presentation/add_meal_bottom_sh
 import 'package:smartnutri/src/features/meal_log/presentation/custom_meal_sheet.dart';
 import 'package:smartnutri/src/features/meal_log/presentation/weekly_summary_card.dart';
 import 'package:smartnutri/src/features/nutrition/domain/nutrition_goal.dart';
+import 'package:smartnutri/src/features/profile/domain/user_profile.dart';
 
 import 'widgets/date_navigator.dart';
 import 'widgets/empty_day.dart';
@@ -55,6 +57,10 @@ class _MealLogPageState extends State<MealLogPage> {
 
     return MultiProvider(
       providers: [
+        StreamProvider<UserProfile?>(
+          create: (_) => context.read<ProfileService>().watchProfile(uid),
+          initialData: null,
+        ),
         StreamProvider<NutritionGoal?>(
           create: (_) => context.read<GoalService>().watchGoal(uid),
           initialData: null,
@@ -67,7 +73,17 @@ class _MealLogPageState extends State<MealLogPage> {
       ],
       child: Builder(
         builder: (context) {
-          final goal = context.watch<NutritionGoal?>() ?? NutritionGoal.defaultGoal(uid);
+          final profile = context.watch<UserProfile?>();
+          final storedGoal = context.watch<NutritionGoal?>();
+          final goal = NutritionGoal.resolveForDisplay(
+            uid: uid,
+            storedGoal: storedGoal,
+            weightKg: profile?.weightKg,
+            heightCm: profile?.heightCm,
+            age: profile?.age,
+            gender: profile?.gender,
+            activityLevel: profile?.activityLevel,
+          );
           final entries = context.watch<List<MealEntry>>();
 
           final totalKcal = entries.fold(0.0, (s, e) => s + e.calorieKcal);
