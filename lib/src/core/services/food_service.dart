@@ -1059,7 +1059,10 @@ class FoodService implements FoodCatalog {
     try {
       final snapshot = await _firestore.collection('foods').get();
       if (snapshot.docs.isNotEmpty) {
-        _cached = snapshot.docs.map((d) => FoodItem.fromMap(d.data())).toList();
+        _cached = snapshot.docs.map((d) {
+          final data = d.data();
+          return FoodItem.fromMap({...data, 'id': data['id'] ?? d.id});
+        }).toList();
       } else {
         _cached = List.unmodifiable(_seedFoods);
       }
