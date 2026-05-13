@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:firebase_auth/firebase_auth.dart';
@@ -56,11 +57,15 @@ class CloudFunctionClient implements FunctionCaller {
 
     final http.Response response;
     try {
-      response = await _http.post(
-        url,
-        headers: headers,
-        body: data != null ? jsonEncode(data) : '{}',
-      );
+      response = await _http
+          .post(
+            url,
+            headers: headers,
+            body: data != null ? jsonEncode(data) : '{}',
+          )
+          .timeout(const Duration(seconds: 20));
+    } on TimeoutException {
+      throw FunctionsException('network_error');
     } catch (e) {
       throw FunctionsException('network_error');
     }
