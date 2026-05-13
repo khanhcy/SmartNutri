@@ -15,6 +15,63 @@ function base64ToPart(base64: string, mimeType: string) {
   return {inlineData: {mimeType, data: base64}};
 }
 
+function numberValue(value: unknown, fallback = 0): number {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string") {
+    const parsed = Number(value.replace(/[^0-9.]/g, ""));
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return fallback;
+}
+
+function parseServingSize(value: unknown): number | undefined {
+  if (typeof value !== "string") return undefined;
+  const parsed = Number(value.replace(/[^0-9.]/g, ""));
+  return Number.isFinite(parsed) ? parsed : undefined;
+}
+
+function optionalString(value: unknown): string | undefined {
+  if (typeof value !== "string") return undefined;
+  const trimmed = value.trim();
+  return trimmed ? trimmed : undefined;
+}
+
+function stringArray(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value.filter((v): v is string => typeof v === "string");
+}
+
+function normalizeFoodPayload(food: any) {
+  const id = optionalString(food?.id);
+  if (!id) throw new Error("missing_food_id");
+
+  const normalized: Record<string, unknown> = {
+    id,
+    name: optionalString(food.name) ?? "",
+    calorieKcal: numberValue(food.calorieKcal ?? food.calories),
+    proteinG: numberValue(food.proteinG ?? food.protein),
+    carbG: numberValue(food.carbG ?? food.carbs),
+    fatG: numberValue(food.fatG ?? food.fat),
+    category: optionalString(food.category) ?? "",
+    defaultPortionG: numberValue(
+      food.defaultPortionG ?? parseServingSize(food.servingSize),
+      100
+    ),
+    tags: stringArray(food.tags),
+    verified: typeof food.verified === "boolean" ? food.verified : false,
+    updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+  };
+
+  const region = optionalString(food.region);
+  const brand = optionalString(food.brand);
+  const imageUrl = optionalString(food.imageUrl);
+  if (region) normalized.region = region;
+  if (brand) normalized.brand = brand;
+  if (imageUrl) normalized.imageUrl = imageUrl;
+
+  return normalized;
+}
+
 // ── Auth helper cho onRequest ───────────────────────────────────────────────
 async function verifyAuth(request: any): Promise<string> {
   const authHeader = request.headers.authorization;
@@ -82,8 +139,16 @@ export const seedFoods = onRequest(async (request, response) => {
   let total = 0;
 
   for (const food of foods) {
-    const ref = db.collection("foods").doc(food.id);
-    batch.set(ref, food);
+    let normalized: Record<string, unknown>;
+    try {
+      normalized = normalizeFoodPayload(food);
+    } catch (e: any) {
+      response.status(400).json({error: e.message ?? "invalid_food"});
+      return;
+    }
+
+    const ref = db.collection("foods").doc(normalized.id as string);
+    batch.set(ref, normalized, {merge: true});
     count++;
     total++;
     if (count >= 500) {
@@ -209,10 +274,10 @@ export const suggestMeals = onRequest(async (request, response) => {
       return {
         id: d.id,
         name: data.name,
-        calorieKcal: data.calories ?? data.calorieKcal ?? 0,
-        proteinG: data.protein ?? data.proteinG ?? 0,
-        carbG: data.carbs ?? data.carbG ?? 0,
-        fatG: data.fat ?? data.fatG ?? 0,
+        calorieKcal: data.calorieKcal ?? data.calories ?? 0,
+        proteinG: data.proteinG ?? data.protein ?? 0,
+        carbG: data.carbG ?? data.carbs ?? 0,
+        fatG: data.fatG ?? data.fat ?? 0,
         category: data.category ?? "",
       };
     });
