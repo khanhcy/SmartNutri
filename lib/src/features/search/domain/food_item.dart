@@ -65,16 +65,38 @@ class FoodItem {
   factory FoodItem.fromMap(Map<String, dynamic> m) => FoodItem(
         id: m['id'] as String? ?? '',
         name: m['name'] as String? ?? '',
-        calorieKcal: (m['calorieKcal'] as num?)?.toDouble() ?? 0,
-        proteinG: (m['proteinG'] as num?)?.toDouble() ?? 0,
-        carbG: (m['carbG'] as num?)?.toDouble() ?? 0,
-        fatG: (m['fatG'] as num?)?.toDouble() ?? 0,
+        calorieKcal: _numberField(m, 'calorieKcal', 'calories'),
+        proteinG: _numberField(m, 'proteinG', 'protein'),
+        carbG: _numberField(m, 'carbG', 'carbs'),
+        fatG: _numberField(m, 'fatG', 'fat'),
         category: m['category'] as String? ?? '',
-        defaultPortionG: (m['defaultPortionG'] as num?)?.toDouble() ?? 100,
+        defaultPortionG: _numberField(
+          m,
+          'defaultPortionG',
+          'servingSize',
+          fallback: 100,
+        ),
         region: m['region'] as String?,
         brand: m['brand'] as String?,
-        tags: (m['tags'] as List?)?.cast<String>() ?? [],
+        tags: (m['tags'] as List?)?.whereType<String>().toList() ?? [],
         imageUrl: m['imageUrl'] as String?,
         verified: m['verified'] as bool? ?? false,
       );
+
+  static double _numberField(
+    Map<String, dynamic> map,
+    String canonical,
+    String legacy, {
+    double fallback = 0,
+  }) {
+    return _toDouble(map[canonical]) ?? _toDouble(map[legacy]) ?? fallback;
+  }
+
+  static double? _toDouble(Object? value) {
+    if (value is num) return value.toDouble();
+    if (value is String) {
+      return double.tryParse(value.replaceAll(RegExp(r'[^0-9.]'), ''));
+    }
+    return null;
+  }
 }
