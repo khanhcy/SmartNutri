@@ -6,8 +6,8 @@ import 'package:smartnutri/src/core/services/connectivity_service.dart';
 import 'package:smartnutri/src/core/ui/theme/app_spacing.dart';
 import 'package:smartnutri/src/features/meal_log/presentation/add_meal_bottom_sheet.dart';
 import 'package:smartnutri/src/features/meal_log/presentation/custom_meal_sheet.dart';
-import 'package:smartnutri/src/features/meal_log/domain/meal_entry.dart';
-import 'package:smartnutri/src/features/search/domain/food_item.dart';
+import 'package:smartnutri/src/features/home/presentation/widgets/ai_suggestions_card.dart';
+import 'package:smartnutri/src/features/scan/domain/barcode_result.dart';
 
 class BarcodeScanPage extends StatefulWidget {
   const BarcodeScanPage({super.key});
@@ -20,7 +20,7 @@ class _BarcodeScanPageState extends State<BarcodeScanPage> {
   final _controller = MobileScannerController(
     formats: [BarcodeFormat.ean13, BarcodeFormat.ean8, BarcodeFormat.upcA],
   );
-  FoodItem? _found;
+  BarcodeResult? _found;
   String? _error;
   bool _lookingUp = false;
   bool _paused = false;
@@ -39,6 +39,7 @@ class _BarcodeScanPageState extends State<BarcodeScanPage> {
     });
 
     final connectivity = context.read<ConnectivityService>();
+    final barcodeService = context.read<BarcodeService>();
     final online = await connectivity.isOnline;
     if (!online) {
       if (mounted) {
@@ -50,32 +51,42 @@ class _BarcodeScanPageState extends State<BarcodeScanPage> {
       return;
     }
 
-    final result = await context.read<BarcodeService>().lookupBarcode(code);
-    if (mounted) {
-      setState(() {
-        _lookingUp = false;
-        _found = result;
-        if (result == null) {
-          _error = 'Không tìm thấy sản phẩm với mã vạch này.';
-        }
-      });
+    try {
+      final result = await barcodeService.lookupBarcode(code);
+      if (mounted) {
+        setState(() {
+          _lookingUp = false;
+          _found = result;
+          if (result == null) {
+            _error = 'Không tìm thấy sản phẩm với mã vạch này.';
+          }
+        });
+      }
+    } on BarcodeLookupException catch (e) {
+      if (mounted) {
+        setState(() {
+          _lookingUp = false;
+          _found = null;
+          _error = e.userMessage;
+        });
+      }
+    } catch (_) {
+      if (mounted) {
+        setState(() {
+          _lookingUp = false;
+          _found = null;
+          _error = 'Không thể tra cứu mã vạch lúc này. Vui lòng thử lại.';
+        });
+      }
     }
   }
 
-  void _addFood(FoodItem food) {
+  void _addFood(BarcodeResult result) {
     showAddMealSheet(
       context,
-      preselectedFood: food,
-      initialMealType: _mealTypeForNow(),
+      preselectedFood: result.foodItem,
+      initialMealType: mealTypeForNow(),
     );
-  }
-
-  MealType _mealTypeForNow() {
-    final h = DateTime.now().hour;
-    if (h < 10) return MealType.breakfast;
-    if (h < 14) return MealType.lunch;
-    if (h < 19) return MealType.dinner;
-    return MealType.snack;
   }
 
   void _rescan() {
@@ -105,12 +116,8 @@ class _BarcodeScanPageState extends State<BarcodeScanPage> {
             child: Stack(
               children: [
                 if (!_paused)
-                  MobileScanner(
-                    controller: _controller,
-                    onDetect: _onDetect,
-                  ),
-                if (_paused)
-                  Container(color: Colors.black87),
+                  MobileScanner(controller: _controller, onDetect: _onDetect),
+                if (_paused) Container(color: Colors.black87),
                 // Scan overlay border
                 Center(
                   child: Container(
@@ -132,10 +139,7 @@ class _BarcodeScanPageState extends State<BarcodeScanPage> {
                   child: FloatingActionButton.small(
                     heroTag: 'torch',
                     onPressed: () => _controller.toggleTorch(),
-                    child: Icon(
-                      Icons.flash_on,
-                      color: colorScheme.primary,
-                    ),
+                    child: Icon(Icons.flash_on, color: colorScheme.primary),
                   ),
                 ),
               ],
@@ -143,10 +147,7 @@ class _BarcodeScanPageState extends State<BarcodeScanPage> {
           ),
 
           // Result / loading area
-          SizedBox(
-            height: 200,
-            child: _buildResultArea(colorScheme),
-          ),
+          SizedBox(height: 200, child: _buildResultArea(colorScheme)),
         ],
       ),
     );
@@ -167,7 +168,7 @@ class _BarcodeScanPageState extends State<BarcodeScanPage> {
     }
 
     if (_found != null) {
-      final food = _found!;
+      final food = _found!.foodItem;
       return Padding(
         padding: const EdgeInsets.all(AppSpacing.lg),
         child: Column(
@@ -184,7 +185,12 @@ class _BarcodeScanPageState extends State<BarcodeScanPage> {
                   ),
                 ),
                 if (food.brand != null)
-                  Chip(label: Text(food.brand!, style: const TextStyle(fontSize: 11))),
+                  Chip(
+                    label: Text(
+                      food.brand!,
+                      style: const TextStyle(fontSize: 11),
+                    ),
+                  ),
               ],
             ),
             const SizedBox(height: AppSpacing.xs),
@@ -206,7 +212,7 @@ class _BarcodeScanPageState extends State<BarcodeScanPage> {
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: FilledButton(
-                    onPressed: () => _addFood(food),
+                    onPressed: () => _addFood(_found!),
                     child: const Text('Thêm vào nhật ký'),
                   ),
                 ),

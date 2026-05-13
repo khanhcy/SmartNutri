@@ -19,7 +19,7 @@ void main() {
 
   final out = File('tools/foods.json');
   out.writeAsStringSync(const JsonEncoder.withIndent('  ').convert(foods));
-  print('Wrote ${foods.length} foods to ${out.path}');
+  stdout.writeln('Wrote ${foods.length} foods to ${out.path}');
 }
 
 // ── Original 122 items (unchanged) ────────────────────────────────────────
