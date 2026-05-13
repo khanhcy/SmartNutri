@@ -66,7 +66,7 @@ void main() {
       ),
     );
 
-    expect(find.text('Thu lai'), findsOneWidget);
+    expect(find.text('Thử lại'), findsOneWidget);
   });
 
   testWidgets('SectionHeader renders title and action', (tester) async {

@@ -1,42 +1,41 @@
-import 'dart:convert';
-
-import 'package:flutter/foundation.dart';
-import 'package:http/http.dart' as http;
+import 'package:smartnutri/src/core/services/cloud_function_client.dart';
+import 'package:smartnutri/src/features/scan/domain/barcode_result.dart';
 import 'package:smartnutri/src/features/search/domain/food_item.dart';
 import 'package:uuid/uuid.dart';
 
-String _functionUrl(String name) {
-  if (kDebugMode) {
-    final host = defaultTargetPlatform == TargetPlatform.android
-        ? '10.0.2.2'
-        : '127.0.0.1';
-    return 'http://$host:5001/smartnutri-dev-2e67b/us-central1/$name';
-  }
-  return 'https://us-central1-smartnutri-dev-2e67b.cloudfunctions.net/$name';
+class BarcodeLookupException implements Exception {
+  BarcodeLookupException(this.userMessage, this.cause);
+
+  final String userMessage;
+  final Object cause;
+
+  @override
+  String toString() => 'BarcodeLookupException: $userMessage';
 }
 
 class BarcodeService {
-  Future<FoodItem?> lookupBarcode(String barcode) async {
+  BarcodeService({FunctionCaller? functions})
+    : _functions = functions ?? CloudFunctionClient();
+
+  final FunctionCaller _functions;
+
+  Future<BarcodeResult?> lookupBarcode(String barcode) async {
     try {
-      final url = Uri.parse(_functionUrl('barcodeLookup'));
-      final response = await http.post(
-        url,
-        headers: {'Content-Type': 'application/json'},
-        body: jsonEncode({
-          'data': {'barcode': barcode},
-        }),
-      );
+      final result = await _functions.call('barcodeLookup', {
+        'barcode': barcode,
+      });
 
-      if (response.statusCode != 200) return null;
-
-      final body = jsonDecode(response.body) as Map<String, dynamic>;
-      final result = body['result'] as Map<String, dynamic>? ?? {};
       final product = result['product'] as Map<String, dynamic>?;
       if (product == null) return null;
 
-      return FoodItem(
-        id: 'barcode_${const Uuid().v4()}',
-        name: product['name'] as String? ?? '',
+      final name = product['name'] as String? ?? '';
+      if (name.trim().isEmpty) {
+        throw const FormatException('Barcode product name is empty');
+      }
+
+      final food = FoodItem(
+        id: 'barcode_${const Uuid().v4().substring(0, 8)}',
+        name: name,
         calorieKcal: (product['calorieKcal'] as num?)?.toDouble() ?? 0,
         proteinG: (product['proteinG'] as num?)?.toDouble() ?? 0,
         carbG: (product['carbG'] as num?)?.toDouble() ?? 0,
@@ -45,8 +44,38 @@ class BarcodeService {
         defaultPortionG: (product['portionG'] as num?)?.toDouble() ?? 100,
         brand: product['brand'] as String?,
       );
-    } catch (_) {
-      return null;
+
+      return BarcodeResult(
+        barcode: barcode,
+        foodItem: food,
+        scannedAt: DateTime.now(),
+      );
+    } catch (e) {
+      throw BarcodeLookupException(_barcodeErrorMessage(e), e);
     }
+  }
+
+  String _barcodeErrorMessage(Object error) {
+    if (error is FunctionsException) {
+      if (error.message == 'network_error') {
+        return 'Không thể kết nối máy chủ tra cứu. '
+            'Kiểm tra Firebase Emulators đã chạy chưa, '
+            'hoặc thử lại sau.';
+      }
+      if (error.message == 'invalid_response') {
+        return 'Dữ liệu mã vạch trả về không hợp lệ. Vui lòng thử lại.';
+      }
+      if (error.statusCode == 401 || error.statusCode == 403) {
+        return 'Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại.';
+      }
+      if ((error.statusCode ?? 0) >= 500) {
+        return 'Máy chủ tra cứu mã vạch đang gặp sự cố. Vui lòng thử lại sau.';
+      }
+      return 'Không thể tra cứu mã vạch lúc này. Vui lòng thử lại.';
+    }
+    if (error is FormatException) {
+      return 'Dữ liệu sản phẩm không hợp lệ. Vui lòng thử lại.';
+    }
+    return 'Không thể kết nối dịch vụ mã vạch. Vui lòng kiểm tra mạng và thử lại.';
   }
 }
