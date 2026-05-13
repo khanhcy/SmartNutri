@@ -19,6 +19,19 @@ class NutritionGoal {
   final double waterTargetMl;
   final DateTime updatedAt;
 
+  bool get isReasonable {
+    return calorieTarget >= 800 &&
+        calorieTarget <= 6000 &&
+        proteinG >= 20 &&
+        proteinG <= 400 &&
+        carbG >= 20 &&
+        carbG <= 800 &&
+        fatG >= 10 &&
+        fatG <= 300 &&
+        waterTargetMl >= 500 &&
+        waterTargetMl <= 7000;
+  }
+
   /// Auto-calculate TDEE using Mifflin-St Jeor equation.
   static NutritionGoal fromProfile({
     required String uid,
@@ -64,6 +77,45 @@ class NutritionGoal {
       fatG: 65,
       updatedAt: DateTime.now(),
     );
+  }
+
+  static NutritionGoal resolveForDisplay({
+    required String uid,
+    NutritionGoal? storedGoal,
+    double? weightKg,
+    double? heightCm,
+    int? age,
+    String? gender,
+    String? activityLevel,
+  }) {
+    if (storedGoal != null && storedGoal.isReasonable) return storedGoal;
+
+    final hasProfileInputs =
+        weightKg != null && weightKg > 0 &&
+        heightCm != null && heightCm > 0 &&
+        age != null && age > 0 &&
+        gender != null && gender.isNotEmpty &&
+        activityLevel != null && activityLevel.isNotEmpty;
+
+    if (hasProfileInputs) {
+      final recalculated = NutritionGoal.fromProfile(
+        uid: uid,
+        weightKg: weightKg,
+        heightCm: heightCm,
+        age: age,
+        gender: gender,
+        activityLevel: activityLevel,
+      );
+      return recalculated.copyWith(
+        waterTargetMl: (storedGoal != null &&
+                storedGoal.waterTargetMl >= 500 &&
+                storedGoal.waterTargetMl <= 7000)
+            ? storedGoal.waterTargetMl
+            : recalculated.waterTargetMl,
+      );
+    }
+
+    return defaultGoal(uid);
   }
 
   NutritionGoal copyWith({

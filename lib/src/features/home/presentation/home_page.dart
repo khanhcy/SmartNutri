@@ -63,7 +63,16 @@ class _HomePageContent extends StatelessWidget {
     // Các Widget con bên trong chỉ cần dùng context.watch() 
     // Data thay đổi ở Provider nào thì chỉ ảnh hưởng phần liên quan.
     final profile = context.watch<UserProfile?>();
-    final goal = context.watch<NutritionGoal?>() ?? NutritionGoal.defaultGoal(uid);
+    final storedGoal = context.watch<NutritionGoal?>();
+    final goal = NutritionGoal.resolveForDisplay(
+      uid: uid,
+      storedGoal: storedGoal,
+      weightKg: profile?.weightKg,
+      heightCm: profile?.heightCm,
+      age: profile?.age,
+      gender: profile?.gender,
+      activityLevel: profile?.activityLevel,
+    );
     final entries = context.watch<List<MealEntry>>();
 
     final displayName = profile?.displayName;
