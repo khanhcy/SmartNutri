@@ -46,12 +46,11 @@ const TAGS = [
 const EMPTY_FORM: FoodFormData = {
   name: "",
   category: "Món chính",
-  calories: 0,
-  protein: 0,
-  carbs: 0,
-  fat: 0,
-  fiber: 0,
-  servingSize: "100g",
+  calorieKcal: 0,
+  proteinG: 0,
+  carbG: 0,
+  fatG: 0,
+  defaultPortionG: 100,
   region: undefined,
   brand: undefined,
   tags: undefined,
@@ -75,7 +74,7 @@ export function FoodFormPage() {
         setForm(rest);
       }
     }
-  }, [loading, id]);
+  }, [loading, id, isEdit, foods]);
 
   const set = (field: keyof FoodFormData, value: any) => {
     setForm((prev) => ({ ...prev, [field]: value }));
@@ -147,10 +146,11 @@ export function FoodFormPage() {
             </select>
           </Field>
 
-          <Field label="Khẩu phần">
+          <Field label="Khẩu phần mặc định (g)">
             <input
-              value={form.servingSize}
-              onChange={(e) => set("servingSize", e.target.value)}
+              type="number"
+              value={form.defaultPortionG}
+              onChange={(e) => set("defaultPortionG", Number(e.target.value))}
               style={inputStyle}
             />
           </Field>
@@ -163,49 +163,40 @@ export function FoodFormPage() {
             gap: 16,
           }}
         >
-          <Field label="Calo (kcal)" required>
+          <Field label="Calo (kcal/100g)" required>
             <input
               type="number"
-              value={form.calories}
-              onChange={(e) => set("calories", Number(e.target.value))}
+              value={form.calorieKcal}
+              onChange={(e) => set("calorieKcal", Number(e.target.value))}
               required
               style={inputStyle}
             />
           </Field>
-          <Field label="Đạm (g)">
+          <Field label="Đạm (g/100g)">
             <input
               type="number"
-              value={form.protein}
-              onChange={(e) => set("protein", Number(e.target.value))}
+              value={form.proteinG}
+              onChange={(e) => set("proteinG", Number(e.target.value))}
               style={inputStyle}
             />
           </Field>
-          <Field label="Carb (g)">
+          <Field label="Carb (g/100g)">
             <input
               type="number"
-              value={form.carbs}
-              onChange={(e) => set("carbs", Number(e.target.value))}
+              value={form.carbG}
+              onChange={(e) => set("carbG", Number(e.target.value))}
               style={inputStyle}
             />
           </Field>
-          <Field label="Béo (g)">
+          <Field label="Béo (g/100g)">
             <input
               type="number"
-              value={form.fat}
-              onChange={(e) => set("fat", Number(e.target.value))}
+              value={form.fatG}
+              onChange={(e) => set("fatG", Number(e.target.value))}
               style={inputStyle}
             />
           </Field>
         </div>
-
-        <Field label="Chất xơ (g)">
-          <input
-            type="number"
-            value={form.fiber}
-            onChange={(e) => set("fiber", Number(e.target.value))}
-            style={{ ...inputStyle, width: 150 }}
-          />
-        </Field>
 
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
           <Field label="Vùng miền">

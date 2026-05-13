@@ -1,6 +1,6 @@
 import { useState, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
-import { useFoods, FoodItem } from "../hooks/useFoods";
+import { useFoods, FoodItem, FoodFormData } from "../hooks/useFoods";
 import Papa from "papaparse";
 
 const CATEGORIES = [
@@ -13,6 +13,34 @@ const CATEGORIES = [
   "Món Trung",
   "Món Nam",
 ];
+
+function numberValue(value: unknown, fallback = 0): number {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string") {
+    const parsed = Number(value.replace(/[^0-9.]/g, ""));
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return fallback;
+}
+
+function parseCsvFood(row: Record<string, string>): FoodFormData {
+  return {
+    name: row.name ?? "",
+    category: row.category ?? "",
+    calorieKcal: numberValue(row.calorieKcal ?? row.calories),
+    proteinG: numberValue(row.proteinG ?? row.protein),
+    carbG: numberValue(row.carbG ?? row.carbs),
+    fatG: numberValue(row.fatG ?? row.fat),
+    defaultPortionG: numberValue(row.defaultPortionG ?? row.servingSize, 100),
+    region: row.region || undefined,
+    brand: row.brand || undefined,
+    tags: row.tags
+      ? row.tags.split(",").map((t) => t.trim()).filter(Boolean)
+      : undefined,
+    imageUrl: row.imageUrl || undefined,
+    verified: row.verified === "true",
+  };
+}
 
 export function FoodsPage() {
   const { foods, loading, deleteFood, importFoods } = useFoods();
@@ -72,27 +100,11 @@ export function FoodsPage() {
     if (!file) return;
     setImporting(true);
 
-    Papa.parse(file, {
+    Papa.parse<Record<string, string>>(file, {
       header: true,
       skipEmptyLines: true,
       complete: async (results) => {
-        const items = results.data.map((row: any) => ({
-          name: row.name ?? "",
-          category: row.category ?? "",
-          calories: Number(row.calories) || 0,
-          protein: Number(row.protein) || 0,
-          carbs: Number(row.carbs) || 0,
-          fat: Number(row.fat) || 0,
-          fiber: Number(row.fiber) || 0,
-          servingSize: row.servingSize ?? "100g",
-          region: row.region || undefined,
-          brand: row.brand || undefined,
-          tags: row.tags
-            ? row.tags.split(",").map((t: string) => t.trim())
-            : undefined,
-          imageUrl: row.imageUrl || undefined,
-          verified: row.verified === "true",
-        }));
+        const items = results.data.map(parseCsvFood);
         await importFoods(items);
         setImporting(false);
         if (fileRef.current) fileRef.current.value = "";
@@ -221,10 +233,10 @@ export function FoodsPage() {
             <tr style={{ backgroundColor: "#e8f5e9" }}>
               <Th onClick={() => handleSort("name")}>Tên</Th>
               <Th onClick={() => handleSort("category")}>Danh mục</Th>
-              <Th onClick={() => handleSort("calories")}>Calo</Th>
-              <Th onClick={() => handleSort("protein")}>Đạm</Th>
-              <Th onClick={() => handleSort("carbs")}>Carb</Th>
-              <Th onClick={() => handleSort("fat")}>Béo</Th>
+              <Th onClick={() => handleSort("calorieKcal")}>Calo</Th>
+              <Th onClick={() => handleSort("proteinG")}>Đạm</Th>
+              <Th onClick={() => handleSort("carbG")}>Carb</Th>
+              <Th onClick={() => handleSort("fatG")}>Béo</Th>
               <Th onClick={() => handleSort("brand")}>Thương hiệu</Th>
               <Th>Hành động</Th>
             </tr>
@@ -250,10 +262,10 @@ export function FoodsPage() {
                   )}
                 </Td>
                 <Td>{f.category}</Td>
-                <Td>{f.calories}</Td>
-                <Td>{f.protein}g</Td>
-                <Td>{f.carbs}g</Td>
-                <Td>{f.fat}g</Td>
+                <Td>{f.calorieKcal}</Td>
+                <Td>{f.proteinG}g</Td>
+                <Td>{f.carbG}g</Td>
+                <Td>{f.fatG}g</Td>
                 <Td>{f.brand ?? "-"}</Td>
                 <Td>
                   <button
