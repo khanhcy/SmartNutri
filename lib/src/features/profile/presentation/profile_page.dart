@@ -50,7 +50,16 @@ class _ProfileContent extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final profile = context.watch<UserProfile?>();
-    final goal = context.watch<NutritionGoal?>() ?? NutritionGoal.defaultGoal(uid);
+    final storedGoal = context.watch<NutritionGoal?>();
+    final goal = NutritionGoal.resolveForDisplay(
+      uid: uid,
+      storedGoal: storedGoal,
+      weightKg: profile?.weightKg,
+      heightCm: profile?.heightCm,
+      age: profile?.age,
+      gender: profile?.gender,
+      activityLevel: profile?.activityLevel,
+    );
 
     return PageTemplate(
       title: 'Hồ sơ',
