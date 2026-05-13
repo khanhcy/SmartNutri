@@ -74,7 +74,7 @@ Future<void> bootstrap() async {
         Provider.value(value: authService),
         Provider.value(value: profileService),
         Provider.value(value: foodService),
-        Provider.value(value: favoritesService),
+        ChangeNotifierProvider.value(value: favoritesService),
         Provider(create: (_) => GoalService()),
         Provider(create: (_) => MealService()),
         Provider(create: (_) => WaterService()),
