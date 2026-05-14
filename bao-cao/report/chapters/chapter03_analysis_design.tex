@@ -415,7 +415,432 @@ Hình~\ref{fig:usecase_diagram} trình bày biểu đồ ca sử dụng tổng q
 \end{figure}
 
 % ============================================================
-% [TODO: Bổ sung mô tả các use case còn lại: UC-03, UC-04, UC-08 đến UC-12]
+\subsection{UC-03: Quản lý hồ sơ cá nhân}
+
+\begin{longtable}{|p{4cm}|p{11cm}|}
+    \hline
+    \textbf{Thuộc tính} & \textbf{Mô tả} \\
+    \hline
+    \endhead
+    \hline
+    \endfoot
+    Tên ca sử dụng & Quản lý hồ sơ cá nhân \\
+    \hline
+    Mô tả & Người dùng xem và cập nhật thông tin cá nhân như họ tên, giới tính, chiều cao, cân nặng, độ tuổi và các thông tin phục vụ tính toán mục tiêu dinh dưỡng. \\
+    \hline
+    Actor & Người dùng đã đăng nhập \\
+    \hline
+    Luồng cơ bản &
+        \begin{enumerate}[nosep]
+            \item Người dùng mở màn hình hồ sơ cá nhân.
+            \item Hệ thống tải thông tin hồ sơ hiện tại từ Firestore.
+            \item Người dùng chỉnh sửa các trường thông tin cần cập nhật.
+            \item Người dùng nhấn nút lưu thay đổi.
+            \item Hệ thống kiểm tra dữ liệu đầu vào.
+            \item Hệ thống cập nhật document hồ sơ người dùng trong Firestore.
+            \item Hệ thống hiển thị thông báo cập nhật thành công.
+        \end{enumerate} \\
+    \hline
+    Luồng thay thế &
+        \begin{enumerate}[nosep]
+            \item[2a.] Chưa có hồ sơ: Hệ thống hiển thị form rỗng và yêu cầu người dùng bổ sung thông tin.
+            \item[5a.] Dữ liệu không hợp lệ: Hệ thống hiển thị lỗi tại trường tương ứng.
+            \item[6a.] Lưu thất bại do lỗi mạng: Hệ thống thông báo lỗi và cho phép thử lại.
+        \end{enumerate} \\
+    \hline
+    Tiền điều kiện & Người dùng đã đăng nhập vào hệ thống. \\
+    \hline
+    Hậu điều kiện & Thông tin hồ sơ cá nhân được cập nhật và có thể được sử dụng cho các tính năng tính toán mục tiêu dinh dưỡng. \\
+    \hline
+    Business Rules &
+        \begin{itemize}[nosep]
+            \item Người dùng chỉ được cập nhật hồ sơ của chính mình.
+            \item Các trường như chiều cao, cân nặng và tuổi phải là giá trị hợp lệ.
+            \item Dữ liệu hồ sơ là cơ sở để tính toán mục tiêu calo và gợi ý dinh dưỡng.
+        \end{itemize} \\
+    \hline
+\end{longtable}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{assets/diagrams/uc03_profile_activity.png}
+    \caption{Biểu đồ hoạt động ca sử dụng Quản lý hồ sơ cá nhân}
+    \label{fig:uc03_profile_activity}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{assets/diagrams/uc03_profile_sequence.png}
+    \caption{Biểu đồ tuần tự ca sử dụng Quản lý hồ sơ cá nhân}
+    \label{fig:uc03_profile_sequence}
+\end{figure}
+
+% ============================================================
+\subsection{UC-04: Hoàn thành Onboarding}
+
+\begin{longtable}{|p{4cm}|p{11cm}|}
+    \hline
+    \textbf{Thuộc tính} & \textbf{Mô tả} \\
+    \hline
+    \endhead
+    \hline
+    \endfoot
+    Tên ca sử dụng & Hoàn thành Onboarding \\
+    \hline
+    Mô tả & Người dùng mới cung cấp các thông tin ban đầu để hệ thống thiết lập hồ sơ cá nhân và mục tiêu dinh dưỡng phù hợp. \\
+    \hline
+    Actor & Người dùng mới đăng ký hoặc chưa hoàn thiện hồ sơ \\
+    \hline
+    Luồng cơ bản &
+        \begin{enumerate}[nosep]
+            \item Người dùng đăng nhập lần đầu hoặc được chuyển đến màn hình Onboarding.
+            \item Hệ thống hiển thị các bước nhập thông tin cơ bản.
+            \item Người dùng nhập tuổi, giới tính, chiều cao, cân nặng và mục tiêu sức khỏe.
+            \item Hệ thống tính toán mục tiêu dinh dưỡng ban đầu dựa trên thông tin đã nhập.
+            \item Người dùng xác nhận thông tin.
+            \item Hệ thống lưu hồ sơ và mục tiêu dinh dưỡng vào Firestore.
+            \item Hệ thống chuyển người dùng đến màn hình chính.
+        \end{enumerate} \\
+    \hline
+    Luồng thay thế &
+        \begin{enumerate}[nosep]
+            \item[3a.] Người dùng nhập thiếu thông tin bắt buộc: Hệ thống yêu cầu hoàn thiện trước khi tiếp tục.
+            \item[4a.] Không thể tính mục tiêu do dữ liệu không hợp lệ: Hệ thống yêu cầu kiểm tra lại thông tin.
+            \item[6a.] Lưu thất bại: Hệ thống hiển thị thông báo lỗi và cho phép lưu lại.
+        \end{enumerate} \\
+    \hline
+    Tiền điều kiện & Người dùng đã đăng nhập nhưng chưa hoàn tất hồ sơ ban đầu. \\
+    \hline
+    Hậu điều kiện & Hồ sơ người dùng và mục tiêu dinh dưỡng ban đầu được tạo trong hệ thống. \\
+    \hline
+    Business Rules &
+        \begin{itemize}[nosep]
+            \item Người dùng phải hoàn thành các thông tin bắt buộc trước khi sử dụng đầy đủ ứng dụng.
+            \item Mục tiêu dinh dưỡng ban đầu có thể được chỉnh sửa lại sau trong phần hồ sơ hoặc mục tiêu.
+            \item Dữ liệu Onboarding phải gắn với đúng tài khoản đang đăng nhập.
+        \end{itemize} \\
+    \hline
+\end{longtable}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{assets/diagrams/uc04_onboarding_activity.png}
+    \caption{Biểu đồ hoạt động ca sử dụng Hoàn thành Onboarding}
+    \label{fig:uc04_onboarding_activity}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{assets/diagrams/uc04_onboarding_sequence.png}
+    \caption{Biểu đồ tuần tự ca sử dụng Hoàn thành Onboarding}
+    \label{fig:uc04_onboarding_sequence}
+\end{figure}
+
+% ============================================================
+\subsection{UC-08: Quản lý món ăn yêu thích}
+
+\begin{longtable}{|p{4cm}|p{11cm}|}
+    \hline
+    \textbf{Thuộc tính} & \textbf{Mô tả} \\
+    \hline
+    \endhead
+    \hline
+    \endfoot
+    Tên ca sử dụng & Quản lý món ăn yêu thích \\
+    \hline
+    Mô tả & Người dùng thêm hoặc xóa món ăn khỏi danh sách yêu thích để có thể truy cập và thêm nhanh các món thường dùng. \\
+    \hline
+    Actor & Người dùng đã đăng nhập \\
+    \hline
+    Luồng cơ bản &
+        \begin{enumerate}[nosep]
+            \item Người dùng mở danh sách món ăn hoặc màn hình tìm kiếm thực phẩm.
+            \item Hệ thống hiển thị trạng thái yêu thích của từng món ăn.
+            \item Người dùng nhấn biểu tượng yêu thích trên một món ăn.
+            \item Hệ thống kiểm tra trạng thái hiện tại của món ăn.
+            \item Nếu món chưa được yêu thích, hệ thống ghi bản ghi vào `users/\{uid\}/favorites`.
+            \item Nếu món đã được yêu thích, hệ thống xóa bản ghi tương ứng.
+            \item Hệ thống cập nhật lại giao diện danh sách yêu thích.
+        \end{enumerate} \\
+    \hline
+    Luồng thay thế &
+        \begin{enumerate}[nosep]
+            \item[2a.] Không có món yêu thích: Hệ thống hiển thị trạng thái rỗng và gợi ý người dùng thêm món.
+            \item[5a.] Món ăn không còn tồn tại trong food catalog: Hệ thống bỏ qua hoặc không hiển thị món trong danh sách yêu thích.
+            \item[6a.] Lỗi ghi/xóa Firestore: Hệ thống thông báo lỗi và giữ nguyên trạng thái trước đó.
+        \end{enumerate} \\
+    \hline
+    Tiền điều kiện & Người dùng đã đăng nhập và food catalog đã được tải. \\
+    \hline
+    Hậu điều kiện & Danh sách món ăn yêu thích của người dùng được cập nhật. \\
+    \hline
+    Business Rules &
+        \begin{itemize}[nosep]
+            \item Mỗi món ăn yêu thích được định danh theo `foodId`.
+            \item Người dùng chỉ đọc/ghi danh sách yêu thích của chính mình.
+            \item Danh sách yêu thích phải đồng bộ giữa màn hình Home và màn hình Search.
+        \end{itemize} \\
+    \hline
+\end{longtable}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{assets/diagrams/uc08_favorites_activity.png}
+    \caption{Biểu đồ hoạt động ca sử dụng Quản lý món ăn yêu thích}
+    \label{fig:uc08_favorites_activity}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{assets/diagrams/uc08_favorites_sequence.png}
+    \caption{Biểu đồ tuần tự ca sử dụng Quản lý món ăn yêu thích}
+    \label{fig:uc08_favorites_sequence}
+\end{figure}
+
+% ============================================================
+\subsection{UC-09: Chatbot AI dinh dưỡng}
+
+\begin{longtable}{|p{4cm}|p{11cm}|}
+    \hline
+    \textbf{Thuộc tính} & \textbf{Mô tả} \\
+    \hline
+    \endhead
+    \hline
+    \endfoot
+    Tên ca sử dụng & Chatbot AI dinh dưỡng \\
+    \hline
+    Mô tả & Người dùng gửi câu hỏi về dinh dưỡng và nhận phản hồi từ trợ lý AI dựa trên ngữ cảnh hồ sơ, mục tiêu và dữ liệu ăn uống hiện có. \\
+    \hline
+    Actor & Người dùng đã đăng nhập \\
+    \hline
+    Luồng cơ bản &
+        \begin{enumerate}[nosep]
+            \item Người dùng mở màn hình chatbot dinh dưỡng.
+            \item Hệ thống tải lịch sử hội thoại gần nhất từ `users/\{uid\}/chat\_history`.
+            \item Người dùng nhập câu hỏi và gửi tin nhắn.
+            \item Hệ thống xây dựng ngữ cảnh từ hồ sơ, mục tiêu và nhật ký ăn uống.
+            \item Hệ thống gửi yêu cầu đến dịch vụ AI đã cấu hình.
+            \item Dịch vụ AI trả về nội dung phản hồi và gợi ý câu hỏi tiếp theo.
+            \item Hệ thống lưu cặp tin nhắn người dùng/trợ lý vào lịch sử hội thoại.
+            \item Hệ thống hiển thị phản hồi cho người dùng.
+        \end{enumerate} \\
+    \hline
+    Luồng thay thế &
+        \begin{enumerate}[nosep]
+            \item[2a.] Chưa có lịch sử hội thoại: Hệ thống hiển thị tin nhắn chào mừng mặc định.
+            \item[5a.] Dịch vụ AI chưa được cấu hình: Hệ thống hiển thị thông báo không thể sử dụng AI lúc này.
+            \item[5b.] Lỗi mạng hoặc lỗi từ dịch vụ AI: Hệ thống hiển thị tin nhắn lỗi và cho phép người dùng thử lại.
+        \end{enumerate} \\
+    \hline
+    Tiền điều kiện & Người dùng đã đăng nhập; dịch vụ AI được cấu hình hợp lệ. \\
+    \hline
+    Hậu điều kiện & Tin nhắn mới được hiển thị trên giao diện chat và được lưu vào lịch sử hội thoại nếu thao tác lưu thành công. \\
+    \hline
+    Business Rules &
+        \begin{itemize}[nosep]
+            \item Chatbot chỉ đưa ra thông tin tham khảo, không thay thế tư vấn y tế chuyên môn.
+            \item Lịch sử hội thoại của người dùng phải được tách biệt theo tài khoản.
+            \item Nội dung phản hồi cần phù hợp với ngữ cảnh dinh dưỡng của người dùng nếu có dữ liệu liên quan.
+        \end{itemize} \\
+    \hline
+\end{longtable}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{assets/diagrams/uc09_chatbot_activity.png}
+    \caption{Biểu đồ hoạt động ca sử dụng Chatbot AI dinh dưỡng}
+    \label{fig:uc09_chatbot_activity}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{assets/diagrams/uc09_chatbot_sequence.png}
+    \caption{Biểu đồ tuần tự ca sử dụng Chatbot AI dinh dưỡng}
+    \label{fig:uc09_chatbot_sequence}
+\end{figure}
+
+% ============================================================
+\subsection{UC-10: Quản lý thực phẩm}
+
+\begin{longtable}{|p{4cm}|p{11cm}|}
+    \hline
+    \textbf{Thuộc tính} & \textbf{Mô tả} \\
+    \hline
+    \endhead
+    \hline
+    \endfoot
+    Tên ca sử dụng & Quản lý thực phẩm \\
+    \hline
+    Mô tả & Quản trị viên quản lý dữ liệu thực phẩm trong food catalog, bao gồm xem danh sách, tìm kiếm, thêm mới, chỉnh sửa hoặc vô hiệu hóa món ăn. \\
+    \hline
+    Actor & Quản trị viên \\
+    \hline
+    Luồng cơ bản &
+        \begin{enumerate}[nosep]
+            \item Quản trị viên đăng nhập vào trang quản trị.
+            \item Hệ thống xác thực quyền quản trị.
+            \item Quản trị viên mở màn hình quản lý thực phẩm.
+            \item Hệ thống hiển thị danh sách thực phẩm từ collection `foods`.
+            \item Quản trị viên thực hiện thao tác thêm, sửa hoặc vô hiệu hóa thực phẩm.
+            \item Hệ thống kiểm tra tính hợp lệ của dữ liệu dinh dưỡng.
+            \item Hệ thống ghi thay đổi vào Firestore.
+            \item Hệ thống cập nhật lại danh sách thực phẩm trên giao diện.
+        \end{enumerate} \\
+    \hline
+    Luồng thay thế &
+        \begin{enumerate}[nosep]
+            \item[2a.] Tài khoản không có quyền admin: Hệ thống từ chối truy cập.
+            \item[6a.] Thiếu trường bắt buộc hoặc giá trị dinh dưỡng không hợp lệ: Hệ thống hiển thị lỗi nhập liệu.
+            \item[7a.] Ghi dữ liệu thất bại: Hệ thống thông báo lỗi và không cập nhật giao diện thành công.
+        \end{enumerate} \\
+    \hline
+    Tiền điều kiện & Quản trị viên đã đăng nhập và có quyền quản trị. \\
+    \hline
+    Hậu điều kiện & Dữ liệu food catalog được cập nhật theo thao tác hợp lệ của quản trị viên. \\
+    \hline
+    Business Rules &
+        \begin{itemize}[nosep]
+            \item Chỉ tài khoản có quyền admin mới được ghi vào collection `foods`.
+            \item Thông tin dinh dưỡng phải có các chỉ số cơ bản như calo, protein, carbohydrate và chất béo.
+            \item Không nên xóa cứng dữ liệu đang được tham chiếu bởi nhật ký người dùng; ưu tiên vô hiệu hóa nếu cần ẩn món ăn.
+        \end{itemize} \\
+    \hline
+\end{longtable}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{assets/diagrams/uc10_food_admin_activity.png}
+    \caption{Biểu đồ hoạt động ca sử dụng Quản lý thực phẩm}
+    \label{fig:uc10_food_admin_activity}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{assets/diagrams/uc10_food_admin_sequence.png}
+    \caption{Biểu đồ tuần tự ca sử dụng Quản lý thực phẩm}
+    \label{fig:uc10_food_admin_sequence}
+\end{figure}
+
+% ============================================================
+\subsection{UC-11: Quản lý người dùng}
+
+\begin{longtable}{|p{4cm}|p{11cm}|}
+    \hline
+    \textbf{Thuộc tính} & \textbf{Mô tả} \\
+    \hline
+    \endhead
+    \hline
+    \endfoot
+    Tên ca sử dụng & Quản lý người dùng \\
+    \hline
+    Mô tả & Quản trị viên xem danh sách người dùng, theo dõi thông tin cơ bản và trạng thái sử dụng để phục vụ công tác quản trị hệ thống. \\
+    \hline
+    Actor & Quản trị viên \\
+    \hline
+    Luồng cơ bản &
+        \begin{enumerate}[nosep]
+            \item Quản trị viên đăng nhập vào trang quản trị.
+            \item Hệ thống xác thực quyền quản trị.
+            \item Quản trị viên mở màn hình quản lý người dùng.
+            \item Hệ thống truy xuất danh sách người dùng từ collection `users`.
+            \item Quản trị viên tìm kiếm hoặc lọc danh sách theo thông tin cần xem.
+            \item Hệ thống hiển thị thông tin hồ sơ, trạng thái gói dịch vụ và usage liên quan nếu có.
+        \end{enumerate} \\
+    \hline
+    Luồng thay thế &
+        \begin{enumerate}[nosep]
+            \item[2a.] Tài khoản không có quyền admin: Hệ thống từ chối truy cập.
+            \item[4a.] Không tải được danh sách người dùng: Hệ thống hiển thị thông báo lỗi.
+            \item[5a.] Không có kết quả tìm kiếm phù hợp: Hệ thống hiển thị trạng thái rỗng.
+        \end{enumerate} \\
+    \hline
+    Tiền điều kiện & Quản trị viên đã đăng nhập và có quyền truy cập trang quản trị. \\
+    \hline
+    Hậu điều kiện & Quản trị viên xem được thông tin người dùng phục vụ theo dõi và quản trị. \\
+    \hline
+    Business Rules &
+        \begin{itemize}[nosep]
+            \item Thông tin người dùng chỉ được hiển thị cho tài khoản có quyền admin.
+            \item Các dữ liệu nhạy cảm như mật khẩu không được lưu hoặc hiển thị trong Firestore.
+            \item Các thao tác thay đổi trạng thái người dùng cần được kiểm soát quyền chặt chẽ.
+        \end{itemize} \\
+    \hline
+\end{longtable}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{assets/diagrams/uc11_user_admin_activity.png}
+    \caption{Biểu đồ hoạt động ca sử dụng Quản lý người dùng}
+    \label{fig:uc11_user_admin_activity}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{assets/diagrams/uc11_user_admin_sequence.png}
+    \caption{Biểu đồ tuần tự ca sử dụng Quản lý người dùng}
+    \label{fig:uc11_user_admin_sequence}
+\end{figure}
+
+% ============================================================
+\subsection{UC-12: Đăng ký Premium}
+
+\begin{longtable}{|p{4cm}|p{11cm}|}
+    \hline
+    \textbf{Thuộc tính} & \textbf{Mô tả} \\
+    \hline
+    \endhead
+    \hline
+    \endfoot
+    Tên ca sử dụng & Đăng ký Premium \\
+    \hline
+    Mô tả & Người dùng xem quyền lợi gói Premium và thực hiện thao tác đăng ký hoặc nâng cấp để mở khóa các tính năng nâng cao. \\
+    \hline
+    Actor & Người dùng đã đăng nhập \\
+    \hline
+    Luồng cơ bản &
+        \begin{enumerate}[nosep]
+            \item Người dùng mở màn hình gói dịch vụ hoặc màn hình paywall.
+            \item Hệ thống hiển thị thông tin gói Free và Premium.
+            \item Người dùng chọn nâng cấp lên Premium.
+            \item Hệ thống kiểm tra trạng thái subscription hiện tại của người dùng.
+            \item Hệ thống ghi nhận yêu cầu nâng cấp theo cơ chế thanh toán hoặc cơ chế demo đang được cấu hình.
+            \item Hệ thống cập nhật thông tin `subscription` trong document người dùng.
+            \item Hệ thống cập nhật giao diện và mở khóa quyền lợi Premium tương ứng.
+        \end{enumerate} \\
+    \hline
+    Luồng thay thế &
+        \begin{enumerate}[nosep]
+            \item[4a.] Người dùng đã là Premium: Hệ thống hiển thị trạng thái gói hiện tại.
+            \item[5a.] Thanh toán hoặc thao tác nâng cấp thất bại: Hệ thống thông báo lỗi và giữ nguyên trạng thái hiện tại.
+            \item[6a.] Cập nhật Firestore thất bại: Hệ thống hiển thị thông báo lỗi và yêu cầu thử lại.
+        \end{enumerate} \\
+    \hline
+    Tiền điều kiện & Người dùng đã đăng nhập và có kết nối mạng. \\
+    \hline
+    Hậu điều kiện & Trạng thái gói dịch vụ của người dùng được cập nhật nếu thao tác nâng cấp thành công. \\
+    \hline
+    Business Rules &
+        \begin{itemize}[nosep]
+            \item Người dùng Free bị giới hạn số lượt sử dụng một số tính năng AI theo tháng.
+            \item Người dùng Premium được mở khóa giới hạn cao hơn hoặc các tính năng nâng cao tùy cấu hình hệ thống.
+            \item Trạng thái subscription phải được lưu trong document `users/\{uid\}` và được kiểm tra trước khi cấp quyền.
+        \end{itemize} \\
+    \hline
+\end{longtable}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{assets/diagrams/uc12_premium_activity.png}
+    \caption{Biểu đồ hoạt động ca sử dụng Đăng ký Premium}
+    \label{fig:uc12_premium_activity}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{assets/diagrams/uc12_premium_sequence.png}
+    \caption{Biểu đồ tuần tự ca sử dụng Đăng ký Premium}
+    \label{fig:uc12_premium_sequence}
+\end{figure}
 
 \section{Thiết kế cơ sở dữ liệu}
 
@@ -504,9 +929,9 @@ Lưu trữ cơ sở dữ liệu thực phẩm và món ăn.
     \hline
 \end{longtable}
 
-\subsubsection{Sub-collection: users/\{userId\}/foodLogs}
+\subsubsection{Sub-collection: users/\{userId\}/meal\_entries}
 
-Lưu trữ nhật ký ăn uống hàng ngày của từng người dùng.
+Lưu trữ nhật ký ăn uống hàng ngày của từng người dùng. Mỗi bản ghi thể hiện một món ăn hoặc thực phẩm được người dùng thêm vào một bữa ăn cụ thể.
 
 \begin{longtable}{|p{3.5cm}|p{3.5cm}|p{7.5cm}|}
     \hline
@@ -515,26 +940,108 @@ Lưu trữ nhật ký ăn uống hàng ngày của từng người dùng.
     \endhead
     \hline
     \endfoot
-    foodId & String & ID của món ăn (tham chiếu đến foods) \\
+    uid & String & ID người dùng sở hữu bản ghi \\
     \hline
-    foodName & String & Tên món ăn \\
+    date & String & Ngày ghi nhận bữa ăn \\
     \hline
-    servingSize & Number & Khẩu phần đã ăn \\
+    mealType & String & Loại bữa ăn (sáng, trưa, tối, bữa phụ) \\
     \hline
-    calories & Number & Calo thực tế \\
+    foodName & String & Tên món ăn hoặc thực phẩm \\
     \hline
-    protein & Number & Protein thực tế (g) \\
+    portionG & Number & Khối lượng khẩu phần tính theo gram \\
     \hline
-    carbs & Number & Carb thực tế (g) \\
+    calorieKcal & Number & Năng lượng tính theo kcal \\
     \hline
-    fat & Number & Chất béo thực tế (g) \\
+    proteinG & Number & Lượng protein tính theo gram \\
     \hline
-    mealType & String & Loại bữa ăn (breakfast, lunch, dinner, snack) \\
+    carbG & Number & Lượng carbohydrate tính theo gram \\
+    \hline
+    fatG & Number & Lượng chất béo tính theo gram \\
     \hline
     loggedAt & Timestamp & Thời điểm ghi nhận \\
     \hline
-    imageURL & String & URL ảnh món ăn (nếu có) \\
+\end{longtable}
+
+\subsubsection{Sub-collection: users/\{userId\}/favorites}
+
+Lưu trữ danh sách món ăn yêu thích của từng người dùng. Collection này giúp người dùng truy cập nhanh các món thường xuyên sử dụng trên màn hình Home hoặc Search.
+
+\begin{longtable}{|p{3.5cm}|p{3.5cm}|p{7.5cm}|}
+    \hline
+    \textbf{Trường} & \textbf{Kiểu dữ liệu} & \textbf{Mô tả} \\
+    \hline
+    \endhead
+    \hline
+    \endfoot
+    foodId & String & ID món ăn được yêu thích; thường trùng với ID document \\
+    \hline
+    addedAt & Timestamp & Thời điểm người dùng thêm món vào danh sách yêu thích \\
     \hline
 \end{longtable}
 
-% [TODO: Bổ sung mô tả các collection còn lại: favFoods, subscriptions, chatHistory]
+\subsubsection{Thông tin subscription trong users/\{userId\}}
+
+Thông tin gói dịch vụ được lưu trực tiếp trong document người dùng dưới field `subscription`. Cách lưu này giúp ứng dụng nhanh chóng xác định quyền lợi hiện tại của người dùng mà không cần truy vấn thêm collection riêng.
+
+\begin{longtable}{|p{3.5cm}|p{3.5cm}|p{7.5cm}|}
+    \hline
+    \textbf{Trường} & \textbf{Kiểu dữ liệu} & \textbf{Mô tả} \\
+    \hline
+    \endhead
+    \hline
+    \endfoot
+    subscription.plan & String & Tên gói dịch vụ, ví dụ `free` hoặc `premium` \\
+    \hline
+    subscription.status & String & Trạng thái gói, ví dụ `none`, `active` hoặc trạng thái mở rộng khác \\
+    \hline
+    subscription.source & String & Nguồn cập nhật gói, ví dụ `default`, `admin`, `mock` hoặc `iap` \\
+    \hline
+    subscription.premiumUntil & Timestamp & Thời điểm hết hạn Premium nếu có \\
+    \hline
+    subscription.updatedAt & Timestamp & Thời điểm cập nhật trạng thái subscription gần nhất \\
+    \hline
+\end{longtable}
+
+\subsubsection{Sub-collection: users/\{userId\}/usage}
+
+Lưu trữ số lượt sử dụng tính năng AI theo từng tháng, phục vụ việc giới hạn quota cho người dùng Free và theo dõi quyền lợi của người dùng Premium.
+
+\begin{longtable}{|p{3.5cm}|p{3.5cm}|p{7.5cm}|}
+    \hline
+    \textbf{Trường} & \textbf{Kiểu dữ liệu} & \textbf{Mô tả} \\
+    \hline
+    \endhead
+    \hline
+    \endfoot
+    monthKey & String & Khóa tháng theo định dạng `yyyy-MM` \\
+    \hline
+    aiScanUsed & Number & Số lượt quét AI đã sử dụng trong tháng \\
+    \hline
+    aiScanLimit & Number & Giới hạn lượt quét AI trong tháng \\
+    \hline
+    updatedAt & Timestamp & Thời điểm cập nhật usage gần nhất \\
+    \hline
+\end{longtable}
+
+\subsubsection{Sub-collection: users/\{userId\}/chat\_history}
+
+Lưu trữ lịch sử hội thoại giữa người dùng và chatbot dinh dưỡng. Dữ liệu này được dùng để hiển thị lại cuộc trò chuyện gần nhất và cung cấp ngữ cảnh cho các lượt chat tiếp theo.
+
+\begin{longtable}{|p{3.5cm}|p{3.5cm}|p{7.5cm}|}
+    \hline
+    \textbf{Trường} & \textbf{Kiểu dữ liệu} & \textbf{Mô tả} \\
+    \hline
+    \endhead
+    \hline
+    \endfoot
+    role & String & Vai trò của tin nhắn, gồm `user` hoặc `assistant` \\
+    \hline
+    content & String & Nội dung tin nhắn \\
+    \hline
+    suggestions & Array<String> & Danh sách gợi ý câu hỏi tiếp theo, thường có trong tin nhắn của assistant \\
+    \hline
+    isError & Boolean & Đánh dấu tin nhắn lỗi nếu quá trình xử lý AI thất bại \\
+    \hline
+    timestamp & Timestamp & Thời điểm ghi nhận tin nhắn \\
+    \hline
+\end{longtable}

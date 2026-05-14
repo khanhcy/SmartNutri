@@ -108,12 +108,7 @@ void main() {
     expect(find.text('Xem trang gói'), findsNothing);
 
     await tester.pumpWidget(
-      _wrap(
-        const PaywallPage(
-          source: 'scan_photo',
-          reason: 'quota_exhausted',
-        ),
-      ),
+      _wrap(const PaywallPage(source: 'scan_photo', reason: 'quota_exhausted')),
     );
 
     expect(
@@ -131,10 +126,7 @@ void main() {
       ..go('${AppPaths.paywall}?source=scan_photo&reason=quota_exhausted');
 
     await tester.pumpWidget(
-      MaterialApp.router(
-        theme: AppTheme.light(),
-        routerConfig: router,
-      ),
+      MaterialApp.router(theme: AppTheme.light(), routerConfig: router),
     );
     await tester.pumpAndSettle();
 
@@ -170,16 +162,16 @@ Widget _wrap(Widget child) {
 }
 
 class _FakeSubscriptionService implements SubscriptionService {
-  _FakeSubscriptionService({
-    required this.stream,
-    required this.fallback,
-  });
+  _FakeSubscriptionService({required this.stream, required this.fallback});
 
   final Stream<SubscriptionOverview> stream;
   final SubscriptionOverview fallback;
 
   @override
   Future<SubscriptionOverview> getOverview(String uid) async => fallback;
+
+  @override
+  Future<SubscriptionOverview> recordAiScanUse(String uid) async => fallback;
 
   @override
   Stream<SubscriptionOverview> watchOverview(String uid) => stream;
@@ -212,7 +204,10 @@ class _FakeAuthService implements AuthService {
   Future<void> sendPasswordReset({required String email}) async {}
 
   @override
-  Future<void> signIn({required String email, required String password}) async {}
+  Future<void> signIn({
+    required String email,
+    required String password,
+  }) async {}
 
   @override
   Future<void> signInWithApple() async {}
