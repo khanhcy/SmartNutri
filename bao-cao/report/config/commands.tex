@@ -1,0 +1,34 @@
+% ============================================================
+% CUSTOM COMMANDS
+% ============================================================
+
+% --- Hình ảnh ---
+\newcommand{\fig}[4][H]{
+    \begin{figure}[#1]
+        \centering
+        \includegraphics[width=#2\textwidth]{#3}
+        \caption{#4}
+        \label{fig:#3}
+    \end{figure}
+}
+
+% --- Bảng dài ---
+\newenvironment{usecasetable}[1]
+    {\begin{longtable}{|p{4cm}|p{11cm}|}
+    \hline
+    \textbf{Thuộc tính} & \textbf{Mô tả} \\
+    \hline
+    \endhead
+    \hline
+    \endfoot
+    #1
+    \end{longtable}}
+
+% --- Định dạng dòng use case ---
+\newcommand{\ucrow}[2]{#1 & #2 \\ \hline}
+
+% --- Trích dẫn ---
+\newcommand{\citevn}[1]{\cite{#1}}
+
+% --- TODO marker ---
+\newcommand{\todomissing}[1]{\textbf{[TODO: #1]}}
