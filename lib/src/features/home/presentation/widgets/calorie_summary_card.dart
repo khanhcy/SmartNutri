@@ -2,17 +2,27 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:smartnutri/src/core/ui/components/sn_card.dart';
+import 'package:smartnutri/src/core/ui/components/sn_chip.dart';
+import 'package:smartnutri/src/core/ui/theme/app_colors.dart';
+import 'package:smartnutri/src/core/ui/theme/app_radius.dart';
 import 'package:smartnutri/src/core/ui/theme/app_spacing.dart';
+import 'package:smartnutri/src/core/ui/theme/app_text_styles.dart';
 
 class CalorieSummaryCard extends StatefulWidget {
   const CalorieSummaryCard({
     super.key,
     required this.consumed,
     required this.goal,
+    required this.proteinG,
+    required this.carbG,
+    required this.fatG,
   });
 
   final double consumed;
   final double goal;
+  final double proteinG;
+  final double carbG;
+  final double fatG;
 
   @override
   State<CalorieSummaryCard> createState() => _CalorieSummaryCardState();
@@ -41,117 +51,172 @@ class _CalorieSummaryCardState extends State<CalorieSummaryCard> {
     }
   }
 
-  Color _progressColor(double progress, ColorScheme cs) {
-    if (progress >= 1.0) return Colors.red;
-    if (progress >= 0.8) return Colors.orange;
-    return cs.primary;
-  }
-
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
     final progress = widget.goal > 0
         ? (widget.consumed / widget.goal).clamp(0.0, 1.0)
         : 0.0;
     final isOver = widget.consumed > widget.goal;
     final remaining =
         (widget.goal - widget.consumed).clamp(0.0, widget.goal);
-    final ringColor = _progressColor(progress, colorScheme);
 
     return SNCard(
-      child: Column(
+      variant: SNCardVariant.glow,
+      padding: const EdgeInsets.all(20),
+      child: Stack(
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text(
-                'Tổng quan calo',
-                style: Theme.of(context).textTheme.titleMedium,
-              ),
-              Icon(Icons.local_fire_department_outlined,
-                  color: ringColor),
-            ],
-          ),
-          const SizedBox(height: AppSpacing.xl),
-          Center(
-            child: SizedBox(
-              width: 180,
-              height: 180,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  TweenAnimationBuilder<double>(
-                    tween: Tween<double>(begin: 0, end: progress),
-                    duration: const Duration(milliseconds: 800),
-                    curve: Curves.easeOutCubic,
-                    builder: (context, value, _) {
-                      return SizedBox(
-                        width: 180,
-                        height: 180,
-                        child: CustomPaint(
-                          painter: _DonutPainter(
-                            progress: value,
-                            isOver: value >= 1.0,
-                            backgroundColor:
-                                colorScheme.surfaceContainerHighest,
-                            progressColor: _progressColor(
-                                value, colorScheme),
-                            strokeWidth: 16,
-                          ),
-                        ),
-                      );
-                    },
-                  ),
-                  Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        '${widget.consumed.round()}',
-                        style: Theme.of(context)
-                            .textTheme
-                            .headlineSmall
-                            ?.copyWith(
-                              fontSize: 36,
-                              fontWeight: FontWeight.w800,
-                              color: ringColor,
-                              height: 1.1,
-                            ),
-                      ),
-                      Text(
-                        'kcal nạp',
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodySmall
-                            ?.copyWith(fontWeight: FontWeight.bold),
-                      ),
-                    ],
-                  ),
-                ],
+          // Decorative circle top-right
+          Positioned(
+            right: -70,
+            top: -70,
+            child: Container(
+              width: 176,
+              height: 176,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                color: AppColors.mint.withValues(alpha: 0.34),
               ),
             ),
           ),
-          const SizedBox(height: AppSpacing.xl),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              _StatItem(
-                label: 'Mục tiêu',
-                value: '${widget.goal.round()}',
-                unit: 'kcal',
+              Row(
+                children: [
+                  Icon(Icons.local_fire_department_rounded,
+                      size: 20, color: progress >= 0.8
+                          ? (isOver ? AppColors.danger : AppColors.warning)
+                          : AppColors.fresh),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Tổng quan calo',
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ],
               ),
-              Container(
-                width: 1,
-                height: 30,
-                color:
-                    colorScheme.outlineVariant.withValues(alpha: 0.5),
-              ),
-              _StatItem(
-                label: isOver ? 'Đã vượt' : 'Còn lại',
-                value: isOver
-                    ? '${(widget.consumed - widget.goal).round()}'
-                    : '${remaining.round()}',
-                unit: 'kcal',
-                valueColor: isOver ? Colors.red : null,
+              const SizedBox(height: AppSpacing.lg),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // Donut
+                  SizedBox(
+                    width: 150,
+                    height: 150,
+                    child: Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        TweenAnimationBuilder<double>(
+                          tween: Tween<double>(begin: 0, end: progress),
+                          duration: const Duration(milliseconds: 800),
+                          curve: Curves.easeOutCubic,
+                          builder: (context, value, _) {
+                            return CustomPaint(
+                              size: const Size(150, 150),
+                              painter: _DonutPainter(
+                                progress: value,
+                                progressColor:
+                                    isOver ? AppColors.danger : AppColors.fresh,
+                                trackColor: AppColors.mint.withValues(alpha: 0.42),
+                              ),
+                            );
+                          },
+                        ),
+                        // White hole
+                        Container(
+                          width: 106,
+                          height: 106,
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: LinearGradient(
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                              colors: [Colors.white, Color(0xFFF8FFF8)],
+                            ),
+                          ),
+                        ),
+                        // Center content
+                        Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              '${widget.consumed.round()}',
+                              style: AppTextStyles.heroNumber,
+                            ),
+                            const Text(
+                              'kcal',
+                              style: TextStyle(
+                                fontSize: 12,
+                                color: AppColors.muted,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  const SizedBox(width: 18),
+                  // Info
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Mục tiêu ${widget.goal.round()} kcal',
+                          style: const TextStyle(
+                            fontSize: 13,
+                            color: AppColors.muted,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 8),
+                          decoration: BoxDecoration(
+                            color: AppColors.fresh.withValues(alpha: 0.12),
+                            borderRadius:
+                                BorderRadius.circular(AppRadius.pill),
+                          ),
+                          child: Text(
+                            isOver
+                                ? 'Vượt ${(widget.consumed - widget.goal).round()} kcal'
+                                : 'Còn ${remaining.round()} kcal',
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w800,
+                              color: AppColors.primary,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 14),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: SnChip.macro(
+                                MacroNutrient.protein,
+                                'P ${widget.proteinG.round()}g',
+                              ),
+                            ),
+                            const SizedBox(width: 7),
+                            Expanded(
+                              child: SnChip.macro(
+                                MacroNutrient.carb,
+                                'C ${widget.carbG.round()}g',
+                              ),
+                            ),
+                            const SizedBox(width: 7),
+                            Expanded(
+                              child: SnChip.macro(
+                                MacroNutrient.fat,
+                                'F ${widget.fatG.round()}g',
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -161,102 +226,53 @@ class _CalorieSummaryCardState extends State<CalorieSummaryCard> {
   }
 }
 
-class _StatItem extends StatelessWidget {
-  const _StatItem({
-    required this.label,
-    required this.value,
-    required this.unit,
-    this.valueColor,
-  });
-
-  final String label;
-  final String value;
-  final String unit;
-  final Color? valueColor;
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Text(label, style: Theme.of(context).textTheme.bodySmall),
-        const SizedBox(height: 2),
-        Row(
-          crossAxisAlignment: CrossAxisAlignment.baseline,
-          textBaseline: TextBaseline.alphabetic,
-          children: [
-            Text(
-              value,
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w700,
-                    color: valueColor,
-                  ),
-            ),
-            const SizedBox(width: 4),
-            Text(
-              unit,
-              style: Theme.of(context).textTheme.bodySmall,
-            ),
-          ],
-        ),
-      ],
-    );
-  }
-}
-
 class _DonutPainter extends CustomPainter {
   _DonutPainter({
     required this.progress,
-    required this.isOver,
-    required this.backgroundColor,
     required this.progressColor,
-    required this.strokeWidth,
+    required this.trackColor,
   });
 
   final double progress;
-  final bool isOver;
-  final Color backgroundColor;
   final Color progressColor;
-  final double strokeWidth;
+  final Color trackColor;
 
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
-    final radius = (size.width - strokeWidth) / 2;
+    final radius = size.width / 2;
 
-    final bgPaint = Paint()
-      ..color = backgroundColor
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth
-      ..strokeCap = StrokeCap.round;
+    // Background track
+    final trackPaint = Paint()..color = trackColor;
+    canvas.drawCircle(center, radius, trackPaint);
 
-    final progressPaint = Paint()
-      ..color = progressColor
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = strokeWidth
-      ..strokeCap = StrokeCap.round;
-
-    canvas.drawCircle(center, radius, bgPaint);
-
-    final startAngle = -pi / 2;
-    final sweepAngle = 2 * pi * progress;
-
-    if (progress > 0) {
+    // Progress arc
+    final p = progress.clamp(0.0, 1.0);
+    if (p > 0) {
+      final progressPaint = Paint()
+        ..color = progressColor
+        ..style = PaintingStyle.fill;
       canvas.drawArc(
         Rect.fromCircle(center: center, radius: radius),
-        startAngle,
-        sweepAngle,
-        false,
+        -pi / 2,
+        2 * pi * p,
+        true,
         progressPaint,
       );
     }
+
+    // Inset shadow ring (white overlay at edge)
+    final ringPaint = Paint()
+      ..color = Colors.white.withValues(alpha: 0.8)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 10;
+    canvas.drawCircle(center, radius - 5, ringPaint);
   }
 
   @override
   bool shouldRepaint(covariant _DonutPainter oldDelegate) {
     return oldDelegate.progress != progress ||
-        oldDelegate.isOver != isOver ||
-        oldDelegate.backgroundColor != backgroundColor ||
         oldDelegate.progressColor != progressColor ||
-        oldDelegate.strokeWidth != strokeWidth;
+        oldDelegate.trackColor != trackColor;
   }
 }

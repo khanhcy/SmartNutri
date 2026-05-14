@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:smartnutri/src/core/services/auth_service.dart';
 import 'package:smartnutri/src/core/services/meal_service.dart';
 import 'package:smartnutri/src/core/ui/components/sn_card.dart';
+import 'package:smartnutri/src/core/ui/theme/app_colors.dart';
+import 'package:smartnutri/src/core/ui/theme/app_radius.dart';
 import 'package:smartnutri/src/core/ui/theme/app_spacing.dart';
 import 'package:smartnutri/src/core/utils/date_utils.dart';
 import 'package:smartnutri/src/features/meal_log/domain/meal_entry.dart';
@@ -25,7 +27,6 @@ class _MacroTrendCardState extends State<MacroTrendCard> {
     _loadWeek();
   }
 
-  /// Refresh when the tab becomes visible again (IndexedStack ticker active).
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
@@ -45,7 +46,8 @@ class _MacroTrendCardState extends State<MacroTrendCard> {
 
     for (int i = 6; i >= 0; i--) {
       final date = today.subtract(Duration(days: i));
-      final entries = await service.getEntriesForDate(uid, AppDateUtils.toDateStr(date));
+      final entries =
+          await service.getEntriesForDate(uid, AppDateUtils.toDateStr(date));
       results.add(_DayMacro.fromEntries(date, entries));
     }
 
@@ -73,25 +75,23 @@ class _MacroTrendCardState extends State<MacroTrendCard> {
         .fold(0.0, (a, b) => a > b ? a : b);
 
     return SNCard(
+      padding: const EdgeInsets.all(AppSpacing.md),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
             children: [
-              Icon(Icons.stacked_bar_chart,
-                  color: Theme.of(context).colorScheme.primary, size: 20),
+              Icon(Icons.stacked_bar_chart, color: AppColors.primary, size: 20),
               const SizedBox(width: 8),
               Text('Macro 7 ngày',
-                  style: Theme.of(context).textTheme.titleSmall),
+                  style: Theme.of(context).textTheme.titleMedium),
               const Spacer(),
               InkWell(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(AppRadius.md),
                 onTap: _loading ? null : _loadWeek,
                 child: Padding(
                   padding: const EdgeInsets.all(4),
-                  child: Icon(Icons.refresh,
-                      size: 16,
-                      color: Theme.of(context).colorScheme.onSurfaceVariant),
+                  child: Icon(Icons.refresh, size: 16, color: AppColors.muted),
                 ),
               ),
             ],
@@ -106,7 +106,6 @@ class _MacroTrendCardState extends State<MacroTrendCard> {
                 final ratio = maxTotal > 0 ? total / maxTotal : 0.0;
                 final barH = ratio * 84;
                 final isToday = _isSameDay(day.date, DateTime.now());
-                final colorScheme = Theme.of(context).colorScheme;
 
                 return Expanded(
                   child: Padding(
@@ -114,7 +113,6 @@ class _MacroTrendCardState extends State<MacroTrendCard> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.end,
                       children: [
-                        // Stacked bar
                         AnimatedContainer(
                           duration: const Duration(milliseconds: 450),
                           curve: Curves.easeOut,
@@ -125,26 +123,21 @@ class _MacroTrendCardState extends State<MacroTrendCard> {
                                   borderRadius: BorderRadius.circular(4),
                                   child: Column(
                                     children: [
-                                      // Fat (top)
                                       if (day.fatG > 0)
                                         Flexible(
                                           flex: day.fatG.round(),
-                                          child: Container(
-                                              color: Colors.pink.shade300),
+                                          child: Container(color: AppColors.fat),
                                         ),
-                                      // Carb (middle)
                                       if (day.carbG > 0)
                                         Flexible(
                                           flex: day.carbG.round(),
-                                          child: Container(
-                                              color: Colors.orange.shade300),
+                                          child: Container(color: AppColors.carb),
                                         ),
-                                      // Protein (bottom)
                                       if (day.proteinG > 0)
                                         Flexible(
                                           flex: day.proteinG.round(),
-                                          child: Container(
-                                              color: Colors.blue.shade300),
+                                          child:
+                                              Container(color: AppColors.protein),
                                         ),
                                     ],
                                   ),
@@ -155,12 +148,10 @@ class _MacroTrendCardState extends State<MacroTrendCard> {
                           _shortDay(day.date),
                           style: TextStyle(
                             fontSize: 10,
-                            fontWeight: isToday
-                                ? FontWeight.bold
-                                : FontWeight.normal,
-                            color: isToday
-                                ? colorScheme.primary
-                                : colorScheme.onSurfaceVariant,
+                            fontWeight:
+                                isToday ? FontWeight.bold : FontWeight.normal,
+                            color:
+                                isToday ? AppColors.primary : AppColors.muted,
                           ),
                         ),
                       ],
@@ -171,15 +162,14 @@ class _MacroTrendCardState extends State<MacroTrendCard> {
             ),
           ),
           const SizedBox(height: AppSpacing.sm),
-          // Legend
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              _Legend(color: Colors.blue.shade300, label: 'Protein'),
+              _Legend(color: AppColors.protein, label: 'Protein'),
               const SizedBox(width: AppSpacing.md),
-              _Legend(color: Colors.orange.shade300, label: 'Carb'),
+              _Legend(color: AppColors.carb, label: 'Carb'),
               const SizedBox(width: AppSpacing.md),
-              _Legend(color: Colors.pink.shade300, label: 'Fat'),
+              _Legend(color: AppColors.fat, label: 'Fat'),
             ],
           ),
         ],

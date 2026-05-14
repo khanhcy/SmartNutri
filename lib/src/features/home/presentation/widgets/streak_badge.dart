@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:smartnutri/src/core/services/meal_service.dart';
+import 'package:smartnutri/src/core/ui/components/sn_card.dart';
 import 'package:smartnutri/src/core/ui/theme/app_colors.dart';
 import 'package:smartnutri/src/core/ui/theme/app_spacing.dart';
 import 'package:smartnutri/src/core/utils/calorie_streak.dart';
@@ -86,9 +87,8 @@ class _StreakBadgeState extends State<StreakBadge>
     final v = _value;
     if (v == null) {
       return const SizedBox(
-        height: 36,
-        child: Align(
-          alignment: Alignment.centerLeft,
+        height: 60,
+        child: Center(
           child: SizedBox(
             width: 20,
             height: 20,
@@ -103,33 +103,45 @@ class _StreakBadgeState extends State<StreakBadge>
       opacity: _fadeAnim,
       child: SlideTransition(
         position: _slideAnim,
-        child: Container(
+        child: SNCard(
           padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.md,
-            vertical: AppSpacing.sm,
-          ),
-          decoration: BoxDecoration(
-            color: AppColors.streak.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(12),
-            border: Border.all(
-              color: AppColors.streak.withValues(alpha: 0.3),
-            ),
+            vertical: 14,
           ),
           child: Row(
             children: [
               const Icon(
                 Icons.local_fire_department_rounded,
                 color: AppColors.streak,
-                size: 22,
+                size: 24,
               ),
-              const SizedBox(width: AppSpacing.sm),
+              const SizedBox(width: 10),
               Expanded(
-                child: Text(
-                  '$v ngày liên tiếp đạt mục tiêu calo!',
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                        color: AppColors.streak,
-                        fontWeight: FontWeight.w700,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'Chuỗi lành mạnh',
+                      style: TextStyle(
+                        fontSize: 15,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.text,
                       ),
+                    ),
+                    Text(
+                      'Bạn đang giữ nhịp rất tốt',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ],
+                ),
+              ),
+              Text(
+                '$v ngày',
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.w900,
+                  color: AppColors.streak,
+                  letterSpacing: -0.96,
                 ),
               ),
             ],

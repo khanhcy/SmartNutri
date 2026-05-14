@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:smartnutri/src/core/services/water_service.dart';
 import 'package:smartnutri/src/core/ui/components/sn_card.dart';
 import 'package:smartnutri/src/core/ui/theme/app_colors.dart';
+import 'package:smartnutri/src/core/ui/theme/app_radius.dart';
 import 'package:smartnutri/src/core/ui/theme/app_spacing.dart';
 import 'package:smartnutri/src/core/ui/components/skeleton.dart';
 
@@ -26,7 +27,7 @@ class WaterCard extends StatelessWidget {
       stream: context.read<WaterService>().watchWaterMl(uid, date),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          return const SkeletonBox(height: 160, width: double.infinity);
+          return const SkeletonBox(height: 200, width: double.infinity);
         }
 
         final waterMl = snapshot.data ?? 0.0;
@@ -34,107 +35,110 @@ class WaterCard extends StatelessWidget {
         final remaining = (targetMl - waterMl).clamp(0.0, targetMl);
 
         return SNCard(
+          padding: const EdgeInsets.all(AppSpacing.md),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+              // Section title
               Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Icon(Icons.water_drop_rounded, color: AppColors.water),
-                  const SizedBox(width: AppSpacing.sm),
-                  Text('Nước uống hôm nay',
-                      style: Theme.of(context).textTheme.titleSmall),
-                ],
-              ),
-              const SizedBox(height: AppSpacing.md),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          '${(waterMl / 1000).toStringAsFixed(1)} / ${(targetMl / 1000).toStringAsFixed(1)} L',
-                          style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                                fontWeight: FontWeight.w800,
-                                color: AppColors.water,
-                              ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          remaining > 0
-                              ? 'Còn thiếu ${(remaining / 1000).toStringAsFixed(1)} L'
-                              : 'Tuyệt vời! Đã đủ nước hôm nay.',
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                      ],
-                    ),
+                  Text(
+                    'Nước uống',
+                    style: Theme.of(context).textTheme.titleLarge,
                   ),
                   Text(
-                    '${(progress * 100).round()}%',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: AppColors.water,
-                          fontWeight: FontWeight.bold,
-                        ),
+                    '${(waterMl / 1000).toStringAsFixed(1)}L',
+                    style: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w800,
+                      color: AppColors.primary,
+                    ),
                   ),
                 ],
               ),
-              const SizedBox(height: AppSpacing.md),
+              const SizedBox(height: 2),
+              Text(
+                remaining > 0
+                    ? 'Còn ${(remaining / 1000).toStringAsFixed(1)}L để đạt mục tiêu nước hôm nay.'
+                    : 'Tuyệt vời! Đã đủ nước hôm nay.',
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+              const SizedBox(height: 12),
+              // Progress bar
               TweenAnimationBuilder<double>(
                 tween: Tween<double>(begin: 0, end: progress),
                 duration: const Duration(milliseconds: 600),
                 curve: Curves.easeOutCubic,
                 builder: (context, value, _) {
-                  return Container(
-                    height: 12,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: AppColors.water.withValues(alpha: 0.15),
-                      borderRadius: BorderRadius.circular(6),
-                    ),
-                    child: Stack(
-                      children: [
-                        FractionallySizedBox(
-                          widthFactor: value,
-                          child: Container(
-                            decoration: BoxDecoration(
-                              color: AppColors.water,
-                              borderRadius: BorderRadius.circular(6),
+                  return Row(
+                    children: [
+                      Expanded(
+                        child: Container(
+                          height: 10,
+                          decoration: BoxDecoration(
+                            color: const Color(0x12102A16),
+                            borderRadius: BorderRadius.circular(AppRadius.pill),
+                          ),
+                          child: FractionallySizedBox(
+                            alignment: Alignment.centerLeft,
+                            widthFactor: value,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                gradient: const LinearGradient(
+                                  colors: [AppColors.water, Color(0xFF79D3F3)],
+                                ),
+                                borderRadius: BorderRadius.circular(AppRadius.pill),
+                              ),
                             ),
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        '${targetMl.round() / 1000}L',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w700,
+                          color: AppColors.text,
+                        ),
+                      ),
+                    ],
                   );
                 },
               ),
-              const SizedBox(height: AppSpacing.lg),
+              const SizedBox(height: 14),
+              // Quick water buttons
               Row(
                 children: [
                   for (final ml in [150.0, 200.0, 250.0, 330.0])
                     Expanded(
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 4),
-                        child: FilledButton.tonal(
-                          style: FilledButton.styleFrom(
-                            padding: EdgeInsets.zero,
-                            minimumSize: const Size(0, 40),
-                            backgroundColor:
-                                AppColors.water.withValues(alpha: 0.1),
-                            foregroundColor: AppColors.water,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(10)),
-                          ),
-                          onPressed: () {
-                            HapticFeedback.selectionClick();
-                            _addWater(context, ml);
-                          },
-                          child: Text(
-                            ml >= 1000
-                                ? '${(ml / 1000).toStringAsFixed(1)}L'
-                                : '${ml.round()}ml',
-                            style: const TextStyle(
-                                fontSize: 13, fontWeight: FontWeight.w600),
+                        padding: const EdgeInsets.only(right: 8),
+                        child: Material(
+                          color: Colors.transparent,
+                          child: InkWell(
+                            onTap: () {
+                              HapticFeedback.selectionClick();
+                              _addWater(context, ml);
+                            },
+                            borderRadius: BorderRadius.circular(AppRadius.pill),
+                            child: Container(
+                              height: 38,
+                              alignment: Alignment.center,
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withValues(alpha: 0.08),
+                                borderRadius: BorderRadius.circular(AppRadius.pill),
+                              ),
+                              child: Text(
+                                '${ml.round()}ml',
+                                style: const TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w800,
+                                  color: AppColors.primary,
+                                ),
+                              ),
+                            ),
                           ),
                         ),
                       ),

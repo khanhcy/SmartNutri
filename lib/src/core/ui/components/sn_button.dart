@@ -43,8 +43,9 @@ class SNButton extends StatelessWidget {
         onTap: effectiveOnPressed,
         borderRadius: BorderRadius.circular(_radius),
         child: Container(
-          width: double.infinity,
+          width: _isFullWidth ? double.infinity : null,
           height: _height,
+          padding: _isFullWidth ? null : const EdgeInsets.symmetric(horizontal: 14),
           decoration: BoxDecoration(
             gradient: _gradient,
             color: _bgColor,
@@ -57,6 +58,15 @@ class SNButton extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  bool get _isFullWidth {
+    return switch (variant) {
+      SNButtonVariant.primary => true,
+      SNButtonVariant.danger => true,
+      SNButtonVariant.secondary => false,
+      SNButtonVariant.ghost => false,
+    };
   }
 
   double get _height {
