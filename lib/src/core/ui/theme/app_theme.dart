@@ -25,26 +25,39 @@ class AppTheme {
     return ThemeData(
       useMaterial3: true,
       colorScheme: colorScheme,
+      scaffoldBackgroundColor: AppColors.bg,
       textTheme: GoogleFonts.beVietnamProTextTheme(
         AppTextStyles.textTheme(colorScheme),
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: colorScheme.surfaceContainerHighest.withValues(alpha: 0.35),
+        fillColor: AppColors.surface,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.md),
+          borderSide: const BorderSide(color: AppColors.border),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          borderSide: const BorderSide(color: AppColors.border),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.md),
-          borderSide: BorderSide(color: colorScheme.primary, width: 1.2),
+          borderSide: const BorderSide(color: AppColors.primary, width: 1.2),
         ),
       ),
       cardTheme: CardThemeData(
         elevation: 0,
-        color: colorScheme.surfaceContainerLow,
+        color: AppColors.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(AppRadius.lg),
+          side: const BorderSide(color: AppColors.border),
         ),
+        shadowColor: const Color(0x17195526),
+        surfaceTintColor: Colors.transparent,
+      ),
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Colors.transparent,
+        surfaceTintColor: Colors.transparent,
       ),
     );
   }
