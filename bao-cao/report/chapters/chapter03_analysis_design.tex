@@ -1,0 +1,540 @@
+% ============================================================
+% CHƯƠNG 3: PHÂN TÍCH THIẾT KẾ HỆ THỐNG
+% ============================================================
+
+\chapter{Phân tích thiết kế hệ thống}
+
+\section{Tổng quan hệ thống}
+
+Hệ thống SmartNutri bao gồm ba thành phần chính:
+
+\begin{enumerate}
+    \item \textbf{Ứng dụng di động (Mobile App):} Ứng dụng Flutter chạy trên Android/iOS, là điểm tương tác chính với người dùng cuối.
+    \item \textbf{Backend Firebase:} Bao gồm Authentication, Firestore, Storage và Cloud Functions, xử lý toàn bộ logic nghiệp vụ và lưu trữ dữ liệu.
+    \item \textbf{Trang quản trị (Admin Web):} Ứng dụng React cho phép quản trị viên quản lý dữ liệu thực phẩm, người dùng và theo dõi hoạt động hệ thống.
+\end{enumerate}
+
+Các actor chính của hệ thống:
+\begin{itemize}
+    \item \textbf{Người dùng (User):} Người dùng cuối sử dụng ứng dụng di động để theo dõi dinh dưỡng.
+    \item \textbf{Quản trị viên (Admin):} Người quản lý dữ liệu thực phẩm, danh mục và người dùng qua trang admin web.
+    \item \textbf{Hệ thống AI (Gemini):} Dịch vụ AI bên ngoài hỗ trợ nhận diện món ăn và phân tích dinh dưỡng.
+\end{itemize}
+
+\section{Đặc tả yêu cầu}
+
+\subsection{Yêu cầu chức năng}
+
+\begin{longtable}{|p{3cm}|p{11cm}|}
+    \hline
+    \textbf{Use Case} & \textbf{Mô tả} \\
+    \hline
+    \endhead
+    \hline
+    \endfoot
+    UC-01: Đăng ký & Người dùng tạo tài khoản mới bằng email và mật khẩu, hoặc đăng ký qua Google. \\
+    \hline
+    UC-02: Đăng nhập & Người dùng đăng nhập vào hệ thống bằng email/mật khẩu hoặc Google. \\
+    \hline
+    UC-03: Quản lý hồ sơ & Người dùng cập nhật thông tin cá nhân: tên, tuổi, cân nặng, chiều cao, mục tiêu dinh dưỡng. \\
+    \hline
+    UC-04: Onboarding & Hệ thống thu thập thông tin ban đầu của người dùng để cá nhân hóa trải nghiệm. \\
+    \hline
+    UC-05: Quét món ăn bằng AI & Người dùng chụp ảnh hoặc chọn ảnh món ăn; hệ thống gửi ảnh đến Gemini API để nhận diện và trả về thông tin dinh dưỡng. \\
+    \hline
+    UC-06: Nhật ký ăn uống & Người dùng xem và quản lý nhật ký các món ăn đã tiêu thụ trong ngày. \\
+    \hline
+    UC-07: Theo dõi dinh dưỡng & Người dùng xem biểu đồ và thống kê về lượng calo, protein, carb, fat đã tiêu thụ theo ngày/tuần. \\
+    \hline
+    UC-08: Món ăn yêu thích & Người dùng lưu các món ăn vào danh sách yêu thích để truy cập nhanh. \\
+    \hline
+    UC-09: Chatbot AI dinh dưỡng & Người dùng trò chuyện với AI để nhận tư vấn về dinh dưỡng và chế độ ăn uống. \\
+    \hline
+    UC-10: Quản lý thực phẩm (Admin) & Admin thêm/sửa/xóa thực phẩm trong cơ sở dữ liệu, quản lý danh mục. \\
+    \hline
+    UC-11: Quản lý người dùng (Admin) & Admin xem danh sách người dùng, khóa/mở khóa tài khoản. \\
+    \hline
+    UC-12: Đăng ký Premium & Người dùng đăng ký gói Premium để mở khóa các tính năng nâng cao. \\
+    \hline
+\end{longtable}
+
+\subsection{Yêu cầu phi chức năng}
+
+\subsubsection{Hiệu năng}
+\begin{itemize}
+    \item Thời gian phản hồi API nhận diện món ăn không quá 10 giây.
+    \item Ứng dụng khởi động trong vòng 3 giây trên thiết bị tầm trung.
+    \item Đồng bộ dữ liệu giữa client và Firestore trong thời gian thực.
+\end{itemize}
+
+\subsubsection{Độ tin cậy và tính sẵn sàng}
+\begin{itemize}
+    \item Hệ thống hoạt động ổn định 24/7 (phụ thuộc vào Firebase SLA).
+    \item Dữ liệu người dùng được backup tự động bởi Firebase.
+    \item Xử lý lỗi mạng và offline một cách graceful.
+\end{itemize}
+
+\subsubsection{An ninh và bảo mật}
+\begin{itemize}
+    \item Xác thực người dùng qua Firebase Authentication với JWT token.
+    \item Firestore Security Rules giới hạn quyền truy cập dữ liệu theo user ID.
+    \item Kết nối giữa client và server sử dụng SSL/TLS.
+    \item API key của Gemini được lưu trữ an toàn trên Cloud Functions, không lộ ra client.
+\end{itemize}
+
+\subsubsection{Khả bảo trì và khả chuyển đổi}
+\begin{itemize}
+    \item Code được tổ chức theo feature-first structure, tách biệt rõ ràng giữa các module.
+    \item Sử dụng TypeScript cho Cloud Functions và Admin Web để đảm bảo type safety.
+    \item Hỗ trợ đa nền tảng (Android/iOS) từ một codebase Flutter.
+\end{itemize}
+
+\subsubsection{Các ràng buộc khác}
+\begin{itemize}
+    \item Ứng dụng hỗ trợ Android 5.0 (API 21) trở lên.
+    \item Giao diện người dùng sử dụng tiếng Việt làm ngôn ngữ chính.
+    \item Tuân thủ các quy định về quyền riêng tư dữ liệu (GDPR, luật bảo vệ dữ liệu cá nhân).
+\end{itemize}
+
+\section{Tổng quan ca sử dụng hệ thống}
+
+Hình~\ref{fig:usecase_diagram} trình bày biểu đồ ca sử dụng tổng quan của hệ thống SmartNutri, thể hiện mối quan hệ giữa các actor và các chức năng chính.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{assets/diagrams/usecase_diagram.png}
+    \caption{Biểu đồ ca sử dụng tổng quan hệ thống SmartNutri}
+    \label{fig:usecase_diagram}
+\end{figure}
+
+\section{Mô tả ca sử dụng}
+
+% ============================================================
+\subsection{UC-01: Đăng ký tài khoản}
+
+\begin{longtable}{|p{4cm}|p{11cm}|}
+    \hline
+    \textbf{Thuộc tính} & \textbf{Mô tả} \\
+    \hline
+    \endhead
+    \hline
+    \endfoot
+    Tên ca sử dụng & Đăng ký tài khoản \\
+    \hline
+    Mô tả & Người dùng tạo tài khoản mới để sử dụng ứng dụng. \\
+    \hline
+    Actor & Người dùng (chưa có tài khoản) \\
+    \hline
+    Luồng cơ bản &
+        \begin{enumerate}[nosep]
+            \item Người dùng mở ứng dụng, chọn ``Đăng ký''.
+            \item Hệ thống hiển thị form đăng ký (email, mật khẩu, xác nhận mật khẩu).
+            \item Người dùng nhập thông tin và nhấn ``Đăng ký''.
+            \item Hệ thống kiểm tra tính hợp lệ của dữ liệu.
+            \item Firebase Auth tạo tài khoản mới và gửi email xác minh.
+            \item Hệ thống tạo document người dùng trong Firestore.
+            \item Hệ thống chuyển đến màn hình Onboarding.
+        \end{enumerate} \\
+    \hline
+    Luồng thay thế &
+        \begin{enumerate}[nosep]
+            \item[3a.] Email đã tồn tại: Hiển thị thông báo lỗi ``Email đã được sử dụng''.
+            \item[3b.] Mật khẩu không đủ mạnh: Yêu cầu mật khẩu tối thiểu 6 ký tự.
+            \item[3c.] Mất kết nối mạng: Hiển thị thông báo lỗi kết nối.
+        \end{enumerate} \\
+    \hline
+    Tiền điều kiện & Người dùng chưa có tài khoản trong hệ thống. \\
+    \hline
+    Hậu điều kiện & Tài khoản được tạo, document người dùng được lưu trong Firestore, email xác minh được gửi. \\
+    \hline
+    Business Rules &
+        \begin{itemize}[nosep]
+            \item Email phải đúng định dạng.
+            \item Mật khẩu tối thiểu 6 ký tự.
+            \item Mỗi email chỉ được đăng ký một tài khoản.
+        \end{itemize} \\
+    \hline
+\end{longtable}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{assets/diagrams/uc01_register_activity.png}
+    \caption{Biểu đồ hoạt động ca sử dụng Đăng ký tài khoản}
+    \label{fig:uc01_register_activity}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{assets/diagrams/uc01_register_sequence.png}
+    \caption{Biểu đồ tuần tự ca sử dụng Đăng ký tài khoản}
+    \label{fig:uc01_register_sequence}
+\end{figure}
+
+% ============================================================
+\subsection{UC-02: Đăng nhập}
+
+\begin{longtable}{|p{4cm}|p{11cm}|}
+    \hline
+    \textbf{Thuộc tính} & \textbf{Mô tả} \\
+    \hline
+    \endhead
+    \hline
+    \endfoot
+    Tên ca sử dụng & Đăng nhập \\
+    \hline
+    Mô tả & Người dùng đăng nhập vào hệ thống để truy cập các chức năng cá nhân hóa như nhật ký ăn uống, thống kê dinh dưỡng và chatbot AI. \\
+    \hline
+    Actor & Người dùng đã có tài khoản \\
+    \hline
+    Luồng cơ bản &
+        \begin{enumerate}[nosep]
+            \item Người dùng mở ứng dụng và chọn chức năng đăng nhập.
+            \item Hệ thống hiển thị form đăng nhập.
+            \item Người dùng nhập email và mật khẩu, sau đó nhấn ``Đăng nhập''.
+            \item Hệ thống gửi thông tin xác thực đến Firebase Authentication.
+            \item Firebase Authentication xác thực thông tin đăng nhập.
+            \item Hệ thống tải thông tin hồ sơ người dùng từ Firestore.
+            \item Hệ thống chuyển người dùng đến màn hình chính.
+        \end{enumerate} \\
+    \hline
+    Luồng thay thế &
+        \begin{enumerate}[nosep]
+            \item[3a.] Người dùng chọn đăng nhập bằng Google: Hệ thống mở màn hình chọn tài khoản Google, sau đó xác thực qua Firebase Authentication.
+            \item[4a.] Email hoặc mật khẩu không hợp lệ: Hệ thống hiển thị thông báo lỗi và cho phép nhập lại.
+            \item[6a.] Hồ sơ người dùng chưa hoàn tất: Hệ thống chuyển người dùng đến màn hình Onboarding.
+        \end{enumerate} \\
+    \hline
+    Tiền điều kiện & Người dùng đã có tài khoản trong hệ thống. \\
+    \hline
+    Hậu điều kiện & Người dùng được xác thực và có thể truy cập các chức năng chính của ứng dụng. \\
+    \hline
+    Business Rules &
+        \begin{itemize}[nosep]
+            \item Không cho phép truy cập dữ liệu cá nhân nếu người dùng chưa đăng nhập.
+            \item Thông tin xác thực được xử lý qua Firebase Authentication.
+            \item Nếu hồ sơ chưa hoàn tất, người dùng phải hoàn thành Onboarding trước khi dùng đầy đủ chức năng.
+        \end{itemize} \\
+    \hline
+\end{longtable}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{assets/diagrams/uc02_login_activity.png}
+    \caption{Biểu đồ hoạt động ca sử dụng Đăng nhập}
+    \label{fig:uc02_login_activity}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{assets/diagrams/uc02_login_sequence.png}
+    \caption{Biểu đồ tuần tự ca sử dụng Đăng nhập}
+    \label{fig:uc02_login_sequence}
+\end{figure}
+
+% ============================================================
+\subsection{UC-05: Quét món ăn bằng AI}
+
+\begin{longtable}{|p{4cm}|p{11cm}|}
+    \hline
+    \textbf{Thuộc tính} & \textbf{Mô tả} \\
+    \hline
+    \endhead
+    \hline
+    \endfoot
+    Tên ca sử dụng & Quét món ăn bằng AI \\
+    \hline
+    Mô tả & Người dùng chụp ảnh hoặc tải ảnh món ăn lên; hệ thống sử dụng AI để nhận diện món ăn và trả về thông tin dinh dưỡng. \\
+    \hline
+    Actor & Người dùng (đã đăng nhập) \\
+    \hline
+    Luồng cơ bản &
+        \begin{enumerate}[nosep]
+            \item Người dùng nhấn nút ``Scan'' trên màn hình chính.
+            \item Hệ thống mở camera hoặc cho phép chọn ảnh từ thư viện.
+            \item Người dùng chụp ảnh hoặc chọn ảnh món ăn.
+            \item Hệ thống gửi ảnh đến Cloud Function ``scanFood''.
+            \item Cloud Function gọi Gemini API để phân tích ảnh.
+            \item Gemini trả về tên món ăn và thông tin dinh dưỡng ước tính.
+            \item Hệ thống hiển thị kết quả nhận diện cho người dùng.
+            \item Người dùng xác nhận và thêm món ăn vào nhật ký.
+        \end{enumerate} \\
+    \hline
+    Luồng thay thế &
+        \begin{enumerate}[nosep]
+            \item[5a.] Gemini không nhận diện được món ăn: Hiển thị ``Không thể nhận diện món ăn, vui lòng thử lại''.
+            \item[5b.] Gemini API lỗi/quá tải: Fallback về xử lý trực tiếp từ client với cấu hình đơn giản hơn.
+            \item[5c.] Người dùng hủy thao tác: Quay về màn hình chính.
+        \end{enumerate} \\
+    \hline
+    Tiền điều kiện & Người dùng đã đăng nhập, thiết bị có kết nối mạng. \\
+    \hline
+    Hậu điều kiện & Món ăn được thêm vào nhật ký dinh dưỡng của người dùng trong ngày. \\
+    \hline
+    Business Rules &
+        \begin{itemize}[nosep]
+            \item Ảnh phải có độ phân giải tối thiểu 224x224 pixels.
+            \item Kết quả dinh dưỡng từ AI là ước tính, người dùng có thể chỉnh sửa.
+            \item Chỉ hỗ trợ nhận diện món ăn Việt Nam và phổ biến.
+        \end{itemize} \\
+    \hline
+\end{longtable}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{assets/diagrams/uc05_scan_activity.png}
+    \caption{Biểu đồ hoạt động ca sử dụng Quét món ăn bằng AI}
+    \label{fig:uc05_scan_activity}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{assets/diagrams/uc05_scan_sequence.png}
+    \caption{Biểu đồ tuần tự ca sử dụng Quét món ăn bằng AI}
+    \label{fig:uc05_scan_sequence}
+\end{figure}
+
+% ============================================================
+\subsection{UC-06: Nhật ký ăn uống}
+
+\begin{longtable}{|p{4cm}|p{11cm}|}
+    \hline
+    \textbf{Thuộc tính} & \textbf{Mô tả} \\
+    \hline
+    \endhead
+    \hline
+    \endfoot
+    Tên ca sử dụng & Nhật ký ăn uống \\
+    \hline
+    Mô tả & Người dùng xem, thêm, chỉnh sửa hoặc xóa các món ăn đã ghi nhận trong ngày để theo dõi lượng dinh dưỡng tiêu thụ. \\
+    \hline
+    Actor & Người dùng đã đăng nhập \\
+    \hline
+    Luồng cơ bản &
+        \begin{enumerate}[nosep]
+            \item Người dùng mở màn hình nhật ký ăn uống.
+            \item Hệ thống truy xuất danh sách món ăn đã ghi nhận trong ngày từ Firestore.
+            \item Hệ thống hiển thị danh sách món ăn theo từng bữa: sáng, trưa, tối và bữa phụ.
+            \item Người dùng chọn thêm món ăn thủ công hoặc thêm từ kết quả quét AI.
+            \item Người dùng nhập khẩu phần hoặc điều chỉnh thông tin dinh dưỡng nếu cần.
+            \item Hệ thống lưu bản ghi mới vào sub-collection nhật ký của người dùng.
+            \item Hệ thống cập nhật tổng calo và các chỉ số dinh dưỡng trong ngày.
+        \end{enumerate} \\
+    \hline
+    Luồng thay thế &
+        \begin{enumerate}[nosep]
+            \item[2a.] Không có dữ liệu trong ngày: Hệ thống hiển thị trạng thái rỗng và gợi ý người dùng thêm món ăn.
+            \item[5a.] Người dùng hủy thao tác thêm món: Hệ thống quay lại danh sách nhật ký hiện tại.
+            \item[6a.] Lưu dữ liệu thất bại do mất mạng: Hệ thống hiển thị thông báo lỗi và cho phép thử lại.
+        \end{enumerate} \\
+    \hline
+    Tiền điều kiện & Người dùng đã đăng nhập và có quyền truy cập dữ liệu cá nhân của mình. \\
+    \hline
+    Hậu điều kiện & Nhật ký ăn uống được cập nhật, tổng dinh dưỡng trong ngày được tính lại. \\
+    \hline
+    Business Rules &
+        \begin{itemize}[nosep]
+            \item Mỗi bản ghi nhật ký thuộc về đúng một người dùng.
+            \item Người dùng chỉ được chỉnh sửa hoặc xóa bản ghi của chính mình.
+            \item Thông tin dinh dưỡng được tính theo khẩu phần thực tế đã nhập.
+        \end{itemize} \\
+    \hline
+\end{longtable}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{assets/diagrams/uc06_foodlog_activity.png}
+    \caption{Biểu đồ hoạt động ca sử dụng Nhật ký ăn uống}
+    \label{fig:uc06_foodlog_activity}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{assets/diagrams/uc06_foodlog_sequence.png}
+    \caption{Biểu đồ tuần tự ca sử dụng Nhật ký ăn uống}
+    \label{fig:uc06_foodlog_sequence}
+\end{figure}
+
+% ============================================================
+\subsection{UC-07: Theo dõi dinh dưỡng}
+
+\begin{longtable}{|p{4cm}|p{11cm}|}
+    \hline
+    \textbf{Thuộc tính} & \textbf{Mô tả} \\
+    \hline
+    \endhead
+    \hline
+    \endfoot
+    Tên ca sử dụng & Theo dõi dinh dưỡng \\
+    \hline
+    Mô tả & Người dùng xem tổng quan lượng calo và các nhóm chất dinh dưỡng đã tiêu thụ, từ đó so sánh với mục tiêu cá nhân. \\
+    \hline
+    Actor & Người dùng đã đăng nhập \\
+    \hline
+    Luồng cơ bản &
+        \begin{enumerate}[nosep]
+            \item Người dùng mở màn hình thống kê dinh dưỡng.
+            \item Hệ thống truy xuất nhật ký ăn uống theo khoảng thời gian được chọn.
+            \item Hệ thống tính tổng calo, protein, carbohydrate và chất béo.
+            \item Hệ thống so sánh kết quả với mục tiêu dinh dưỡng của người dùng.
+            \item Hệ thống hiển thị biểu đồ và thẻ thống kê tổng quan.
+            \item Người dùng chuyển đổi giữa chế độ xem ngày, tuần hoặc tháng.
+        \end{enumerate} \\
+    \hline
+    Luồng thay thế &
+        \begin{enumerate}[nosep]
+            \item[2a.] Không có dữ liệu trong khoảng thời gian được chọn: Hệ thống hiển thị thông báo chưa có dữ liệu.
+            \item[4a.] Người dùng chưa thiết lập mục tiêu dinh dưỡng: Hệ thống hiển thị số liệu tiêu thụ và gợi ý hoàn thiện hồ sơ.
+            \item[6a.] Người dùng chọn khoảng thời gian khác: Hệ thống tải lại dữ liệu tương ứng.
+        \end{enumerate} \\
+    \hline
+    Tiền điều kiện & Người dùng đã đăng nhập; dữ liệu nhật ký ăn uống có thể tồn tại hoặc chưa tồn tại. \\
+    \hline
+    Hậu điều kiện & Người dùng nắm được tình trạng tiêu thụ dinh dưỡng so với mục tiêu cá nhân. \\
+    \hline
+    Business Rules &
+        \begin{itemize}[nosep]
+            \item Số liệu thống kê chỉ tính từ dữ liệu nhật ký của người dùng hiện tại.
+            \item Các chỉ số macro bao gồm protein, carbohydrate và chất béo.
+            \item Nếu dữ liệu thiếu hoặc chưa đủ, hệ thống phải thể hiện rõ trạng thái chưa có dữ liệu thay vì suy đoán.
+        \end{itemize} \\
+    \hline
+\end{longtable}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.8\textwidth]{assets/diagrams/uc07_stats_activity.png}
+    \caption{Biểu đồ hoạt động ca sử dụng Theo dõi dinh dưỡng}
+    \label{fig:uc07_stats_activity}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{assets/diagrams/uc07_stats_sequence.png}
+    \caption{Biểu đồ tuần tự ca sử dụng Theo dõi dinh dưỡng}
+    \label{fig:uc07_stats_sequence}
+\end{figure}
+
+% ============================================================
+% [TODO: Bổ sung mô tả các use case còn lại: UC-03, UC-04, UC-08 đến UC-12]
+
+\section{Thiết kế cơ sở dữ liệu}
+
+Hệ thống sử dụng Cloud Firestore — cơ sở dữ liệu NoSQL dạng document. Dữ liệu được tổ chức theo cấu trúc collection và document, trong đó mỗi document có thể chứa các sub-collection.
+
+\subsection{Sơ đồ thực thể - liên kết (ERD)}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{assets/diagrams/erd_diagram.png}
+    \caption{Biểu đồ thực thể - liên kết hệ thống SmartNutri}
+    \label{fig:erd_diagram}
+\end{figure}
+
+\subsection{Mô tả các collection chính}
+
+\subsubsection{Collection: users}
+
+Lưu trữ thông tin người dùng. Mỗi document được định danh bằng user ID từ Firebase Authentication.
+
+\begin{longtable}{|p{3.5cm}|p{3.5cm}|p{7.5cm}|}
+    \hline
+    \textbf{Trường} & \textbf{Kiểu dữ liệu} & \textbf{Mô tả} \\
+    \hline
+    \endhead
+    \hline
+    \endfoot
+    email & String & Email người dùng \\
+    \hline
+    displayName & String & Tên hiển thị \\
+    \hline
+    photoURL & String & URL ảnh đại diện \\
+    \hline
+    height & Number & Chiều cao (cm) \\
+    \hline
+    weight & Number & Cân nặng (kg) \\
+    \hline
+    age & Number & Tuổi \\
+    \hline
+    gender & String & Giới tính \\
+    \hline
+    goal & String & Mục tiêu dinh dưỡng \\
+    \hline
+    dailyCalorieTarget & Number & Mục tiêu calo/ngày \\
+    \hline
+    isPremium & Boolean & Trạng thái Premium \\
+    \hline
+    createdAt & Timestamp & Thời điểm tạo tài khoản \\
+    \hline
+\end{longtable}
+
+\subsubsection{Collection: foods}
+
+Lưu trữ cơ sở dữ liệu thực phẩm và món ăn.
+
+\begin{longtable}{|p{3.5cm}|p{3.5cm}|p{7.5cm}|}
+    \hline
+    \textbf{Trường} & \textbf{Kiểu dữ liệu} & \textbf{Mô tả} \\
+    \hline
+    \endhead
+    \hline
+    \endfoot
+    name & String & Tên món ăn (tiếng Việt) \\
+    \hline
+    nameEn & String & Tên món ăn (tiếng Anh) \\
+    \hline
+    category & String & Danh mục (cơm, phở, canh, ...) \\
+    \hline
+    calories & Number & Lượng calo (kcal/100g) \\
+    \hline
+    protein & Number & Lượng protein (g/100g) \\
+    \hline
+    carbs & Number & Lượng carbohydrate (g/100g) \\
+    \hline
+    fat & Number & Lượng chất béo (g/100g) \\
+    \hline
+    fiber & Number & Lượng chất xơ (g/100g) \\
+    \hline
+    imageURL & String & URL hình ảnh món ăn \\
+    \hline
+    servingSize & String & Đơn vị khẩu phần \\
+    \hline
+    isActive & Boolean & Trạng thái hiển thị \\
+    \hline
+    createdAt & Timestamp & Thời điểm tạo \\
+    \hline
+\end{longtable}
+
+\subsubsection{Sub-collection: users/\{userId\}/foodLogs}
+
+Lưu trữ nhật ký ăn uống hàng ngày của từng người dùng.
+
+\begin{longtable}{|p{3.5cm}|p{3.5cm}|p{7.5cm}|}
+    \hline
+    \textbf{Trường} & \textbf{Kiểu dữ liệu} & \textbf{Mô tả} \\
+    \hline
+    \endhead
+    \hline
+    \endfoot
+    foodId & String & ID của món ăn (tham chiếu đến foods) \\
+    \hline
+    foodName & String & Tên món ăn \\
+    \hline
+    servingSize & Number & Khẩu phần đã ăn \\
+    \hline
+    calories & Number & Calo thực tế \\
+    \hline
+    protein & Number & Protein thực tế (g) \\
+    \hline
+    carbs & Number & Carb thực tế (g) \\
+    \hline
+    fat & Number & Chất béo thực tế (g) \\
+    \hline
+    mealType & String & Loại bữa ăn (breakfast, lunch, dinner, snack) \\
+    \hline
+    loggedAt & Timestamp & Thời điểm ghi nhận \\
+    \hline
+    imageURL & String & URL ảnh món ăn (nếu có) \\
+    \hline
+\end{longtable}
+
+% [TODO: Bổ sung mô tả các collection còn lại: favFoods, subscriptions, chatHistory]

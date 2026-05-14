@@ -1,0 +1,50 @@
+% ============================================================
+% MAIN.TEX — File chính của báo cáo SmartNutri
+% Biên dịch với XeLaTeX: xelatex main.tex && biber main && xelatex main.tex && xelatex main.tex
+% ============================================================
+
+\documentclass[12pt, a4paper]{report}
+
+% --- Config ---
+\input{config/packages.tex}
+\input{config/metadata.tex}
+\input{config/commands.tex}
+\input{config/style.tex}
+
+\begin{document}
+
+% --- FRONT MATTER ---
+\input{frontmatter/cover.tex}
+\input{frontmatter/acknowledgements.tex}
+\input{frontmatter/declaration.tex}
+\input{frontmatter/abstract.tex}
+
+% --- Table of contents ---
+\tableofcontents
+\newpage
+
+% --- List of figures ---
+\listoffigures
+\addcontentsline{toc}{chapter}{Danh sách hình vẽ}
+\newpage
+
+% --- List of tables ---
+\listoftables
+\addcontentsline{toc}{chapter}{Danh sách bảng}
+\newpage
+
+% --- Abbreviations ---
+\input{frontmatter/abbreviations.tex}
+
+% --- MAIN CONTENT ---
+\input{chapters/chapter01_intro.tex}
+\input{chapters/chapter02_background.tex}
+\input{chapters/chapter03_analysis_design.tex}
+\input{chapters/chapter04_implementation_testing.tex}
+\input{chapters/conclusion.tex}
+
+% --- BIBLIOGRAPHY ---
+\printbibliography[title={Tài liệu tham khảo}]
+\addcontentsline{toc}{chapter}{Tài liệu tham khảo}
+
+\end{document}
