@@ -10,6 +10,7 @@
 
 ## High priority
 
+- Manual verify Subscription/Premium MVP trên emulator/admin web: Free còn quota, Free hết quota, Premium không giới hạn, admin Set Free/Premium.
 - Chạy tiếp manual test checklist cho auth/onboarding (flow thêm meal thực tế đã pass; barcode UI và AI picker đã verify).
 - Dùng Firestore `foods` làm source of truth chính, seed local chỉ là fallback.
 
@@ -64,6 +65,8 @@
 - Viết & test script migrate `foods` legacy→canonical: phát hiện legacy-only, mixed, empty food; migrate thành công 4/4 docs sạch canonical, 0 legacy fields (2026-05-14).
 - Tối ưu admin N+1 query: Cloud Function trigger `onMealEntryChanged` duy trì `mealCount` + `lastMealDate` trên `users/{uid}`; admin web `loadUsers()` giảm N+1→1 query, `getDashboardStats().todayMeals` dùng collection group query. Thêm index `meal_entries.date`. Functions build/lint pass, admin build pass, trigger đã test (2026-05-14).
 - Implement favorite foods: `FavoriteFoodsService` (Firestore subcollection + ChangeNotifier), `FoodCatalog` DI, heart toggle trên `FoodTile`, favorites section trên FoodSearchPage, `QuickAddFavorites` chips trên HomePage, `firestore.rules` cập nhật. Flutter 62 tests pass, analyze sạch, Functions/admin build pass (2026-05-14).
+- Polish Subscription UI mobile: cải thiện `SubscriptionSummaryCard`, `SubscriptionPage`, `PaywallPage`; truyền ngữ cảnh chặn quota từ `PhotoScanPage` sang paywall qua query params; thêm `subscription_ui_test.dart` (4). `flutter analyze` sạch, full `flutter test` pass (81 tests) (2026-05-14).
+- Hoàn thiện Subscription/Premium MVP backend/admin/docs: DOCX kế hoạch, model/service subscription, AI scan quota 5 lượt/tháng, `setUserSubscription`, backend enforce quota trong `identifyFoodImage`, admin web hiển thị/set Free/Premium, rules usage và docs/checklist cập nhật. Flutter analyze/test, Functions build/lint, admin build pass (2026-05-14).
 
 ## Cancelled / not doing
 

@@ -182,4 +182,86 @@ void main() {
       expect(restored.updatedAt.isAfter(after), isFalse);
     });
   });
+
+  group('NutritionGoal.resolveForDisplay', () {
+    test('keeps stored goal when all values are reasonable', () {
+      final storedGoal = NutritionGoal(
+        uid: 'user-10',
+        calorieTarget: 1900,
+        proteinG: 110,
+        carbG: 220,
+        fatG: 55,
+        waterTargetMl: 2300,
+        updatedAt: DateTime.parse('2026-04-01T00:00:00.000Z'),
+      );
+
+      final resolved = NutritionGoal.resolveForDisplay(
+        uid: 'user-10',
+        storedGoal: storedGoal,
+        weightKg: 70,
+        heightCm: 175,
+        age: 30,
+        gender: 'male',
+        activityLevel: 'moderate',
+      );
+
+      expect(resolved, same(storedGoal));
+    });
+
+    test('recalculates unreasonable stored goal from profile inputs', () {
+      final storedGoal = NutritionGoal(
+        uid: 'user-11',
+        calorieTarget: 153440,
+        proteinG: 120,
+        carbG: 250,
+        fatG: 65,
+        waterTargetMl: 2400,
+        updatedAt: DateTime.parse('2026-04-01T00:00:00.000Z'),
+      );
+
+      final resolved = NutritionGoal.resolveForDisplay(
+        uid: 'user-11',
+        storedGoal: storedGoal,
+        weightKg: 70,
+        heightCm: 175,
+        age: 30,
+        gender: 'male',
+        activityLevel: 'light',
+      );
+
+      expect(resolved.uid, 'user-11');
+      expect(resolved.calorieTarget, 2267);
+      expect(resolved.proteinG, 112);
+      expect(resolved.fatG, 63);
+      expect(resolved.carbG, 313);
+      expect(resolved.waterTargetMl, 2400);
+    });
+
+    test('uses default goal when stored goal is unreasonable and profile inputs are missing', () {
+      final storedGoal = NutritionGoal(
+        uid: 'user-12',
+        calorieTarget: 500,
+        proteinG: 120,
+        carbG: 250,
+        fatG: 65,
+        updatedAt: DateTime.parse('2026-04-01T00:00:00.000Z'),
+      );
+
+      final before = DateTime.now();
+      final resolved = NutritionGoal.resolveForDisplay(
+        uid: 'user-12',
+        storedGoal: storedGoal,
+      );
+      final after = DateTime.now();
+
+      expect(resolved.uid, 'user-12');
+      expect(resolved.calorieTarget, 2000);
+      expect(resolved.proteinG, 120);
+      expect(resolved.carbG, 250);
+      expect(resolved.fatG, 65);
+      expect(resolved.waterTargetMl, 2500);
+      expect(resolved.updatedAt.isBefore(before), isFalse);
+      expect(resolved.updatedAt.isAfter(after), isFalse);
+    });
+  });
 }

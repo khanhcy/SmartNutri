@@ -27,7 +27,7 @@ class MainShellPage extends StatelessWidget {
     return SNScaffold(
       appBar: SNAppBar(
         title: label,
-        actions: [const _NotificationBell()],
+        actions: [const _ChatButton(), const _NotificationBell()],
       ),
       body: shell,
       floatingActionButton: _ScanFAB(shell: shell),
@@ -142,6 +142,19 @@ class _NotificationBell extends StatelessWidget {
             ),
           ),
       ],
+    );
+  }
+}
+
+class _ChatButton extends StatelessWidget {
+  const _ChatButton();
+
+  @override
+  Widget build(BuildContext context) {
+    return IconButton(
+      icon: const Icon(Icons.chat_bubble_outline_rounded),
+      tooltip: 'Trợ lý AI',
+      onPressed: () => context.push(AppPaths.chat),
     );
   }
 }

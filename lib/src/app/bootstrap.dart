@@ -12,6 +12,7 @@ import 'package:smartnutri/src/core/providers/app_settings_provider.dart';
 import 'package:smartnutri/src/core/services/ai_food_service.dart';
 import 'package:smartnutri/src/core/services/auth_service.dart';
 import 'package:smartnutri/src/core/services/barcode_service.dart';
+import 'package:smartnutri/src/core/services/chat_service.dart';
 import 'package:smartnutri/src/core/services/cloud_function_client.dart';
 import 'package:smartnutri/src/core/services/connectivity_service.dart';
 import 'package:smartnutri/src/core/services/favorites_service.dart';
@@ -22,15 +23,14 @@ import 'package:smartnutri/src/core/services/notification_service.dart';
 import 'package:smartnutri/src/core/services/profile_service.dart';
 import 'package:smartnutri/src/core/services/recent_foods_service.dart';
 import 'package:smartnutri/src/core/services/scan_history_service.dart';
+import 'package:smartnutri/src/core/services/subscription_service.dart';
 import 'package:smartnutri/src/core/services/water_service.dart';
 import 'package:smartnutri/src/core/services/weight_service.dart';
 
 Future<void> bootstrap() async {
   WidgetsFlutterBinding.ensureInitialized();
 
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   // Enable Firestore offline persistence
   FirebaseFirestore.instance.settings = const Settings(
@@ -40,8 +40,7 @@ Future<void> bootstrap() async {
 
   // ── Crashlytics global error hooks ──────────────────────────────────────
   if (!kDebugMode) {
-    FlutterError.onError =
-        FirebaseCrashlytics.instance.recordFlutterFatalError;
+    FlutterError.onError = FirebaseCrashlytics.instance.recordFlutterFatalError;
     PlatformDispatcher.instance.onError = (error, stack) {
       FirebaseCrashlytics.instance.recordError(error, stack, fatal: true);
       return true;
@@ -61,6 +60,8 @@ Future<void> bootstrap() async {
 
   final authService = AuthService();
   final profileService = ProfileService();
+  final goalService = GoalService();
+  final mealService = MealService();
   final foodService = FoodService();
   final favoritesService = FavoriteFoodsService(foodCatalog: foodService);
 
@@ -75,21 +76,28 @@ Future<void> bootstrap() async {
         Provider.value(value: profileService),
         Provider.value(value: foodService),
         ChangeNotifierProvider.value(value: favoritesService),
-        Provider(create: (_) => GoalService()),
-        Provider(create: (_) => MealService()),
+        Provider.value(value: goalService),
+        Provider.value(value: mealService),
         Provider(create: (_) => WaterService()),
         Provider(create: (_) => WeightService()),
         Provider(create: (_) => ConnectivityService()),
         Provider(create: (_) => CloudFunctionClient()),
+        Provider(create: (_) => SubscriptionService()),
         Provider(create: (_) => AiFoodService(foodService: foodService)),
         Provider(create: (_) => BarcodeService()),
+        ChangeNotifierProvider(
+          create: (_) => ChatService(
+            profileService: profileService,
+            goalService: goalService,
+            mealService: mealService,
+          ),
+        ),
         Provider.value(value: notificationService),
         ChangeNotifierProvider.value(value: recentFoods),
         ChangeNotifierProvider.value(value: scanHistory),
         ChangeNotifierProvider.value(value: settings),
         ChangeNotifierProvider(
-          create: (_) =>
-              AuthFlowNotifier(authService, profileService),
+          create: (_) => AuthFlowNotifier(authService, profileService),
         ),
       ],
       child: const SmartNutriApp(),

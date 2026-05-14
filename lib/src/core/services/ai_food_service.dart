@@ -164,6 +164,10 @@ class AiFoodService {
       if (error.message == 'invalid_response') {
         return 'Dữ liệu AI trả về không hợp lệ. Vui lòng thử lại.';
       }
+      if (error.message == 'quota_exceeded') {
+        return 'Bạn đã dùng hết lượt AI scan miễn phí trong tháng. '
+            'Nâng cấp Premium để tiếp tục sử dụng.';
+      }
       if (error.statusCode == 401 || error.statusCode == 403) {
         return 'Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại.';
       }

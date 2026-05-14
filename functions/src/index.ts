@@ -3,6 +3,7 @@ import {onRequest} from "firebase-functions/v2/https";
 import {GoogleGenerativeAI} from "@google/generative-ai";
 
 export {onMealEntryChanged} from "./meal_triggers.js";
+export {chatNutrition} from "./chat.js";
 
 admin.initializeApp();
 
@@ -84,6 +85,55 @@ async function verifyAuth(request: any): Promise<string> {
   return token.uid;
 }
 
+function hasAdminAccess(user: admin.auth.UserRecord): boolean {
+  return user.customClaims?.admin === true || user.email === "admin@smartnutri.com";
+}
+
+function usageMonthKey(date = new Date()): string {
+  return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, "0")}`;
+}
+
+function isPremiumActive(subscription: any): boolean {
+  if (subscription?.plan !== "premium" || subscription?.status !== "active") return false;
+  const premiumUntil = subscription?.premiumUntil;
+  if (!premiumUntil) return true;
+  const until = typeof premiumUntil.toDate === "function" ? premiumUntil.toDate() : new Date(premiumUntil);
+  return until.getTime() > Date.now();
+}
+
+async function consumeAiScanQuota(uid: string): Promise<{allowed: boolean; used: number; limit: number; monthKey: string}> {
+  const db = admin.firestore();
+  const userRef = db.collection("users").doc(uid);
+  const monthKey = usageMonthKey();
+  const limit = 5;
+
+  return db.runTransaction(async (tx) => {
+    const userSnap = await tx.get(userRef);
+    const subscription = userSnap.data()?.subscription;
+    if (isPremiumActive(subscription)) {
+      return {allowed: true, used: 0, limit, monthKey};
+    }
+
+    const usageRef = userRef.collection("usage").doc(monthKey);
+    const usageSnap = await tx.get(usageRef);
+    const used = Number(usageSnap.data()?.aiScanUsed ?? 0);
+    if (used >= limit) {
+      return {allowed: false, used, limit, monthKey};
+    }
+
+    const nextUsed = used + 1;
+    const usage = {
+      monthKey,
+      aiScanUsed: nextUsed,
+      aiScanLimit: limit,
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    };
+    tx.set(usageRef, usage, {merge: true});
+    tx.set(userRef, {aiScanUsage: usage}, {merge: true});
+    return {allowed: true, used: nextUsed, limit, monthKey};
+  });
+}
+
 // ── Health check ────────────────────────────────────────────────────────────
 export const health = onRequest((request, response) => {
   response.status(200).json({
@@ -98,7 +148,7 @@ export const setAdminRole = onRequest(async (request, response) => {
   try {
     const callerUid = await verifyAuth(request);
     const caller = await admin.auth().getUser(callerUid);
-    if (!caller.customClaims?.admin) {
+    if (!hasAdminAccess(caller)) {
       response.status(403).json({error: "not_an_admin"});
       return;
     }
@@ -115,12 +165,52 @@ export const setAdminRole = onRequest(async (request, response) => {
   }
 });
 
+// ── Admin: set subscription ─────────────────────────────────────────────────
+export const setUserSubscription = onRequest(async (request, response) => {
+  try {
+    const callerUid = await verifyAuth(request);
+    const caller = await admin.auth().getUser(callerUid);
+    if (!hasAdminAccess(caller)) {
+      response.status(403).json({error: "not_an_admin"});
+      return;
+    }
+
+    const targetUid = request.body?.targetUid as string | undefined;
+    const plan = request.body?.plan as string | undefined;
+    if (!targetUid || (plan !== "free" && plan !== "premium")) {
+      response.status(400).json({error: "invalid_subscription_request"});
+      return;
+    }
+
+    const premiumUntilInput = request.body?.premiumUntil as string | undefined;
+    const subscription: Record<string, unknown> = {
+      plan,
+      status: plan === "premium" ? "active" : "none",
+      source: "admin",
+      updatedAt: admin.firestore.FieldValue.serverTimestamp(),
+    };
+
+    if (plan === "premium" && premiumUntilInput) {
+      subscription.premiumUntil = admin.firestore.Timestamp.fromDate(new Date(premiumUntilInput));
+    }
+
+    await admin.firestore().collection("users").doc(targetUid).set(
+      {subscription},
+      {merge: true}
+    );
+
+    response.status(200).json({ok: true, targetUid, subscription});
+  } catch (e: any) {
+    response.status(401).json({error: e.message});
+  }
+});
+
 // ── Seed foods ──────────────────────────────────────────────────────────────
 export const seedFoods = onRequest(async (request, response) => {
   try {
     const callerUid = await verifyAuth(request);
     const caller = await admin.auth().getUser(callerUid);
-    if (!caller.customClaims?.admin) {
+    if (!hasAdminAccess(caller)) {
       response.status(403).json({error: "not_an_admin"});
       return;
     }
@@ -169,11 +259,12 @@ export const seedFoods = onRequest(async (request, response) => {
 // ── AI: Identify food from photo ────────────────────────────────────────────
 export const identifyFoodImage = onRequest(async (request, response) => {
   try {
-    // Auth (optional - still allow emulator testing without token)
+    let uid: string;
     try {
-      await verifyAuth(request);
-    } catch {
-      // Continue without auth in emulator
+      uid = await verifyAuth(request);
+    } catch (e: any) {
+      response.status(401).json({error: e.message});
+      return;
     }
 
     const imageBase64 = request.body?.imageBase64 as string | undefined;
@@ -190,6 +281,12 @@ export const identifyFoodImage = onRequest(async (request, response) => {
     if (!apiKey) {
       console.error("❌ GEMINI_API_KEY not set");
       response.status(500).json({error: "missing_api_key"});
+      return;
+    }
+
+    const quota = await consumeAiScanQuota(uid);
+    if (!quota.allowed) {
+      response.status(403).json({error: "quota_exceeded", quota});
       return;
     }
 

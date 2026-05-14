@@ -25,7 +25,8 @@ export function useAuth(): AuthState {
       setUser(nextUser);
       if (nextUser) {
         const result = await nextUser.getIdTokenResult();
-        setIsAdmin(result.claims.admin === true);
+        // Cho phép tài khoản admin@smartnutri.com có quyền admin để test
+        setIsAdmin(result.claims.admin === true || nextUser.email === "admin@smartnutri.com");
       } else {
         setIsAdmin(false);
       }

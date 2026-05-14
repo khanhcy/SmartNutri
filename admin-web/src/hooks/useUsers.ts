@@ -8,13 +8,20 @@ import {
   where,
   Timestamp,
 } from "firebase/firestore";
-import { db } from "../firebase";
+import { auth, db } from "../firebase";
+
+type SubscriptionPlan = "free" | "premium";
 
 interface UserStats {
   userId: string;
   email: string;
   mealCount: number;
   lastMealDate?: string;
+  subscriptionPlan: SubscriptionPlan;
+  subscriptionStatus: string;
+  premiumUntil?: string;
+  aiScanUsed: number;
+  aiScanLimit: number;
 }
 
 interface DashboardStats {
@@ -22,6 +29,19 @@ interface DashboardStats {
   totalFoods: number;
   todayMeals: number;
   newUsersThisWeek: number;
+}
+
+function functionBaseUrl() {
+  return import.meta.env.DEV
+    ? "http://127.0.0.1:5001/smartnutri-dev-2e67b/us-central1"
+    : "https://us-central1-smartnutri-dev-2e67b.cloudfunctions.net";
+}
+
+function formatPremiumUntil(value: unknown): string | undefined {
+  if (!value) return undefined;
+  if (value instanceof Timestamp) return value.toDate().toISOString().slice(0, 10);
+  if (typeof value === "string") return value.slice(0, 10);
+  return undefined;
 }
 
 export function useUsers() {
@@ -34,15 +54,20 @@ export function useUsers() {
       query(collection(db, "users"), orderBy("email"))
     );
 
-    // Sử dụng trường mealCount/lastMealDate đã được Cloud Function trigger
-    // duy trì trên document users/{uid}, tránh N+1 query vào sub-collection.
     const items: UserStats[] = userSnap.docs.map((u) => {
       const data = u.data();
+      const subscription = data.subscription ?? {};
+      const usage = data.aiScanUsage ?? {};
       return {
         userId: u.id,
         email: data.email ?? "",
         mealCount: data.mealCount ?? 0,
         lastMealDate: data.lastMealDate ?? undefined,
+        subscriptionPlan: subscription.plan === "premium" ? "premium" : "free",
+        subscriptionStatus: subscription.status ?? "none",
+        premiumUntil: formatPremiumUntil(subscription.premiumUntil),
+        aiScanUsed: usage.aiScanUsed ?? 0,
+        aiScanLimit: usage.aiScanLimit ?? 5,
       };
     });
 
@@ -53,6 +78,27 @@ export function useUsers() {
   useEffect(() => {
     loadUsers();
   }, []);
+
+  const setUserSubscription = async (targetUid: string, plan: SubscriptionPlan) => {
+    const token = await auth.currentUser?.getIdToken();
+    if (!token) throw new Error("missing_token");
+
+    const response = await fetch(`${functionBaseUrl()}/setUserSubscription`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ targetUid, plan }),
+    });
+
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}));
+      throw new Error(body.error ?? "set_subscription_failed");
+    }
+
+    await loadUsers();
+  };
 
   const getDashboardStats = async (): Promise<DashboardStats> => {
     const userSnap = await getDocs(collection(db, "users"));
@@ -67,9 +113,7 @@ export function useUsers() {
       )
     );
 
-    // Collection group query thay vì N+1 sub-collection queries.
-    // Cần index: collectionGroup=meal_entries, field=date (ASC).
-    const dateStr = new Date().toISOString().slice(0, 10); // "2026-05-14"
+    const dateStr = new Date().toISOString().slice(0, 10);
     let todayMeals = 0;
     try {
       const todaySnap = await getDocs(
@@ -80,7 +124,6 @@ export function useUsers() {
       );
       todayMeals = todaySnap.size;
     } catch (_) {
-      // Fallback nếu collection group index chưa deploy
       todayMeals = 0;
     }
 
@@ -92,5 +135,5 @@ export function useUsers() {
     };
   };
 
-  return { users, loading, loadUsers, getDashboardStats };
+  return { users, loading, loadUsers, setUserSubscription, getDashboardStats };
 }

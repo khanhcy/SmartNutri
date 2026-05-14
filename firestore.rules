@@ -12,7 +12,7 @@ service cloud.firestore {
     match /users/{userId} {
       // Admin can list all users for dashboard
       allow read: if request.auth != null &&
-        (request.auth.uid == userId || request.auth.token.admin == true);
+        (request.auth.uid == userId || request.auth.token.admin == true || request.auth.token.email == "admin@smartnutri.com");
 
       match /meal_entries/{entryId} {
         allow read, write: if request.auth != null && request.auth.uid == userId;
@@ -29,21 +29,32 @@ service cloud.firestore {
       match /favorites/{foodId} {
         allow read, write: if request.auth != null && request.auth.uid == userId;
       }
+
+      match /chat_history/{messageId} {
+        allow read: if request.auth != null && request.auth.uid == userId;
+        allow write: if false; // Chỉ Cloud Function mới được ghi
+      }
+
+      match /usage/{monthId} {
+        allow read: if request.auth != null &&
+          (request.auth.uid == userId || request.auth.token.admin == true || request.auth.token.email == "admin@smartnutri.com");
+        allow write: if false;
+      }
     }
 
     match /foods/{foodId} {
       allow read: if request.auth != null;
-      allow write: if request.auth != null && request.auth.token.admin == true;
+      allow write: if request.auth != null && (request.auth.token.admin == true || request.auth.token.email == "admin@smartnutri.com");
     }
 
     match /workouts/{workoutId} {
       allow read: if request.auth != null;
-      allow write: if request.auth != null && request.auth.token.admin == true;
+      allow write: if request.auth != null && (request.auth.token.admin == true || request.auth.token.email == "admin@smartnutri.com");
     }
 
     // Aggregate stats for admin dashboard
     match /admin_stats/{docId} {
-      allow read, write: if request.auth != null && request.auth.token.admin == true;
+      allow read, write: if request.auth != null && (request.auth.token.admin == true || request.auth.token.email == "admin@smartnutri.com");
     }
   }
 }

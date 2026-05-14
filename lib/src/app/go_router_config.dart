@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:smartnutri/src/app/auth_flow_notifier.dart';
 import 'package:smartnutri/src/core/ui/components/state_view.dart';
 import 'package:smartnutri/src/features/auth/presentation/sign_in_page.dart';
+import 'package:smartnutri/src/features/chat/presentation/chat_page.dart';
 import 'package:smartnutri/src/features/dashboard/presentation/main_shell_page.dart';
 import 'package:smartnutri/src/features/home/presentation/home_page.dart';
 import 'package:smartnutri/src/features/meal_log/presentation/meal_log_page.dart';
@@ -12,6 +13,8 @@ import 'package:smartnutri/src/features/search/presentation/food_search_page.dar
 import 'package:smartnutri/src/features/scan/presentation/barcode_scan_page.dart';
 import 'package:smartnutri/src/features/scan/presentation/photo_scan_page.dart';
 import 'package:smartnutri/src/features/stats/presentation/statistics_page.dart';
+import 'package:smartnutri/src/features/subscription/presentation/paywall_page.dart';
+import 'package:smartnutri/src/features/subscription/presentation/subscription_page.dart';
 
 /// Route paths for deep links & notifications.
 abstract final class AppPaths {
@@ -24,8 +27,11 @@ abstract final class AppPaths {
   static const log = '/app/log';
   static const profile = '/app/profile';
   static const stats = '/app/stats';
+  static const subscription = '/app/subscription';
+  static const paywall = '/app/paywall';
   static const scanPhoto = '/app/scan/photo';
   static const scanBarcode = '/app/scan/barcode';
+  static const chat = '/app/chat';
 }
 
 GoRouter createAppRouter({required AuthFlowNotifier authFlow}) {
@@ -98,8 +104,7 @@ GoRouter createAppRouter({required AuthFlowNotifier authFlow}) {
                   GoRoute(
                     path: 'search',
                     pageBuilder: (context, state) =>
-                        const NoTransitionPage<void>(
-                            child: FoodSearchPage()),
+                        const NoTransitionPage<void>(child: FoodSearchPage()),
                   ),
                 ],
               ),
@@ -129,6 +134,21 @@ GoRouter createAppRouter({required AuthFlowNotifier authFlow}) {
                 const NoTransitionPage<void>(child: StatisticsPage()),
           ),
           GoRoute(
+            path: 'subscription',
+            pageBuilder: (context, state) =>
+                const NoTransitionPage<void>(child: SubscriptionPage()),
+          ),
+          GoRoute(
+            path: 'paywall',
+            pageBuilder: (context, state) {
+              final source = state.uri.queryParameters['source'];
+              final reason = state.uri.queryParameters['reason'];
+              return NoTransitionPage<void>(
+                child: PaywallPage(source: source, reason: reason),
+              );
+            },
+          ),
+          GoRoute(
             path: 'scan/photo',
             pageBuilder: (context, state) =>
                 const NoTransitionPage<void>(child: PhotoScanPage()),
@@ -137,6 +157,11 @@ GoRouter createAppRouter({required AuthFlowNotifier authFlow}) {
             path: 'scan/barcode',
             pageBuilder: (context, state) =>
                 const NoTransitionPage<void>(child: BarcodeScanPage()),
+          ),
+          GoRoute(
+            path: 'chat',
+            pageBuilder: (context, state) =>
+                const NoTransitionPage<void>(child: ChatPage()),
           ),
         ],
       ),

@@ -6,7 +6,7 @@ SmartNutri là app theo dõi dinh dưỡng tiếng Việt gồm Flutter mobile a
 
 ## Current development focus
 
-Giai đoạn 1 trong roadmap: ổn định production foundation trước khi mở rộng tính năng.
+Subscription/Premium MVP đã hoàn thiện ở mức mock/admin premium; trọng tâm tiếp theo là manual verification trên emulator/admin web và quyết định payment thật.
 
 ## Completed features
 
@@ -24,10 +24,14 @@ Giai đoạn 1 trong roadmap: ổn định production foundation trước khi m�
 
 ## Recently completed
 
+- Hoàn thiện Subscription/Premium MVP backend/admin/docs: tạo DOCX kế hoạch, thêm model/service subscription, paywall/profile entry, chặn AI scan khi hết quota, Cloud Function `setUserSubscription`, backend enforce quota 5 lượt/tháng trong `identifyFoodImage`, admin web hiển thị/set Free/Premium, rules `users/{uid}/usage/{yyyyMM}` và docs/checklist cập nhật. `flutter analyze`, `flutter test` (81 tests), Functions build/lint và admin build pass (2026-05-14).
+- Implement chatbot thông minh: Cloud Function `chatNutrition` với system prompt cá nhân hóa (profile + goal + meals hôm nay), `ChatService` ChangeNotifier, `ChatPage` với bubble UI, typing indicator 3 chấm, suggestion chips, lưu lịch sử vào Firestore `users/{uid}/chat_history`; nút chat trong AppBar mọi tab. `flutter analyze` sạch, Functions build/lint pass (2026-05-14).
 - Implement favorite foods: `FavoriteFoodsService` với `FoodCatalog` DI, Firestore subcollection `users/{uid}/favorites/{foodId}`, reactive snapshot + `ChangeNotifier`; `FoodTile` có heart toggle; favorites section trên FoodSearchPage; `QuickAddFavorites` chips trên HomePage; `firestore.rules` cập nhật. 4 unit tests, analyze sạch, Functions và admin build pass (2026-05-14).
 - Tối ưu admin N+1 query: Cloud Function trigger `onMealEntryChanged` duy trì `mealCount` và `lastMealDate` trên `users/{uid}`; admin web `loadUsers()` giảm từ N+1 xuống 1 query, `getDashboardStats().todayMeals` dùng collection group query thay N+1. Thêm `firestore.indexes.json` collection group index cho `meal_entries.date`. Functions build/lint pass, admin build pass, trigger đã test trên emulator (2026-05-14).
 - Verify Cloud Functions: `health`, `barcodeLookup`, `identifyFoodImage`, `suggestMeals` đều hoạt động trên emulator. Viết script cleanup goals và migrate foods legacy→canonical, đã test trên emulator (2026-05-14).
 - Thêm `user_profile_test.dart` (6) và `meal_entry_test.dart` (9) — Flutter 58 tests pass, analyze sạch (2026-05-14).
+- Polish Subscription UI mobile: cải thiện `SubscriptionSummaryCard`, `SubscriptionPage`, `PaywallPage`; thêm copy ngữ cảnh khi bị chặn quota AI scan và truyền `source/reason` qua router từ `PhotoScanPage` (2026-05-14).
+- Thêm `test/subscription_ui_test.dart` (4 widget tests) cho summary/subscription/paywall; `flutter analyze` sạch và full `flutter test` pass (81 tests) (2026-05-14).
 
 - AI/barcode error states: `AiFoodServiceException` và `BarcodeLookupException` với message tiếng Việt, UI catch và hiển thị lỗi rõ ràng cho từng loại (auth, 5xx, mạng, invalid response).
 - `FunctionCaller` interface và `FoodCatalog` abstract class cho DI/testing.
@@ -44,10 +48,12 @@ Giai đoạn 1 trong roadmap: ổn định production foundation trước khi m�
 
 ## Missing features
 
+- Manual verification cho Subscription/Premium MVP: Free còn quota, Free hết quota, Premium không giới hạn và admin set plan.
+- Payment thật cho Subscription/Premium: receipt validation, renewal/cancel lifecycle và store integration.
 - Chạy manual release/test checklist đầy đủ cho core flows.
 - Integration tests cho auth → onboarding → dashboard và meal logging.
 - Food data verification workflow.
-- Daily logging UX nâng cao như favorite foods, copy meal và portion selector.
+- Daily logging UX nâng cao như copy meal, portion selector và undo delete meal.
 - Weekly review/insights.
 
 ## Known bugs / risks
@@ -61,13 +67,14 @@ Giai đoạn 1 trong roadmap: ổn định production foundation trước khi m�
 
 ## Test status
 
-- Flutter: 62 tests pass (gồm 4 favorites_service), `flutter analyze` sạch, `flutter build apk --debug` pass (2026-05-14).
+- Flutter: 81 tests pass (bao gồm `subscription_ui_test.dart`), `flutter analyze` sạch, `flutter build apk --debug` pass lần gần nhất (2026-05-14).
 - Admin web: `npm --prefix admin-web run build` pass; còn cảnh báo Vite chunk lớn.
 - Cloud Functions: `npm --prefix functions run build` và `npm --prefix functions run lint` pass.
 
 ## Recent decisions
 
-- Ưu tiên roadmap theo hướng: production foundation → food database → daily logging UX → test/release readiness → retention insights.
+- Cập nhật ưu tiên roadmap: Subscription/Premium MVP được đưa lên nhóm ưu tiên cao để chuẩn bị mô hình Free/Premium.
+- Ưu tiên roadmap trước đó: production foundation → food database → daily logging UX → test/release readiness → retention insights.
 - Provider hiện tại vẫn đủ dùng; chưa ưu tiên đổi state management.
 - Đã hoàn thành chuẩn hóa AI/barcode error states với exception classes và UI error hiển thị rõ ràng.
 - Firestore `foods/{foodId}` dùng canonical fields theo Flutter `FoodItem`; admin web và Cloud Functions đọc legacy nhưng ghi canonical.
@@ -75,7 +82,8 @@ Giai đoạn 1 trong roadmap: ổn định production foundation trước khi m�
 
 ## Next recommended action
 
-Favorite foods đã xong. Medium priority còn lại:
-- Copy meal, portion selector, undo delete meal.
-- Manual test auth/onboarding (vẫn deferred).
-- Tiếp tục thêm test.
+Manual verify Subscription/Premium MVP:
+- Test Profile -> Gói SmartNutri -> Paywall trên emulator.
+- Test Free user còn quota gọi AI scan được và usage tăng.
+- Test Free user hết quota thấy paywall/lỗi quota.
+- Test admin web Set Premium/Set Free và xác nhận Premium user không bị giới hạn AI scan.

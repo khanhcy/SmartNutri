@@ -73,8 +73,20 @@ admin-web/dist/
 admin-web/.vite/
 
 # TypeScript build output
-lib/
-dist/
+/lib/
+!/lib/
+!/lib/src/
+/lib/src/*
+!/lib/src/core/
+/lib/src/core/*
+!/lib/src/core/services/
+/lib/src/core/services/*
+!/lib/src/core/services/subscription_service.dart
+!/lib/src/features/
+/lib/src/features/*
+!/lib/src/features/subscription/
+!/lib/src/features/subscription/**
+/dist/
 *.js.map
 
 # AI Agents & IDE Cache (Do NOT push these)
@@ -93,6 +105,9 @@ dist/
 # AI/Dev Documents (local only)
 CLAUDE.md
 docs/
+!docs/
+docs/*
+!docs/subscription-premium-plan.docx
 PROJECT_NOTES.md
 
 # Test images / temp data

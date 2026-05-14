@@ -46,6 +46,29 @@ void main() {
     );
 
     test(
+      'identifyFood shows quota message when free AI scan limit is reached',
+      () async {
+        final service = AiFoodService(
+          foodService: _FakeFoodCatalog(_foods),
+          functions: _FakeFunctions((_, _) {
+            throw FunctionsException('quota_exceeded', 403);
+          }),
+        );
+
+        expect(
+          () => service.identifyFood('image-base64'),
+          throwsA(
+            isA<AiFoodServiceException>().having(
+              (e) => e.userMessage,
+              'userMessage',
+              contains('hết lượt AI scan'),
+            ),
+          ),
+        );
+      },
+    );
+
+    test(
       'identifyFood shows network error when connection times out',
       () async {
         final service = AiFoodService(

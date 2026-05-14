@@ -11,6 +11,7 @@ import 'package:smartnutri/src/core/ui/theme/app_spacing.dart';
 import 'package:smartnutri/src/features/nutrition/domain/nutrition_goal.dart';
 import 'package:smartnutri/src/features/profile/domain/user_profile.dart';
 import 'package:smartnutri/src/features/profile/presentation/edit_profile_page.dart';
+import 'package:smartnutri/src/features/subscription/presentation/widgets/subscription_summary_card.dart';
 
 import 'widgets/account_card.dart';
 import 'widgets/goal_card.dart';
@@ -75,6 +76,8 @@ class _ProfileContent extends StatelessWidget {
           ],
           GoalCard(goal: goal, uid: uid),
           const SizedBox(height: AppSpacing.md),
+          SubscriptionSummaryCard(uid: uid),
+          const SizedBox(height: AppSpacing.md),
           SNCard(
             child: ListTile(
               contentPadding: EdgeInsets.zero,
@@ -97,13 +100,11 @@ class _ProfileContent extends StatelessWidget {
             onEditProfile: profile == null
                 ? null
                 : () => Navigator.of(context).push(
-                      MaterialPageRoute<void>(
-                        builder: (_) => EditProfilePage(
-                          profile: profile,
-                          goal: goal,
-                        ),
-                      ),
+                    MaterialPageRoute<void>(
+                      builder: (_) =>
+                          EditProfilePage(profile: profile, goal: goal),
                     ),
+                  ),
           ),
           const SizedBox(height: AppSpacing.md),
           const SettingsCard(),

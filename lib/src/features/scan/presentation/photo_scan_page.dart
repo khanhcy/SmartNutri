@@ -1,10 +1,14 @@
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
+import 'package:smartnutri/src/app/go_router_config.dart';
 import 'package:smartnutri/src/core/services/ai_food_service.dart';
+import 'package:smartnutri/src/core/services/auth_service.dart';
 import 'package:smartnutri/src/core/services/connectivity_service.dart';
+import 'package:smartnutri/src/core/services/subscription_service.dart';
 import 'package:smartnutri/src/core/ui/theme/app_spacing.dart';
 import 'package:smartnutri/src/features/meal_log/presentation/add_meal_bottom_sheet.dart';
 import 'package:smartnutri/src/features/home/presentation/widgets/ai_suggestions_card.dart';
@@ -25,6 +29,21 @@ class _PhotoScanPageState extends State<PhotoScanPage> {
   String? _error;
 
   Future<void> _pickAndAnalyze(ImageSource source) async {
+    final uid = context.read<AuthService>().currentUser?.uid;
+    if (uid != null) {
+      final overview = await context.read<SubscriptionService>().getOverview(
+        uid,
+      );
+      if (!overview.canUseAiScan) {
+        if (mounted) {
+          context.push(
+            '${AppPaths.paywall}?source=scan_photo&reason=quota_exhausted',
+          );
+        }
+        return;
+      }
+    }
+
     final xfile = await _picker.pickImage(
       source: source,
       imageQuality: 85,

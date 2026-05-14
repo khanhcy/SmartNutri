@@ -116,7 +116,33 @@ Giảm lỗi regression và chuẩn bị quy trình release/demonstration ổn �
 
 Trung bình.
 
-## Giai đoạn 5 — Retention và insight thông minh
+## Giai đoạn 5 — Subscription/Premium MVP
+
+### Mục tiêu
+
+Thêm nền tảng gói Free/Premium để chuẩn bị mô hình kinh doanh cho app, nhưng vẫn giữ phạm vi nhỏ và có thể demo được.
+
+### Việc cần làm
+
+- Xác định quyền lợi Free/Premium: AI scan quota, premium reports, meal plans hoặc coach mode.
+- Thêm trạng thái subscription cho user trong Firestore.
+- Thiết kế paywall và màn quản lý gói trong mobile app.
+- Thêm guard UI cho tính năng premium.
+- Thêm admin visibility cơ bản cho trạng thái premium của user.
+- Chọn hướng thanh toán: mock/demo trước hoặc tích hợp in-app purchase sau.
+
+### Tiêu chí hoàn thành
+
+- User free và premium có trạng thái rõ ràng trong dữ liệu.
+- App hiển thị paywall khi user free mở tính năng premium.
+- AI scan quota hoặc ít nhất một quyền lợi premium được enforce ở UI/backend phù hợp.
+- Có test/checklist cho user free, user premium và downgrade/expired state nếu áp dụng.
+
+### Độ ưu tiên
+
+Cao theo yêu cầu ưu tiên mới.
+
+## Giai đoạn 6 — Retention và insight thông minh
 
 ### Mục tiêu
 
@@ -141,7 +167,7 @@ Làm app có giá trị lâu dài hơn app ghi log đơn thuần.
 
 Trung bình.
 
-## Giai đoạn 6 — Growth, monetization và mở rộng
+## Giai đoạn 7 — Growth, monetization và mở rộng
 
 ### Mục tiêu
 
@@ -154,7 +180,6 @@ Chuẩn bị cho hướng thương mại hoặc mở rộng sản phẩm nếu M
 - Meal plans cá nhân hóa.
 - Coach/nutritionist mode.
 - Export PDF/CSV.
-- Subscription/paywall.
 - Wearable integration.
 
 ### Tiêu chí bắt đầu
@@ -183,8 +208,8 @@ Thấp ở hiện tại.
 
 ## Việc nên làm ngay tiếp theo
 
-Bắt đầu với Giai đoạn 1, task đầu tiên:
+Theo ưu tiên mới, task tiếp theo nên là lập thiết kế Subscription/Premium MVP trước khi code:
 
-> Chặn admin web chỉ cho tài khoản có admin claim truy cập.
+> Xác định gói Free/Premium, quyền lợi premium đầu tiên, dữ liệu subscription và cách enforce paywall/quota.
 
-Lý do: đây là thay đổi nhỏ, tác động bảo mật cao, ít rủi ro và tạo nền tốt trước khi mở rộng admin/food database.
+Lý do: Subscription/Premium ảnh hưởng product, dữ liệu user, UI mobile, admin web và backend quota nên cần chốt phạm vi nhỏ trước khi triển khai.
