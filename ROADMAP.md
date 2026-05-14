@@ -130,8 +130,8 @@ Thêm nền tảng gói Free/Premium để chuẩn bị mô hình kinh doanh cho
 - [x] Guard UI cho tính năng premium (chặn AI scan khi hết quota).
 - [x] Admin web hiển thị/set Free/Premium cho user.
 - [x] Cloud Function `setUserSubscription` (admin-only).
-- [x] Backend enforce quota trong `identifyFoodImage`.
-- [x] Firestore rules cho `users/{uid}/usage/{yyyyMM}`.
+- [x] Backend enforce quota trong `identifyFoodImage` nếu dùng Cloud Functions path.
+- [x] Firestore rules cho `users/{uid}/usage/{yyyyMM}` và client-side quota demo khi dùng Gemini trực tiếp.
 - [x] Docs/checklist cập nhật.
 
 ### Còn cần làm

@@ -2,10 +2,7 @@
 
 ## In progress
 
-- Refactor Barcode service: Cloud Functions → Open Food Facts API trực tiếp (đã code xong, test pass, chưa commit).
-- Refactor AI Food service: Cloud Functions → Gemini trực tiếp (đã code xong, test pass, chưa commit).
-- Polish Subscription UI mobile (đã code xong, test pass, chưa commit).
-- Giai đoạn 1 — Ổn định production foundation: phần lớn high-priority đã xong.
+- Giai đoạn demo đồ án: đã chọn giữ Gemini trực tiếp trong Flutter; cần manual verify chat history và quota client-side trước khi chốt demo.
 
 ## Deferred
 
@@ -13,7 +10,8 @@
 
 ## High priority
 
-- Manual verify Subscription/Premium MVP: mobile flow Profile→Gói SmartNutri→Paywall đã pass (2026-05-14); còn cần verify quota enforcement và admin Set Free/Premium với Firebase emulator.
+- Manual verify demo AI/Subscription: chat gửi và reload còn lịch sử; Free còn quota scan thành công và tăng usage; Free hết quota mở paywall; Premium không bị chặn.
+- Cập nhật báo cáo/slide để ghi rõ bản demo gọi Gemini trực tiếp trong Flutter, còn production nên chuyển AI qua backend/Cloud Functions để bảo vệ API key và enforce quota thật.
 - Chạy tiếp manual test checklist cho auth/onboarding.
 - Dùng Firestore `foods` làm source of truth chính, seed local chỉ là fallback.
 
@@ -74,6 +72,7 @@
 - Refactor Barcode service: Cloud Functions → Open Food Facts API trực tiếp qua `http.Client`, parse JSON product/nutriments. Tests migrate sang `_FakeHttpClient`. (2026-05-14, chưa commit)
 - Refactor AI Food service: Cloud Functions → Gemini trực tiếp qua `AiService` interface, thêm fuzzy match (Levenshtein + diacritics), `suggestMealsLocal` offline fallback. Tests migrate sang `_FakeGeminiService`. (2026-05-14, chưa commit)
 - Cập nhật test AI/barcode: error message assertions khớp code mới, thêm test case mới (identifyFood matches known foods, suggestMeals with gemini not configured). Tổng 86 tests pass. (2026-05-14, chưa commit)
+- Demo alignment: Firestore rules cho owner ghi `chat_history` và `usage/{yyyyMM}` có validate field; `SubscriptionService.recordAiScanUse` ghi usage client-side sau Gemini scan thành công; docs backend/AI cập nhật theo hướng Gemini trực tiếp cho demo. (2026-05-15, chưa commit)
 
 ## Cancelled / not doing
 

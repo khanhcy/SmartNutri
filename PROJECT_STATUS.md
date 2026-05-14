@@ -6,14 +6,14 @@ SmartNutri là app theo dõi dinh dưỡng tiếng Việt gồm Flutter mobile a
 
 ## Current development focus
 
-Đã refactor Barcode service (Cloud Functions → Open Food Facts API trực tiếp) và AI Food service (Cloud Functions → Gemini trực tiếp). Subscription UI đã polish. Trọng tâm tiếp theo: manual verify Subscription/Premium quota enforcement với Firebase emulator.
+Đã chọn hướng đồ án/demo: giữ Gemini trực tiếp trong Flutter để giảm độ phức tạp vận hành, đồng thời dùng Firestore client-side quota cho Free/Premium và cho client lưu chat history theo rules. Trọng tâm tiếp theo: chạy manual verify core demo flows và cập nhật báo cáo giải thích rõ giới hạn demo so với production.
 
 ## Completed features
 
 - Mobile auth, onboarding và auth-gated routing.
 - Home dashboard với calories, macros, nước, streak, bữa hôm nay và AI suggestions.
 - Meal log, food search, profile, statistics, water tracking và weight tracking.
-- AI photo scan, barcode lookup và meal suggestions qua Cloud Functions.
+- AI photo scan, barcode lookup và meal suggestions đã có UI/service; barcode đang gọi Open Food Facts trực tiếp, AI đang gọi Gemini qua client service.
 - Admin web scaffold với login, dashboard, foods và users.
 - Admin web route guard đã yêu cầu tài khoản có admin claim.
 
@@ -24,6 +24,7 @@ SmartNutri là app theo dõi dinh dưỡng tiếng Việt gồm Flutter mobile a
 
 ## Recently completed
 
+- Demo alignment: giữ Gemini trực tiếp trong Flutter cho đồ án/demo; thêm client-side record quota AI scan sau khi Gemini trả kết quả thành công; mở Firestore rules cho owner ghi `chat_history` và `usage/{yyyyMM}` có validate field; cập nhật docs backend/AI để phân biệt demo direct-client với production Cloud Functions. (2026-05-15)
 - Refactor Barcode service: chuyển từ Cloud Functions sang gọi trực tiếp Open Food Facts API (`BarcodeService` dùng `http.Client`, parse JSON product/nutriments). Test cập nhật dùng `_FakeHttpClient`. (2026-05-14)
 - Refactor AI Food service: chuyển từ Cloud Functions sang Gemini trực tiếp qua `AiService` interface. Thêm fuzzy match (Levenshtein + diacritics stripping) để map kết quả AI vào food catalog. Thêm `suggestMealsLocal` fallback offline với scoring macro. (2026-05-14)
 - Review + fix bảo mật chatbot: xóa hardcoded Gemini API key khỏi client, xóa Gemini Direct fallback path, fix duplicate Firestore save (chỉ CF ghi), thêm debugPrint empty catch, fix isError persistence, cập nhật docs/chatbot.md. (2026-05-14)
@@ -62,6 +63,9 @@ SmartNutri là app theo dõi dinh dưỡng tiếng Việt gồm Flutter mobile a
 
 ## Known bugs / risks
 
+- Demo limitation: Gemini API key đang nằm trong Flutter client để phục vụ đồ án/demo; khi production cần chuyển sang backend/Cloud Functions hoặc backend proxy.
+- Demo limitation: Free/Premium quota hiện enforce ở mức app + Firestore rules, đủ để demo flow nhưng không chống bypass như backend enforcement thật.
+- Chat history đã được chuyển sang client-write theo hướng demo; cần manual verify gửi chat, reload app và thấy lịch sử còn.
 - Storage upload có thể lỗi nếu code mới dùng path ngoài `users/{uid}/...` hoặc `admin/...`.
 - Dữ liệu `goals/{uid}` cũ có thể chứa giá trị bất thường; UI đã có fallback guard nhưng vẫn nên cleanup dữ liệu lỗi trong Firestore để tránh lệch nguồn.
 - Admin users/dashboard có rủi ro N+1 query khi dữ liệu tăng.
@@ -71,9 +75,10 @@ SmartNutri là app theo dõi dinh dưỡng tiếng Việt gồm Flutter mobile a
 
 ## Test status
 
-- Flutter: 86 tests pass (bao gồm `subscription_ui_test.dart` 4 tests), `flutter analyze` sạch, `flutter build apk --debug` chưa chạy lại lần này (2026-05-14).
-- Admin web: `npm --prefix admin-web run build` chưa chạy lại lần này; lần trước pass với cảnh báo Vite chunk lớn.
-- Cloud Functions: `npm --prefix functions run build` và `npm --prefix functions run lint` chưa chạy lại lần này (có thay đổi nhỏ trong `chat.ts`).
+- Flutter: `flutter analyze` pass và `flutter test` pass 86 tests sau thay đổi quota client-side (2026-05-15).
+- Firestore rules: `firebase deploy --only firestore:rules --dry-run` compiled successfully, không deploy thật (2026-05-15).
+- Admin web: không đổi source lần này; lần trước `npm --prefix admin-web run build` pass với cảnh báo Vite chunk lớn.
+- Cloud Functions: không đổi source lần này; lần trước `npm --prefix functions run build` và `npm --prefix functions run lint` pass.
 
 ## Recent decisions
 
@@ -103,4 +108,4 @@ Cần Firebase emulator/backend để xác minh tiếp:
 
 ## Next recommended action
 
-Commit các thay đổi hiện tại (refactor Barcode/AI service + subscription UI polish + test updates), sau đó chạy build Functions + Admin để xác nhận không hồi quy. Tiếp theo: xác minh quota enforcement và admin subscription flow với Firebase emulator.
+Chạy `flutter analyze` và `flutter test`, sau đó manual verify demo flows: chat gửi/lưu lịch sử, AI scan Free còn quota tăng usage, Free hết quota mở paywall, Premium không bị chặn, và cập nhật báo cáo phần giới hạn demo/production.

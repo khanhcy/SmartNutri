@@ -62,6 +62,7 @@ class _PhotoScanPageState extends State<PhotoScanPage> {
 
     final connectivity = context.read<ConnectivityService>();
     final ai = context.read<AiFoodService>();
+    final subscriptionService = context.read<SubscriptionService>();
     final online = await connectivity.isOnline;
     if (!online) {
       if (mounted) {
@@ -76,6 +77,9 @@ class _PhotoScanPageState extends State<PhotoScanPage> {
     final base64 = base64Encode(bytes);
     try {
       final result = await ai.identifyFood(base64);
+      if (uid != null) {
+        await subscriptionService.recordAiScanUse(uid);
+      }
       if (mounted) {
         setState(() {
           _analyzing = false;
