@@ -116,31 +116,28 @@ Giảm lỗi regression và chuẩn bị quy trình release/demonstration ổn �
 
 Trung bình.
 
-## Giai đoạn 5 — Subscription/Premium MVP
+## Giai đoạn 5 — Subscription/Premium MVP ✅ (đã hoàn thành code)
 
 ### Mục tiêu
 
-Thêm nền tảng gói Free/Premium để chuẩn bị mô hình kinh doanh cho app, nhưng vẫn giữ phạm vi nhỏ và có thể demo được.
+Thêm nền tảng gói Free/Premium để chuẩn bị mô hình kinh doanh cho app.
 
-### Việc cần làm
+### Đã làm xong
 
-- Xác định quyền lợi Free/Premium: AI scan quota, premium reports, meal plans hoặc coach mode.
-- Thêm trạng thái subscription cho user trong Firestore.
-- Thiết kế paywall và màn quản lý gói trong mobile app.
-- Thêm guard UI cho tính năng premium.
-- Thêm admin visibility cơ bản cho trạng thái premium của user.
-- Chọn hướng thanh toán: mock/demo trước hoặc tích hợp in-app purchase sau.
+- [x] Quyền lợi Free/Premium: AI scan quota 5 lượt/tháng.
+- [x] Trạng thái subscription trong Firestore (`users/{uid}/subscription`).
+- [x] PaywallPage, SubscriptionPage, SubscriptionSummaryCard trong mobile app.
+- [x] Guard UI cho tính năng premium (chặn AI scan khi hết quota).
+- [x] Admin web hiển thị/set Free/Premium cho user.
+- [x] Cloud Function `setUserSubscription` (admin-only).
+- [x] Backend enforce quota trong `identifyFoodImage`.
+- [x] Firestore rules cho `users/{uid}/usage/{yyyyMM}`.
+- [x] Docs/checklist cập nhật.
 
-### Tiêu chí hoàn thành
+### Còn cần làm
 
-- User free và premium có trạng thái rõ ràng trong dữ liệu.
-- App hiển thị paywall khi user free mở tính năng premium.
-- AI scan quota hoặc ít nhất một quyền lợi premium được enforce ở UI/backend phù hợp.
-- Có test/checklist cho user free, user premium và downgrade/expired state nếu áp dụng.
-
-### Độ ưu tiên
-
-Cao theo yêu cầu ưu tiên mới.
+- [ ] Manual verify quota enforcement với Firebase emulator.
+- [ ] Quyết định payment thật (mock/demo trước hay tích hợp IAP).
 
 ## Giai đoạn 6 — Retention và insight thông minh
 
@@ -208,8 +205,7 @@ Thấp ở hiện tại.
 
 ## Việc nên làm ngay tiếp theo
 
-Theo ưu tiên mới, task tiếp theo nên là lập thiết kế Subscription/Premium MVP trước khi code:
-
-> Xác định gói Free/Premium, quyền lợi premium đầu tiên, dữ liệu subscription và cách enforce paywall/quota.
-
-Lý do: Subscription/Premium ảnh hưởng product, dữ liệu user, UI mobile, admin web và backend quota nên cần chốt phạm vi nhỏ trước khi triển khai.
+1. Commit các thay đổi refactor hiện tại (Barcode + AI service + Subscription UI + test).
+2. Chạy `npm run build` cho Functions và Admin để xác nhận không hồi quy.
+3. Manual verify Subscription/Premium quota enforcement với Firebase emulator.
+4. Quyết định hướng payment thật (IAP hay mock/demo).

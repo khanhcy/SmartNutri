@@ -26,11 +26,14 @@ class CloudFunctionClient implements FunctionCaller {
     : _http = httpClient ?? http.Client(),
       _auth = auth ?? FirebaseAuth.instance;
 
+  /// Set to true to use local Firebase emulators instead of deployed functions.
+  static bool useLocalEmulator = false;
+
   final http.Client _http;
   final FirebaseAuth _auth;
 
   String _baseUrl() {
-    if (kDebugMode) {
+    if (kDebugMode && useLocalEmulator) {
       final host = defaultTargetPlatform == TargetPlatform.android
           ? '10.0.2.2'
           : '127.0.0.1';
@@ -65,8 +68,10 @@ class CloudFunctionClient implements FunctionCaller {
           )
           .timeout(const Duration(seconds: 20));
     } on TimeoutException {
+      debugPrint('❌ CloudFunctionClient timeout');
       throw FunctionsException('network_error');
     } catch (e) {
+      debugPrint('❌ CloudFunctionClient error: $e');
       throw FunctionsException('network_error');
     }
 

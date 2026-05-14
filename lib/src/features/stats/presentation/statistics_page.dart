@@ -96,6 +96,7 @@ class _StatisticsPageState extends State<StatisticsPage> {
     return SNScaffold(
       appBar: SNAppBar(
         title: 'Thống kê 7 ngày',
+        showBackButton: true,
         actions: [
           IconButton(
             icon: const Icon(Icons.refresh),

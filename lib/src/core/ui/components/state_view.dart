@@ -10,6 +10,7 @@ class LoadingView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -17,7 +18,15 @@ class LoadingView extends StatelessWidget {
           const CircularProgressIndicator(),
           if (message != null) ...[
             const SizedBox(height: AppSpacing.sm),
-            Text(message!),
+            Text(
+              message!,
+              style: textTheme.bodyMedium?.copyWith(
+                decoration: TextDecoration.none,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
           ],
         ],
       ),
@@ -33,14 +42,30 @@ class EmptyView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text(title, style: Theme.of(context).textTheme.titleMedium),
+          Text(
+            title,
+            style: textTheme.titleMedium?.copyWith(
+              decoration: TextDecoration.none,
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
           if (description != null) ...[
             const SizedBox(height: AppSpacing.xs),
-            Text(description!),
+            Text(
+              description!,
+              style: textTheme.bodyMedium?.copyWith(
+                decoration: TextDecoration.none,
+              ),
+              textAlign: TextAlign.center,
+              maxLines: 3,
+              overflow: TextOverflow.ellipsis,
+            ),
           ],
         ],
       ),
@@ -60,13 +85,22 @@ class ErrorView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
     return Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           const Icon(Icons.error_outline, color: AppColors.danger),
           const SizedBox(height: AppSpacing.sm),
-          Text(message, textAlign: TextAlign.center),
+          Text(
+            message,
+            style: textTheme.bodyMedium?.copyWith(
+              decoration: TextDecoration.none,
+            ),
+            textAlign: TextAlign.center,
+            maxLines: 3,
+            overflow: TextOverflow.ellipsis,
+          ),
           if (onRetry != null) ...[
             const SizedBox(height: AppSpacing.sm),
             SNButton(label: 'Thử lại', onPressed: onRetry),

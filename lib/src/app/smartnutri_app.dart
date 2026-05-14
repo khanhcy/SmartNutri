@@ -38,8 +38,16 @@ class _SmartNutriAppState extends State<SmartNutriApp> {
       darkTheme: AppTheme.dark(),
       themeMode: settings.themeMode,
       routerConfig: _router,
-      builder: (context, child) =>
-          OfflineBanner(child: child ?? const SizedBox.shrink()),
+      builder: (context, child) {
+        final mediaQuery = MediaQuery.of(context);
+        final clampedScaler = TextScaler.linear(
+          mediaQuery.textScaler.scale(1).clamp(0.8, 1.2),
+        );
+        return MediaQuery(
+          data: mediaQuery.copyWith(textScaler: clampedScaler),
+          child: OfflineBanner(child: child ?? const SizedBox.shrink()),
+        );
+      },
     );
   }
 }

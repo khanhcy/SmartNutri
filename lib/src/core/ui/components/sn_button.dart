@@ -23,7 +23,14 @@ class SNButton extends StatelessWidget {
             dimension: 16,
             child: CircularProgressIndicator(strokeWidth: 2),
           )
-        : Text(label);
+        : Text(
+            label,
+            style: DefaultTextStyle.of(context).style.copyWith(
+              decoration: TextDecoration.none,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          );
 
     final effectiveOnPressed = isLoading ? null : onPressed;
     switch (variant) {

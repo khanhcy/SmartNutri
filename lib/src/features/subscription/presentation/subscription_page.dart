@@ -26,6 +26,7 @@ class SubscriptionPage extends StatelessWidget {
         return PageTemplate(
           title: 'Gói SmartNutri',
           subtitle: 'Quản lý quyền lợi Free/Premium và lượt AI scan.',
+          showAppBar: true,
           child: _buildContent(context, snapshot),
         );
       },
@@ -86,9 +87,11 @@ class _PlanCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isPremium = overview.isPremium;
     final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
 
     return SNCard(
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           CircleAvatar(
             backgroundColor: isPremium
@@ -106,15 +109,24 @@ class _PlanCard extends StatelessWidget {
               children: [
                 Text(
                   isPremium ? 'SmartNutri Premium' : 'Gói Free',
-                  style: Theme.of(
-                    context,
-                  ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
+                  style: textTheme.titleMedium?.copyWith(
+                    fontWeight: FontWeight.w600,
+                    decoration: TextDecoration.none,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 Text(
                   isPremium
                       ? 'Bạn đang mở khóa toàn bộ quyền lợi Premium hiện có trong MVP.'
                       : 'Bạn đang dùng gói miễn phí với quota AI scan hằng tháng.',
+                  style: textTheme.bodyMedium?.copyWith(
+                    color: colorScheme.onSurface.withValues(alpha: 0.7),
+                    decoration: TextDecoration.none,
+                  ),
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
                 ),
               ],
             ),
@@ -134,6 +146,7 @@ class _QuotaCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final usage = overview.aiScanUsage;
     final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
 
     return SNCard(
       child: Column(
@@ -142,14 +155,34 @@ class _QuotaCard extends StatelessWidget {
           if (overview.isPremium)
             Text(
               'Premium được dùng AI scan không giới hạn trong bản MVP.',
-              style: Theme.of(context).textTheme.bodyMedium,
+              style: textTheme.bodyMedium?.copyWith(
+                decoration: TextDecoration.none,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             )
           else ...[
-            LinearProgressIndicator(
-              value: usage.limit == 0 ? 1 : usage.used / usage.limit,
+            ClipRRect(
+              borderRadius: BorderRadius.circular(4),
+              child: LinearProgressIndicator(
+                value: usage.limit == 0 ? 1 : (usage.used / usage.limit).clamp(0.0, 1.0),
+                minHeight: 8,
+                backgroundColor: colorScheme.surfaceContainerHighest,
+                valueColor: AlwaysStoppedAnimation<Color>(
+                  usage.remaining <= 1 ? colorScheme.error : colorScheme.primary,
+                ),
+              ),
             ),
-            const SizedBox(height: AppSpacing.sm),
-            Text('Đã dùng ${usage.used}/${usage.limit} lượt.'),
+            const SizedBox(height: AppSpacing.md),
+            Text(
+              'Đã dùng ${usage.used}/${usage.limit} lượt',
+              style: textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.w700,
+                decoration: TextDecoration.none,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
             const SizedBox(height: AppSpacing.xs),
             Text(
               usage.remaining <= 0
@@ -157,13 +190,16 @@ class _QuotaCard extends StatelessWidget {
                   : usage.remaining <= 1
                       ? 'Bạn sắp hết lượt AI scan miễn phí.'
                       : 'Bạn còn ${usage.remaining} lượt AI scan miễn phí.',
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: usage.remaining <= 0
-                        ? colorScheme.error
-                        : colorScheme.onSurface,
-                    fontWeight:
-                        usage.remaining <= 1 ? FontWeight.w600 : FontWeight.w400,
-                  ),
+              style: textTheme.bodyMedium?.copyWith(
+                color: usage.remaining <= 0
+                    ? colorScheme.error
+                    : colorScheme.onSurface.withValues(alpha: 0.7),
+                fontWeight:
+                    usage.remaining <= 1 ? FontWeight.w600 : FontWeight.w400,
+                decoration: TextDecoration.none,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ],
@@ -180,6 +216,7 @@ class _BenefitsCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
 
     return SNCard(
       child: Column(
@@ -187,9 +224,12 @@ class _BenefitsCard extends StatelessWidget {
         children: [
           Text(
             'Đang có trong MVP',
-            style: Theme.of(
-              context,
-            ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+            style: textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.w700,
+              decoration: TextDecoration.none,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: AppSpacing.sm),
           _BenefitRow(
@@ -200,9 +240,12 @@ class _BenefitsCard extends StatelessWidget {
           const SizedBox(height: AppSpacing.md),
           Text(
             'Sắp có (roadmap)',
-            style: Theme.of(
-              context,
-            ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w700),
+            style: textTheme.titleSmall?.copyWith(
+              fontWeight: FontWeight.w700,
+              decoration: TextDecoration.none,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: AppSpacing.sm),
           _BenefitRow(
@@ -234,13 +277,27 @@ class _BenefitRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.xs),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 18, color: iconColor),
+          Padding(
+            padding: const EdgeInsets.only(top: 2),
+            child: Icon(icon, size: 18, color: iconColor),
+          ),
           const SizedBox(width: AppSpacing.sm),
-          Expanded(child: Text(text)),
+          Expanded(
+            child: Text(
+              text,
+              style: textTheme.bodyMedium?.copyWith(
+                decoration: TextDecoration.none,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
         ],
       ),
     );
@@ -254,11 +311,19 @@ class _UpgradeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
     return SNCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Nâng cấp để mở khóa AI scan không giới hạn trong MVP.'),
+          Text(
+            'Nâng cấp để mở khóa AI scan không giới hạn trong MVP.',
+            style: textTheme.bodyMedium?.copyWith(
+              decoration: TextDecoration.none,
+            ),
+            maxLines: 2,
+            overflow: TextOverflow.ellipsis,
+          ),
           const SizedBox(height: AppSpacing.md),
           SNButton(label: 'Xem Premium', onPressed: onTap),
         ],

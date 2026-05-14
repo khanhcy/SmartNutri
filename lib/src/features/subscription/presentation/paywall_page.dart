@@ -22,10 +22,12 @@ class PaywallPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final textTheme = Theme.of(context).textTheme;
 
     return PageTemplate(
       title: 'Nâng cấp Premium',
       subtitle: 'Mở khóa AI scan không giới hạn và các quyền lợi nâng cao.',
+      showAppBar: true,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -35,9 +37,15 @@ class PaywallPage extends StatelessWidget {
                 children: [
                   Icon(Icons.info_outline, color: colorScheme.error),
                   const SizedBox(width: AppSpacing.sm),
-                  const Expanded(
+                  Expanded(
                     child: Text(
                       'Bạn đã dùng hết lượt AI scan miễn phí tháng này.',
+                      style: textTheme.bodyMedium?.copyWith(
+                        color: colorScheme.error,
+                        decoration: TextDecoration.none,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                 ],
@@ -54,14 +62,17 @@ class PaywallPage extends StatelessWidget {
                     children: [
                       Icon(
                         Icons.workspace_premium,
-                        color: Theme.of(context).colorScheme.primary,
+                        color: colorScheme.primary,
                       ),
                       const SizedBox(width: AppSpacing.sm),
                       Text(
                         'SmartNutri Premium',
-                        style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                              fontWeight: FontWeight.w700,
-                            ),
+                        style: textTheme.titleMedium?.copyWith(
+                          fontWeight: FontWeight.w700,
+                          decoration: TextDecoration.none,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                     ],
                   ),
@@ -98,7 +109,14 @@ class PaywallPage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(_nextStepText()),
+                  Text(
+                    _nextStepText(),
+                    style: textTheme.bodyMedium?.copyWith(
+                      decoration: TextDecoration.none,
+                    ),
+                    maxLines: 3,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                   const SizedBox(height: AppSpacing.md),
                   if (_isQuotaBlocked && source == 'scan_photo') ...[
                     SNButton(
@@ -140,13 +158,27 @@ class _Benefit extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
     return Padding(
       padding: const EdgeInsets.only(bottom: AppSpacing.sm),
       child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(icon, size: 18),
+          Padding(
+            padding: const EdgeInsets.only(top: 2),
+            child: Icon(icon, size: 18, color: Theme.of(context).colorScheme.onSurfaceVariant),
+          ),
           const SizedBox(width: AppSpacing.sm),
-          Expanded(child: Text(text)),
+          Expanded(
+            child: Text(
+              text,
+              style: textTheme.bodyMedium?.copyWith(
+                decoration: TextDecoration.none,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
         ],
       ),
     );

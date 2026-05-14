@@ -1,4 +1,6 @@
-import 'package:smartnutri/src/core/services/cloud_function_client.dart';
+import 'dart:convert';
+
+import 'package:http/http.dart' as http;
 import 'package:smartnutri/src/features/scan/domain/barcode_result.dart';
 import 'package:smartnutri/src/features/search/domain/food_item.dart';
 import 'package:uuid/uuid.dart';
@@ -13,19 +15,49 @@ class BarcodeLookupException implements Exception {
   String toString() => 'BarcodeLookupException: $userMessage';
 }
 
-class BarcodeService {
-  BarcodeService({FunctionCaller? functions})
-    : _functions = functions ?? CloudFunctionClient();
+typedef BarcodeFetcher = Future<Map<String, dynamic>?> Function(String barcode);
 
-  final FunctionCaller _functions;
+class BarcodeService {
+  BarcodeService({
+    http.Client? httpClient,
+    BarcodeFetcher? fetcher,
+  }) : _fetcher = fetcher ?? _defaultFetcher(httpClient ?? http.Client());
+
+  final BarcodeFetcher _fetcher;
+
+  static BarcodeFetcher _defaultFetcher(http.Client client) {
+    return (barcode) async {
+      final url = Uri.parse(
+        'https://world.openfoodfacts.org/api/v2/product/$barcode',
+      );
+      final res = await client.get(
+        url,
+        headers: {'User-Agent': 'SmartNutri/1.0'},
+      );
+
+      if (res.statusCode != 200) return null;
+
+      final json = jsonDecode(res.body) as Map<String, dynamic>;
+      if (json['status'] != 1 || json['product'] == null) return null;
+
+      final p = json['product'] as Map<String, dynamic>;
+      final nutriments = (p['nutriments'] ?? {}) as Map<String, dynamic>;
+
+      return {
+        'name': (p['product_name'] ?? p['brands'] ?? '').toString(),
+        'brand': (p['brands'] ?? '').toString(),
+        'calorieKcal': ((nutriments['energy-kcal_100g'] ?? 0) as num).round(),
+        'proteinG': double.tryParse((nutriments['proteins_100g'] ?? 0).toString()) ?? 0.0,
+        'carbG': double.tryParse((nutriments['carbohydrates_100g'] ?? 0).toString()) ?? 0.0,
+        'fatG': double.tryParse((nutriments['fat_100g'] ?? 0).toString()) ?? 0.0,
+        'portionG': ((p['product_quantity'] ?? 100) as num).toInt(),
+      };
+    };
+  }
 
   Future<BarcodeResult?> lookupBarcode(String barcode) async {
     try {
-      final result = await _functions.call('barcodeLookup', {
-        'barcode': barcode,
-      });
-
-      final product = result['product'] as Map<String, dynamic>?;
+      final product = await _fetcher(barcode);
       if (product == null) return null;
 
       final name = product['name'] as String? ?? '';
@@ -51,31 +83,17 @@ class BarcodeService {
         scannedAt: DateTime.now(),
       );
     } catch (e) {
+      if (e is BarcodeLookupException) rethrow;
       throw BarcodeLookupException(_barcodeErrorMessage(e), e);
     }
   }
 
   String _barcodeErrorMessage(Object error) {
-    if (error is FunctionsException) {
-      if (error.message == 'network_error') {
-        return 'Không thể kết nối máy chủ tra cứu. '
-            'Kiểm tra Firebase Emulators đã chạy chưa, '
-            'hoặc thử lại sau.';
-      }
-      if (error.message == 'invalid_response') {
-        return 'Dữ liệu mã vạch trả về không hợp lệ. Vui lòng thử lại.';
-      }
-      if (error.statusCode == 401 || error.statusCode == 403) {
-        return 'Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại.';
-      }
-      if ((error.statusCode ?? 0) >= 500) {
-        return 'Máy chủ tra cứu mã vạch đang gặp sự cố. Vui lòng thử lại sau.';
-      }
-      return 'Không thể tra cứu mã vạch lúc này. Vui lòng thử lại.';
-    }
     if (error is FormatException) {
       return 'Dữ liệu sản phẩm không hợp lệ. Vui lòng thử lại.';
     }
     return 'Không thể kết nối dịch vụ mã vạch. Vui lòng kiểm tra mạng và thử lại.';
   }
+
+  void dispose() {}
 }

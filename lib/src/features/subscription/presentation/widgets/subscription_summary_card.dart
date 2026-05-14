@@ -22,6 +22,7 @@ class SubscriptionSummaryCard extends StatelessWidget {
         final overview = snapshot.data;
         final hasError = snapshot.hasError;
         final isPremium = overview?.isPremium ?? false;
+        final textTheme = Theme.of(context).textTheme;
 
         final title = hasError
             ? 'Gói SmartNutri'
@@ -49,8 +50,22 @@ class SubscriptionSummaryCard extends StatelessWidget {
           child: ListTile(
             contentPadding: EdgeInsets.zero,
             leading: Icon(icon, color: iconColor),
-            title: Text(title),
-            subtitle: Text(subtitle),
+            title: Text(
+              title,
+              style: textTheme.titleSmall?.copyWith(
+                decoration: TextDecoration.none,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            subtitle: Text(
+              subtitle,
+              style: textTheme.bodyMedium?.copyWith(
+                decoration: TextDecoration.none,
+              ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
+            ),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => context.push(AppPaths.subscription),
           ),

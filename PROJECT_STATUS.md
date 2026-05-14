@@ -6,7 +6,7 @@ SmartNutri là app theo dõi dinh dưỡng tiếng Việt gồm Flutter mobile a
 
 ## Current development focus
 
-Subscription/Premium MVP đã hoàn thiện ở mức mock/admin premium; trọng tâm tiếp theo là manual verification trên emulator/admin web và quyết định payment thật.
+Đã refactor Barcode service (Cloud Functions → Open Food Facts API trực tiếp) và AI Food service (Cloud Functions → Gemini trực tiếp). Subscription UI đã polish. Trọng tâm tiếp theo: manual verify Subscription/Premium quota enforcement với Firebase emulator.
 
 ## Completed features
 
@@ -24,14 +24,18 @@ Subscription/Premium MVP đã hoàn thiện ở mức mock/admin premium; trọn
 
 ## Recently completed
 
-- Hoàn thiện Subscription/Premium MVP backend/admin/docs: tạo DOCX kế hoạch, thêm model/service subscription, paywall/profile entry, chặn AI scan khi hết quota, Cloud Function `setUserSubscription`, backend enforce quota 5 lượt/tháng trong `identifyFoodImage`, admin web hiển thị/set Free/Premium, rules `users/{uid}/usage/{yyyyMM}` và docs/checklist cập nhật. `flutter analyze`, `flutter test` (81 tests), Functions build/lint và admin build pass (2026-05-14).
+- Refactor Barcode service: chuyển từ Cloud Functions sang gọi trực tiếp Open Food Facts API (`BarcodeService` dùng `http.Client`, parse JSON product/nutriments). Test cập nhật dùng `_FakeHttpClient`. (2026-05-14)
+- Refactor AI Food service: chuyển từ Cloud Functions sang Gemini trực tiếp qua `AiService` interface. Thêm fuzzy match (Levenshtein + diacritics stripping) để map kết quả AI vào food catalog. Thêm `suggestMealsLocal` fallback offline với scoring macro. (2026-05-14)
+- Review + fix bảo mật chatbot: xóa hardcoded Gemini API key khỏi client, xóa Gemini Direct fallback path, fix duplicate Firestore save (chỉ CF ghi), thêm debugPrint empty catch, fix isError persistence, cập nhật docs/chatbot.md. (2026-05-14)
+- Hoàn thiện Subscription/Premium MVP backend/admin/docs: tạo DOCX kế hoạch, thêm model/service subscription, paywall/profile entry, chặn AI scan khi hết quota, Cloud Function `setUserSubscription`, backend enforce quota 5 lượt/tháng trong `identifyFoodImage`, admin web hiển thị/set Free/Premium, rules `users/{uid}/usage/{yyyyMM}` và docs/checklist cập nhật. (2026-05-14)
 - Implement chatbot thông minh: Cloud Function `chatNutrition` với system prompt cá nhân hóa (profile + goal + meals hôm nay), `ChatService` ChangeNotifier, `ChatPage` với bubble UI, typing indicator 3 chấm, suggestion chips, lưu lịch sử vào Firestore `users/{uid}/chat_history`; nút chat trong AppBar mọi tab. `flutter analyze` sạch, Functions build/lint pass (2026-05-14).
 - Implement favorite foods: `FavoriteFoodsService` với `FoodCatalog` DI, Firestore subcollection `users/{uid}/favorites/{foodId}`, reactive snapshot + `ChangeNotifier`; `FoodTile` có heart toggle; favorites section trên FoodSearchPage; `QuickAddFavorites` chips trên HomePage; `firestore.rules` cập nhật. 4 unit tests, analyze sạch, Functions và admin build pass (2026-05-14).
 - Tối ưu admin N+1 query: Cloud Function trigger `onMealEntryChanged` duy trì `mealCount` và `lastMealDate` trên `users/{uid}`; admin web `loadUsers()` giảm từ N+1 xuống 1 query, `getDashboardStats().todayMeals` dùng collection group query thay N+1. Thêm `firestore.indexes.json` collection group index cho `meal_entries.date`. Functions build/lint pass, admin build pass, trigger đã test trên emulator (2026-05-14).
 - Verify Cloud Functions: `health`, `barcodeLookup`, `identifyFoodImage`, `suggestMeals` đều hoạt động trên emulator. Viết script cleanup goals và migrate foods legacy→canonical, đã test trên emulator (2026-05-14).
 - Thêm `user_profile_test.dart` (6) và `meal_entry_test.dart` (9) — Flutter 58 tests pass, analyze sạch (2026-05-14).
 - Polish Subscription UI mobile: cải thiện `SubscriptionSummaryCard`, `SubscriptionPage`, `PaywallPage`; thêm copy ngữ cảnh khi bị chặn quota AI scan và truyền `source/reason` qua router từ `PhotoScanPage` (2026-05-14).
-- Thêm `test/subscription_ui_test.dart` (4 widget tests) cho summary/subscription/paywall; `flutter analyze` sạch và full `flutter test` pass (81 tests) (2026-05-14).
+- Thêm `test/subscription_ui_test.dart` (4 widget tests) cho summary/subscription/paywall. (2026-05-14)
+- Cập nhật test AI/barcode: migrate từ `_FakeFunctions` sang `_FakeHttpClient`/`_FakeGeminiService`, cập nhật error message assertions khớp với code mới. (2026-05-14)
 
 - AI/barcode error states: `AiFoodServiceException` và `BarcodeLookupException` với message tiếng Việt, UI catch và hiển thị lỗi rõ ràng cho từng loại (auth, 5xx, mạng, invalid response).
 - `FunctionCaller` interface và `FoodCatalog` abstract class cho DI/testing.
@@ -67,12 +71,14 @@ Subscription/Premium MVP đã hoàn thiện ở mức mock/admin premium; trọn
 
 ## Test status
 
-- Flutter: 81 tests pass (bao gồm `subscription_ui_test.dart`), `flutter analyze` sạch, `flutter build apk --debug` pass lần gần nhất (2026-05-14).
-- Admin web: `npm --prefix admin-web run build` pass; còn cảnh báo Vite chunk lớn.
-- Cloud Functions: `npm --prefix functions run build` và `npm --prefix functions run lint` pass.
+- Flutter: 86 tests pass (bao gồm `subscription_ui_test.dart` 4 tests), `flutter analyze` sạch, `flutter build apk --debug` chưa chạy lại lần này (2026-05-14).
+- Admin web: `npm --prefix admin-web run build` chưa chạy lại lần này; lần trước pass với cảnh báo Vite chunk lớn.
+- Cloud Functions: `npm --prefix functions run build` và `npm --prefix functions run lint` chưa chạy lại lần này (có thay đổi nhỏ trong `chat.ts`).
 
 ## Recent decisions
 
+- Đã fix lỗi UI text style trên PaywallPage và SubscriptionPage (text bị fallback style đỏ/vàng khi không set `style` cho `Text` widget trong `_Benefit`/`_BenefitRow`).
+- Đã manual verify mobile flow Subscription/Premium: Profile→Gói SmartNutri→Paywall pass trên emulator (2026-05-14).
 - Cập nhật ưu tiên roadmap: Subscription/Premium MVP được đưa lên nhóm ưu tiên cao để chuẩn bị mô hình Free/Premium.
 - Ưu tiên roadmap trước đó: production foundation → food database → daily logging UX → test/release readiness → retention insights.
 - Provider hiện tại vẫn đủ dùng; chưa ưu tiên đổi state management.
@@ -80,10 +86,21 @@ Subscription/Premium MVP đã hoàn thiện ở mức mock/admin premium; trọn
 - Firestore `foods/{foodId}` dùng canonical fields theo Flutter `FoodItem`; admin web và Cloud Functions đọc legacy nhưng ghi canonical.
 - Sau mỗi phần việc có ý nghĩa, cập nhật các file Markdown quản lý dự án/docs phù hợp để lần sau tiếp tục đúng điểm dừng.
 
+## Manual verification — Subscription/Premium — 2026-05-14
+
+Mobile flow (đã xác minh trên emulator):
+- [x] Profile hiển thị SubscriptionSummaryCard "Gói Free • Còn 5/5 lượt AI scan".
+- [x] Tap thẻ mở SubscriptionPage với title "Gói SmartNutri", quota "Đã dùng 0/5 lượt", nút "Xem Premium".
+- [x] Nút "Xem Premium" mở PaywallPage với title "Nâng cấp Premium", quyền lợi, disclaimer MVP.
+- [x] Text tiếng Việt trên toàn bộ các màn Subscription/Paywall.
+
+Cần Firebase emulator/backend để xác minh tiếp:
+- [ ] AI scan quota tăng sau scan thành công, usage ghi vào `users/{uid}/usage/{yyyyMM}`.
+- [ ] Free user hết quota bị chặn AI scan, hiển thị paywall/lỗi quota.
+- [ ] Premium user không bị giới hạn AI scan.
+- [ ] Admin web hiển thị cột plan/quota và nút Set Free/Premium hoạt động.
+- [ ] `setUserSubscription` chặn non-admin, set được plan khi caller là admin.
+
 ## Next recommended action
 
-Manual verify Subscription/Premium MVP:
-- Test Profile -> Gói SmartNutri -> Paywall trên emulator.
-- Test Free user còn quota gọi AI scan được và usage tăng.
-- Test Free user hết quota thấy paywall/lỗi quota.
-- Test admin web Set Premium/Set Free và xác nhận Premium user không bị giới hạn AI scan.
+Commit các thay đổi hiện tại (refactor Barcode/AI service + subscription UI polish + test updates), sau đó chạy build Functions + Admin để xác nhận không hồi quy. Tiếp theo: xác minh quota enforcement và admin subscription flow với Firebase emulator.

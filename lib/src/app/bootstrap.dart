@@ -13,10 +13,10 @@ import 'package:smartnutri/src/core/services/ai_food_service.dart';
 import 'package:smartnutri/src/core/services/auth_service.dart';
 import 'package:smartnutri/src/core/services/barcode_service.dart';
 import 'package:smartnutri/src/core/services/chat_service.dart';
-import 'package:smartnutri/src/core/services/cloud_function_client.dart';
 import 'package:smartnutri/src/core/services/connectivity_service.dart';
 import 'package:smartnutri/src/core/services/favorites_service.dart';
 import 'package:smartnutri/src/core/services/food_service.dart';
+import 'package:smartnutri/src/core/services/gemini_service.dart';
 import 'package:smartnutri/src/core/services/goal_service.dart';
 import 'package:smartnutri/src/core/services/meal_service.dart';
 import 'package:smartnutri/src/core/services/notification_service.dart';
@@ -68,6 +68,9 @@ Future<void> bootstrap() async {
   final notificationService = NotificationService();
   await notificationService.init();
 
+  const geminiApiKey = 'AIzaSyC58FKHOO2O6fW48xJ8VVhtNJo1wJfuaow';
+  final geminiService = GeminiService(apiKey: geminiApiKey);
+
   runApp(
     MultiProvider(
       providers: [
@@ -81,15 +84,16 @@ Future<void> bootstrap() async {
         Provider(create: (_) => WaterService()),
         Provider(create: (_) => WeightService()),
         Provider(create: (_) => ConnectivityService()),
-        Provider(create: (_) => CloudFunctionClient()),
+        Provider.value(value: geminiService),
         Provider(create: (_) => SubscriptionService()),
-        Provider(create: (_) => AiFoodService(foodService: foodService)),
+        Provider(create: (_) => AiFoodService(foodService: foodService, ai: geminiService)),
         Provider(create: (_) => BarcodeService()),
         ChangeNotifierProvider(
           create: (_) => ChatService(
             profileService: profileService,
             goalService: goalService,
             mealService: mealService,
+            ai: geminiService,
           ),
         ),
         Provider.value(value: notificationService),
