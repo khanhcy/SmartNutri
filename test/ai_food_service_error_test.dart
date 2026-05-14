@@ -1,9 +1,7 @@
-import 'dart:async';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:smartnutri/src/core/services/ai_food_service.dart';
-import 'package:smartnutri/src/core/services/cloud_function_client.dart';
 import 'package:smartnutri/src/core/services/food_service.dart';
+import 'package:smartnutri/src/core/services/gemini_service.dart' show AiService;
 import 'package:smartnutri/src/features/search/domain/food_item.dart';
 
 void main() {
@@ -13,7 +11,7 @@ void main() {
       () async {
         final service = AiFoodService(
           foodService: _FakeFoodCatalog(_foods),
-          functions: _FakeFunctions((_, _) => {'items': []}),
+          ai: _FakeGeminiService(identifyResult: []),
         );
 
         final result = await service.identifyFood('image-base64');
@@ -23,13 +21,32 @@ void main() {
     );
 
     test(
+      'identifyFood throws user-facing exception when gemini not configured',
+      () async {
+        final service = AiFoodService(
+          foodService: _FakeFoodCatalog(_foods),
+          ai: null,
+        );
+
+        expect(
+          () => service.identifyFood('image-base64'),
+          throwsA(
+            isA<AiFoodServiceException>().having(
+              (e) => e.userMessage,
+              'userMessage',
+              contains('chưa được cấu hình'),
+            ),
+          ),
+        );
+      },
+    );
+
+    test(
       'identifyFood throws user-facing exception when function fails',
       () async {
         final service = AiFoodService(
           foodService: _FakeFoodCatalog(_foods),
-          functions: _FakeFunctions((_, _) {
-            throw FunctionsException('internal_error', 500);
-          }),
+          ai: _FakeGeminiService(throwError: Exception('internal_error')),
         );
 
         expect(
@@ -38,7 +55,7 @@ void main() {
             isA<AiFoodServiceException>().having(
               (e) => e.userMessage,
               'userMessage',
-              contains('Máy chủ AI'),
+              contains('kiểm tra mạng'),
             ),
           ),
         );
@@ -46,62 +63,63 @@ void main() {
     );
 
     test(
-      'identifyFood shows quota message when free AI scan limit is reached',
+      'identifyFood matches known foods from catalog',
       () async {
         final service = AiFoodService(
           foodService: _FakeFoodCatalog(_foods),
-          functions: _FakeFunctions((_, _) {
-            throw FunctionsException('quota_exceeded', 403);
-          }),
+          ai: _FakeGeminiService(identifyResult: [
+            {
+              'name': 'Phở bò',
+              'estimatedKcal': 68,
+              'estimatedProteinG': 5.8,
+              'estimatedCarbG': 9.2,
+              'estimatedFatG': 1.2,
+              'estimatedPortionG': 300,
+              'confidence': 0.9,
+            },
+          ]),
         );
 
-        expect(
-          () => service.identifyFood('image-base64'),
-          throwsA(
-            isA<AiFoodServiceException>().having(
-              (e) => e.userMessage,
-              'userMessage',
-              contains('hết lượt AI scan'),
-            ),
-          ),
-        );
+        final result = await service.identifyFood('image-base64');
+
+        expect(result.items, hasLength(1));
+        expect(result.items.first.foodItem.id, 'pho_bo');
+        expect(result.items.first.confidence, 0.9);
       },
     );
 
-    test(
-      'identifyFood shows network error when connection times out',
-      () async {
-        final service = AiFoodService(
-          foodService: _FakeFoodCatalog(_foods),
-          functions: _FakeFunctions((_, _) {
-            throw FunctionsException('network_error');
-          }),
-        );
+    test('suggestMeals throws when gemini not configured', () async {
+      final service = AiFoodService(
+        foodService: _FakeFoodCatalog(_foods),
+        ai: null,
+      );
 
-        expect(
-          () => service.identifyFood('image-base64'),
-          throwsA(
-            isA<AiFoodServiceException>().having(
-              (e) => e.userMessage,
-              'userMessage',
-              contains('Firebase Emulators'),
-            ),
+      expect(
+        () => service.suggestMeals(
+          remainingKcal: 500,
+          proteinG: 20,
+          carbG: 60,
+          fatG: 10,
+          recentFoodNames: const [],
+          mealTime: 'bữa trưa',
+        ),
+        throwsA(
+          isA<AiFoodServiceException>().having(
+            (e) => e.userMessage,
+            'userMessage',
+            contains('chưa được cấu hình'),
           ),
-        );
-      },
-    );
+        ),
+      );
+    });
 
     test('suggestMeals ignores unknown food ids from AI response', () async {
       final service = AiFoodService(
         foodService: _FakeFoodCatalog(_foods),
-        functions: _FakeFunctions(
-          (_, _) => {
-            'suggestions': [
-              {'foodId': 'pho_bo', 'reason': 'Phù hợp mục tiêu còn lại'},
-              {'foodId': 'missing', 'reason': 'Không có trong catalog'},
-            ],
-          },
-        ),
+        ai: _FakeGeminiService(suggestResult: [
+          {'foodId': 'pho_bo', 'reason': 'Phù hợp mục tiêu còn lại'},
+          {'foodId': 'missing', 'reason': 'Không có trong catalog'},
+        ]),
       );
 
       final suggestions = await service.suggestMeals(
@@ -141,18 +159,43 @@ class _FakeFoodCatalog implements FoodCatalog {
   Future<List<FoodItem>> getAll() async => foods;
 }
 
-class _FakeFunctions implements FunctionCaller {
-  _FakeFunctions(this._handler);
+class _FakeGeminiService implements AiService {
+  _FakeGeminiService({this.identifyResult, this.suggestResult, this.throwError});
 
-  final FutureOr<Map<String, dynamic>> Function(
-    String functionName,
-    Map<String, dynamic>? data,
-  )
-  _handler;
+  final List<Map<String, dynamic>>? identifyResult;
+  final List<Map<String, dynamic>>? suggestResult;
+  final Object? throwError;
 
   @override
-  Future<Map<String, dynamic>> call(
-    String functionName, [
-    Map<String, dynamic>? data,
-  ]) async => _handler(functionName, data);
+  Future<Map<String, dynamic>> chat({
+    required String message,
+    required List<Map<String, dynamic>> conversationHistory,
+    required Map<String, dynamic> context,
+  }) async {
+    if (throwError != null) throw throwError!;
+    return {'reply': 'test reply'};
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> identifyFoodImage({
+    required String imageBase64,
+    required List<String> knownFoodNames,
+  }) async {
+    if (throwError != null) throw throwError!;
+    return identifyResult ?? [];
+  }
+
+  @override
+  Future<List<Map<String, dynamic>>> suggestMeals({
+    required int remainingKcal,
+    required int proteinG,
+    required int carbG,
+    required int fatG,
+    required List<String> recentFoodNames,
+    required String mealTime,
+    required List<Map<String, dynamic>> foodCatalog,
+  }) async {
+    if (throwError != null) throw throwError!;
+    return suggestResult ?? [];
+  }
 }

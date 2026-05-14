@@ -2,7 +2,10 @@
 
 ## In progress
 
-- Giai đoạn 1 — Ổn định production foundation: đã hoàn thành 3 high-priority items backend. Chuẩn bị chuyển qua medium priority.
+- Refactor Barcode service: Cloud Functions → Open Food Facts API trực tiếp (đã code xong, test pass, chưa commit).
+- Refactor AI Food service: Cloud Functions → Gemini trực tiếp (đã code xong, test pass, chưa commit).
+- Polish Subscription UI mobile (đã code xong, test pass, chưa commit).
+- Giai đoạn 1 — Ổn định production foundation: phần lớn high-priority đã xong.
 
 ## Deferred
 
@@ -10,8 +13,8 @@
 
 ## High priority
 
-- Manual verify Subscription/Premium MVP trên emulator/admin web: Free còn quota, Free hết quota, Premium không giới hạn, admin Set Free/Premium.
-- Chạy tiếp manual test checklist cho auth/onboarding (flow thêm meal thực tế đã pass; barcode UI và AI picker đã verify).
+- Manual verify Subscription/Premium MVP: mobile flow Profile→Gói SmartNutri→Paywall đã pass (2026-05-14); còn cần verify quota enforcement và admin Set Free/Premium với Firebase emulator.
+- Chạy tiếp manual test checklist cho auth/onboarding.
 - Dùng Firestore `foods` làm source of truth chính, seed local chỉ là fallback.
 
 ## Medium priority
@@ -67,6 +70,10 @@
 - Implement favorite foods: `FavoriteFoodsService` (Firestore subcollection + ChangeNotifier), `FoodCatalog` DI, heart toggle trên `FoodTile`, favorites section trên FoodSearchPage, `QuickAddFavorites` chips trên HomePage, `firestore.rules` cập nhật. Flutter 62 tests pass, analyze sạch, Functions/admin build pass (2026-05-14).
 - Polish Subscription UI mobile: cải thiện `SubscriptionSummaryCard`, `SubscriptionPage`, `PaywallPage`; truyền ngữ cảnh chặn quota từ `PhotoScanPage` sang paywall qua query params; thêm `subscription_ui_test.dart` (4). `flutter analyze` sạch, full `flutter test` pass (81 tests) (2026-05-14).
 - Hoàn thiện Subscription/Premium MVP backend/admin/docs: DOCX kế hoạch, model/service subscription, AI scan quota 5 lượt/tháng, `setUserSubscription`, backend enforce quota trong `identifyFoodImage`, admin web hiển thị/set Free/Premium, rules usage và docs/checklist cập nhật. Flutter analyze/test, Functions build/lint, admin build pass (2026-05-14).
+- Review + fix bảo mật chatbot: xóa hardcoded Gemini API key khỏi client, xóa Gemini Direct fallback path, fix duplicate Firestore save (chỉ CF ghi), thêm debugPrint empty catch, fix isError persistence, cập nhật docs/chatbot.md. `flutter analyze` + `npm run build` (functions) sạch (2026-05-14).
+- Refactor Barcode service: Cloud Functions → Open Food Facts API trực tiếp qua `http.Client`, parse JSON product/nutriments. Tests migrate sang `_FakeHttpClient`. (2026-05-14, chưa commit)
+- Refactor AI Food service: Cloud Functions → Gemini trực tiếp qua `AiService` interface, thêm fuzzy match (Levenshtein + diacritics), `suggestMealsLocal` offline fallback. Tests migrate sang `_FakeGeminiService`. (2026-05-14, chưa commit)
+- Cập nhật test AI/barcode: error message assertions khớp code mới, thêm test case mới (identifyFood matches known foods, suggestMeals with gemini not configured). Tổng 86 tests pass. (2026-05-14, chưa commit)
 
 ## Cancelled / not doing
 

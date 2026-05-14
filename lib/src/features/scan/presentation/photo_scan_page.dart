@@ -119,7 +119,10 @@ class _PhotoScanPageState extends State<PhotoScanPage> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Chụp ảnh món ăn')),
+      appBar: AppBar(
+        title: const Text('Chụp ảnh món ăn'),
+        leading: const BackButton(),
+      ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(AppSpacing.lg),
         child: Column(

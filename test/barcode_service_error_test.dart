@@ -1,15 +1,10 @@
-import 'dart:async';
-
 import 'package:flutter_test/flutter_test.dart';
 import 'package:smartnutri/src/core/services/barcode_service.dart';
-import 'package:smartnutri/src/core/services/cloud_function_client.dart';
 
 void main() {
   group('BarcodeService error states', () {
     test('lookupBarcode returns null when product is not found', () async {
-      final service = BarcodeService(
-        functions: _FakeFunctions((_, _) => {'product': null}),
-      );
+      final service = BarcodeService(fetcher: (_) async => null);
 
       final result = await service.lookupBarcode('8930000000000');
 
@@ -18,19 +13,15 @@ void main() {
 
     test('lookupBarcode returns result when product is valid', () async {
       final service = BarcodeService(
-        functions: _FakeFunctions(
-          (_, _) => {
-            'product': {
-              'name': 'Sữa tươi',
-              'brand': 'SmartNutri',
-              'calorieKcal': 61,
-              'proteinG': 3.2,
-              'carbG': 4.8,
-              'fatG': 3.3,
-              'portionG': 200,
-            },
-          },
-        ),
+        fetcher: (_) async => {
+          'name': 'Sữa tươi',
+          'brand': 'SmartNutri',
+          'calorieKcal': 61,
+          'proteinG': 3.2,
+          'carbG': 4.8,
+          'fatG': 3.3,
+          'portionG': 200,
+        },
       );
 
       final result = await service.lookupBarcode('8930000000000');
@@ -41,12 +32,10 @@ void main() {
     });
 
     test(
-      'lookupBarcode shows network error when connection times out',
+      'lookupBarcode throws user-facing exception when network fails',
       () async {
         final service = BarcodeService(
-          functions: _FakeFunctions((_, _) {
-            throw FunctionsException('network_error');
-          }),
+          fetcher: (_) async => throw Exception('Connection refused'),
         );
 
         expect(
@@ -55,7 +44,7 @@ void main() {
             isA<BarcodeLookupException>().having(
               (e) => e.userMessage,
               'userMessage',
-              contains('Firebase Emulators'),
+              contains('kiểm tra mạng'),
             ),
           ),
         );
@@ -63,41 +52,25 @@ void main() {
     );
 
     test(
-      'lookupBarcode throws user-facing exception when function fails',
+      'lookupBarcode throws when product name is empty',
       () async {
         final service = BarcodeService(
-          functions: _FakeFunctions((_, _) {
-            throw FunctionsException('internal_error', 500);
-          }),
+          fetcher: (_) async => {
+            'name': '',
+            'brand': null,
+            'calorieKcal': 0,
+            'proteinG': 0.0,
+            'carbG': 0.0,
+            'fatG': 0.0,
+            'portionG': 100,
+          },
         );
 
         expect(
           () => service.lookupBarcode('8930000000000'),
-          throwsA(
-            isA<BarcodeLookupException>().having(
-              (e) => e.userMessage,
-              'userMessage',
-              contains('Máy chủ tra cứu mã vạch'),
-            ),
-          ),
+          throwsA(isA<BarcodeLookupException>()),
         );
       },
     );
   });
-}
-
-class _FakeFunctions implements FunctionCaller {
-  _FakeFunctions(this._handler);
-
-  final FutureOr<Map<String, dynamic>> Function(
-    String functionName,
-    Map<String, dynamic>? data,
-  )
-  _handler;
-
-  @override
-  Future<Map<String, dynamic>> call(
-    String functionName, [
-    Map<String, dynamic>? data,
-  ]) async => _handler(functionName, data);
 }

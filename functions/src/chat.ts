@@ -182,6 +182,7 @@ Ví dụ output: ["Phở bò bao nhiêu calo?", "Cách giảm calo hiệu quả?
         batch.set(chatRef.doc(), {
           role: "user",
           content: message.trim(),
+          isError: false,
           timestamp: admin.firestore.FieldValue.serverTimestamp(),
         });
 
@@ -190,6 +191,7 @@ Ví dụ output: ["Phở bò bao nhiêu calo?", "Cách giảm calo hiệu quả?
           role: "assistant",
           content: reply,
           suggestions,
+          isError: false,
           timestamp: admin.firestore.FieldValue.serverTimestamp(),
         });
 

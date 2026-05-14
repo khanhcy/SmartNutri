@@ -80,7 +80,7 @@ class _ScanFAB extends StatelessWidget {
                 subtitle: const Text('Nhận diện món ăn bằng AI'),
                 onTap: () {
                   Navigator.of(ctx).pop();
-                  context.go(AppPaths.scanPhoto);
+                  context.push(AppPaths.scanPhoto);
                 },
               ),
               ListTile(
@@ -89,7 +89,7 @@ class _ScanFAB extends StatelessWidget {
                 subtitle: const Text('Tra cứu sản phẩm đóng gói'),
                 onTap: () {
                   Navigator.of(ctx).pop();
-                  context.go(AppPaths.scanBarcode);
+                  context.push(AppPaths.scanBarcode);
                 },
               ),
               const Divider(),

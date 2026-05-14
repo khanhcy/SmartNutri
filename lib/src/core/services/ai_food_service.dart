@@ -1,7 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
-import 'package:smartnutri/src/core/services/cloud_function_client.dart';
+import 'package:smartnutri/src/core/services/gemini_service.dart' show AiService;
 import 'package:smartnutri/src/core/services/food_service.dart';
 import 'package:smartnutri/src/features/scan/domain/scan_result.dart';
 import 'package:smartnutri/src/features/search/domain/food_item.dart';
@@ -24,28 +24,29 @@ class AiFoodServiceException implements Exception {
 }
 
 class AiFoodService {
-  AiFoodService({required FoodCatalog foodService, FunctionCaller? functions})
+  AiFoodService({required FoodCatalog foodService, AiService? ai})
     : _foodService = foodService,
-      _functions = functions ?? CloudFunctionClient();
+      _ai = ai;
 
   final FoodCatalog _foodService;
-  final FunctionCaller _functions;
+  final AiService? _ai;
 
   Future<ScanResult> identifyFood(String imageBase64) async {
+    if (_ai == null) {
+      throw AiFoodServiceException('Dịch vụ AI chưa được cấu hình.', Exception('no_ai'));
+    }
+
     try {
       // Send known food names so Gemini can match against our database
       final knownNames = _foodService.foods.map((f) => f.name).toList();
-      final result = await _functions.call('identifyFoodImage', {
-        'imageBase64': imageBase64,
-        'knownFoodNames': knownNames,
-      });
-
-      final items = result['items'] as List<dynamic>? ?? [];
+      final items = await _ai.identifyFoodImage(
+        imageBase64: imageBase64,
+        knownFoodNames: knownNames,
+      );
       final allFoods = await _foodService.getAll();
       final scanned = <ScannedFoodItem>[];
 
       for (final item in items) {
-        if (item is! Map) continue;
         final name = item['name'] as String? ?? '';
         final confidence = (item['confidence'] as num?)?.toDouble() ?? 0;
         final aiKcal = (item['estimatedKcal'] as num?)?.toInt() ?? 0;
@@ -105,6 +106,10 @@ class AiFoodService {
     required List<String> recentFoodNames,
     required String mealTime,
   }) async {
+    if (_ai == null) {
+      throw AiFoodServiceException('Dịch vụ AI chưa được cấu hình.', Exception('no_ai'));
+    }
+
     try {
       // Send food catalog as fallback in case Firestore is empty
       final foodCatalog = _foodService.foods
@@ -121,17 +126,15 @@ class AiFoodService {
           )
           .toList();
 
-      final result = await _functions.call('suggestMeals', {
-        'remainingKcal': remainingKcal.round(),
-        'proteinG': proteinG.round(),
-        'carbG': carbG.round(),
-        'fatG': fatG.round(),
-        'recentFoodNames': recentFoodNames,
-        'mealTime': mealTime,
-        'foodCatalog': foodCatalog,
-      });
-
-      final suggestions = result['suggestions'] as List<dynamic>? ?? [];
+      final suggestions = await _ai.suggestMeals(
+        remainingKcal: remainingKcal.round(),
+        proteinG: proteinG.round(),
+        carbG: carbG.round(),
+        fatG: fatG.round(),
+        recentFoodNames: recentFoodNames,
+        mealTime: mealTime,
+        foodCatalog: foodCatalog,
+      );
       final allFoods = await _foodService.getAll();
 
       return suggestions
@@ -155,26 +158,17 @@ class AiFoodService {
   }
 
   String _aiErrorMessage(Object error) {
-    if (error is FunctionsException) {
-      if (error.message == 'network_error') {
-        return 'Không thể kết nối máy chủ AI. '
-            'Kiểm tra Firebase Emulators đã chạy chưa, '
-            'hoặc thử lại sau.';
-      }
-      if (error.message == 'invalid_response') {
-        return 'Dữ liệu AI trả về không hợp lệ. Vui lòng thử lại.';
-      }
-      if (error.message == 'quota_exceeded') {
-        return 'Bạn đã dùng hết lượt AI scan miễn phí trong tháng. '
-            'Nâng cấp Premium để tiếp tục sử dụng.';
-      }
-      if (error.statusCode == 401 || error.statusCode == 403) {
-        return 'Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại.';
-      }
-      if ((error.statusCode ?? 0) >= 500) {
-        return 'Máy chủ AI đang gặp sự cố. Vui lòng thử lại sau.';
-      }
-      return 'Không thể xử lý yêu cầu AI lúc này. Vui lòng thử lại.';
+    if (error is AiFoodServiceException) return error.userMessage;
+    final msg = error.toString();
+    if (msg.contains('quota') || msg.contains('exceeded')) {
+      return 'Bạn đã dùng hết lượt AI scan miễn phí trong tháng. '
+          'Nâng cấp Premium để tiếp tục sử dụng.';
+    }
+    if (msg.contains('unauthorized') || msg.contains('403') || msg.contains('401')) {
+      return 'Phiên đăng nhập không hợp lệ. Vui lòng đăng nhập lại.';
+    }
+    if (msg.contains('apiKey') || msg.contains('API key')) {
+      return 'Dịch vụ AI chưa sẵn sàng. Vui lòng thử lại sau.';
     }
     return 'Không thể kết nối dịch vụ AI. Vui lòng kiểm tra mạng và thử lại.';
   }

@@ -108,7 +108,10 @@ class _BarcodeScanPageState extends State<BarcodeScanPage> {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Quét mã vạch')),
+      appBar: AppBar(
+        title: const Text('Quét mã vạch'),
+        leading: const BackButton(),
+      ),
       body: Column(
         children: [
           // Scanner area

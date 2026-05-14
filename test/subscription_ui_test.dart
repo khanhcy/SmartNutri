@@ -1,9 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
+import 'package:smartnutri/src/app/auth_flow_notifier.dart';
+import 'package:smartnutri/src/app/go_router_config.dart';
 import 'package:smartnutri/src/core/services/auth_service.dart';
+import 'package:smartnutri/src/core/services/profile_service.dart';
 import 'package:smartnutri/src/core/services/subscription_service.dart';
 import 'package:smartnutri/src/core/ui/theme/app_theme.dart';
+import 'package:smartnutri/src/features/profile/domain/user_profile.dart';
 import 'package:smartnutri/src/features/subscription/domain/subscription_status.dart';
 import 'package:smartnutri/src/features/subscription/presentation/paywall_page.dart';
 import 'package:smartnutri/src/features/subscription/presentation/subscription_page.dart';
@@ -118,6 +122,30 @@ void main() {
     );
     expect(find.text('Xem trang gói'), findsOneWidget);
   });
+
+  testWidgets('Router truyền query source/reason vào PaywallPage', (
+    tester,
+  ) async {
+    final authFlow = _ReadyAuthFlowNotifier();
+    final router = createAppRouter(authFlow: authFlow)
+      ..go('${AppPaths.paywall}?source=scan_photo&reason=quota_exhausted');
+
+    await tester.pumpWidget(
+      MaterialApp.router(
+        theme: AppTheme.light(),
+        routerConfig: router,
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      find.text('Bạn đã dùng hết lượt AI scan miễn phí tháng này.'),
+      findsOneWidget,
+    );
+    expect(find.text('Xem trang gói'), findsOneWidget);
+
+    authFlow.dispose();
+  });
 }
 
 Widget _wrapWithProviders({
@@ -157,6 +185,22 @@ class _FakeSubscriptionService implements SubscriptionService {
   Stream<SubscriptionOverview> watchOverview(String uid) => stream;
 }
 
+class _ReadyAuthFlowNotifier extends AuthFlowNotifier {
+  _ReadyAuthFlowNotifier() : super(_FakeAuthService(), _FakeProfileService());
+
+  @override
+  AuthUser? get user => AuthUser(uid: 'u-1', email: 'user@test.dev');
+
+  @override
+  bool get isLoading => false;
+
+  @override
+  bool get isLoggedIn => true;
+
+  @override
+  bool get needsOnboarding => false;
+}
+
 class _FakeAuthService implements AuthService {
   @override
   Stream<AuthUser?> authStateChanges() => Stream.value(currentUser);
@@ -188,4 +232,30 @@ class _FakeAuthService implements AuthService {
     required String password,
     String? displayName,
   }) async {}
+}
+
+class _FakeProfileService implements ProfileService {
+  @override
+  Future<UserProfile?> getProfile(String uid) async => _profile(uid);
+
+  @override
+  Future<void> upsertProfile(UserProfile profile) async {}
+
+  @override
+  Stream<UserProfile?> watchProfile(String uid) => Stream.value(_profile(uid));
+
+  UserProfile _profile(String uid) {
+    return UserProfile(
+      uid: uid,
+      email: 'user@test.dev',
+      displayName: 'Người dùng',
+      age: 30,
+      heightCm: 170,
+      weightKg: 65,
+      gender: 'unknown',
+      activityLevel: 'light',
+      onboardingCompleted: true,
+      updatedAt: DateTime(2026, 5, 14),
+    );
+  }
 }
