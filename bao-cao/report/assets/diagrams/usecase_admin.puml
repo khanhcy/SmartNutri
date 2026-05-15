@@ -1,0 +1,31 @@
+@startuml
+scale 1.6
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam packageBorderColor #555555
+skinparam usecaseFontSize 12
+skinparam actorFontSize 13
+skinparam defaultFontSize 12
+
+left to right direction
+
+actor "Quản trị viên" as Admin
+
+rectangle "Hệ thống SmartNutri" as System #White {
+    package "Xác thực" as Auth {
+        usecase "UC-02: Đăng nhập" as UC02
+    }
+    package "Phân quyền" as Premium {
+        usecase "UC-12: Quản lý trạng thái Premium" as UC12
+    }
+    package "Chức năng quản trị" as AdminFn {
+        usecase "UC-10: Quản lý thực phẩm" as UC10
+        usecase "UC-11: Quản lý người dùng" as UC11
+    }
+}
+
+Admin --> UC02
+Admin --> UC10
+Admin --> UC11
+Admin --> UC12
+@enduml

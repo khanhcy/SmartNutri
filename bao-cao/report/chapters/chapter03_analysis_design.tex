@@ -117,13 +117,28 @@ Các actor chính của hệ thống:
 
 \section{Tổng quan ca sử dụng hệ thống}
 
-Hình~\ref{fig:usecase_diagram} trình bày biểu đồ ca sử dụng tổng quan của hệ thống SmartNutri, thể hiện mối quan hệ giữa các actor và các chức năng chính.
+Hệ thống SmartNutri có hai nhóm actor chính: \textbf{Người dùng} (người dùng cuối tương tác qua ứng dụng di động) và \textbf{Quản trị viên} (người quản lý hệ thống qua trang web). Ngoài ra, \textbf{Gemini API} đóng vai trò là hệ thống bên ngoài, được gọi từ Cloud Functions để hỗ trợ nhận diện món ăn và trả lời chatbot.
+
+\subsection{Biểu đồ ca sử dụng cho Người dùng}
+
+Hình~\ref{fig:usecase_user} trình bày các ca sử dụng dành cho người dùng cuối. Mười ca sử dụng được chia thành ba nhóm: Xác thực (UC-01, UC-02), Hồ sơ và mục tiêu (UC-03, UC-04, UC-12) và Chức năng người dùng (UC-05, UC-06, UC-07, UC-08, UC-09). Actor Gemini API (hệ thống ngoài) hỗ trợ hai ca sử dụng AI: UC-05 (Quét món ăn bằng AI) và UC-09 (Chatbot AI dinh dưỡng), được gọi gián tiếp thông qua Cloud Functions.
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.9\textwidth]{assets/diagrams/usecase_diagram.png}
-    \caption{Biểu đồ ca sử dụng tổng quan hệ thống SmartNutri}
-    \label{fig:usecase_diagram}
+    \includegraphics[width=0.78\textwidth]{assets/diagrams/usecase_user.png}
+    \caption{Biểu đồ ca sử dụng cho Người dùng — Hệ thống SmartNutri}
+    \label{fig:usecase_user}
+\end{figure}
+
+\subsection{Biểu đồ ca sử dụng cho Quản trị viên}
+
+Hình~\ref{fig:usecase_admin} trình bày các ca sử dụng dành cho quản trị viên qua trang quản trị web. Bốn ca sử dụng được chia thành ba nhóm: Xác thực (UC-02), Phân quyền (UC-12) và Chức năng quản trị (UC-10, UC-11). Quản trị viên cần đăng nhập trước khi thực hiện các thao tác quản lý thực phẩm, quản lý người dùng và gán gói Premium.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.6\textwidth]{assets/diagrams/usecase_admin.png}
+    \caption{Biểu đồ ca sử dụng cho Quản trị viên — Hệ thống SmartNutri}
+    \label{fig:usecase_admin}
 \end{figure}
 
 \section{Mô tả ca sử dụng}
@@ -175,19 +190,6 @@ Hình~\ref{fig:usecase_diagram} trình bày biểu đồ ca sử dụng tổng q
     \hline
 \end{longtable}
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.8\textwidth]{assets/diagrams/uc01_register_activity.png}
-    \caption{Biểu đồ hoạt động ca sử dụng Đăng ký tài khoản}
-    \label{fig:uc01_register_activity}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\textwidth]{assets/diagrams/uc01_register_sequence.png}
-    \caption{Biểu đồ tuần tự ca sử dụng Đăng ký tài khoản}
-    \label{fig:uc01_register_sequence}
-\end{figure}
 
 % ============================================================
 \subsection{UC-02: Đăng nhập}
@@ -236,19 +238,6 @@ Hình~\ref{fig:usecase_diagram} trình bày biểu đồ ca sử dụng tổng q
     \hline
 \end{longtable}
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.8\textwidth]{assets/diagrams/uc02_login_activity.png}
-    \caption{Biểu đồ hoạt động ca sử dụng Đăng nhập}
-    \label{fig:uc02_login_activity}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\textwidth]{assets/diagrams/uc02_login_sequence.png}
-    \caption{Biểu đồ tuần tự ca sử dụng Đăng nhập}
-    \label{fig:uc02_login_sequence}
-\end{figure}
 
 % ============================================================
 \subsection{UC-05: Quét món ăn bằng AI}
@@ -302,13 +291,6 @@ Hình~\ref{fig:usecase_diagram} trình bày biểu đồ ca sử dụng tổng q
         \end{itemize} \\
     \hline
 \end{longtable}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.8\textwidth]{assets/diagrams/uc05_scan_activity.png}
-    \caption{Biểu đồ hoạt động ca sử dụng Quét món ăn bằng AI}
-    \label{fig:uc05_scan_activity}
-\end{figure}
 
 \begin{figure}[H]
     \centering
@@ -366,13 +348,6 @@ Hình~\ref{fig:usecase_diagram} trình bày biểu đồ ca sử dụng tổng q
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\textwidth]{assets/diagrams/uc06_foodlog_activity.png}
-    \caption{Biểu đồ hoạt động ca sử dụng Nhật ký ăn uống}
-    \label{fig:uc06_foodlog_activity}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
     \includegraphics[width=0.9\textwidth]{assets/diagrams/uc06_foodlog_sequence.png}
     \caption{Biểu đồ tuần tự ca sử dụng Nhật ký ăn uống}
     \label{fig:uc06_foodlog_sequence}
@@ -423,13 +398,6 @@ Hình~\ref{fig:usecase_diagram} trình bày biểu đồ ca sử dụng tổng q
         \end{itemize} \\
     \hline
 \end{longtable}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.8\textwidth]{assets/diagrams/uc07_stats_activity.png}
-    \caption{Biểu đồ hoạt động ca sử dụng Theo dõi dinh dưỡng}
-    \label{fig:uc07_stats_activity}
-\end{figure}
 
 \begin{figure}[H]
     \centering
@@ -485,19 +453,6 @@ Hình~\ref{fig:usecase_diagram} trình bày biểu đồ ca sử dụng tổng q
     \hline
 \end{longtable}
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.8\textwidth]{assets/diagrams/uc03_profile_activity.png}
-    \caption{Biểu đồ hoạt động ca sử dụng Quản lý hồ sơ cá nhân}
-    \label{fig:uc03_profile_activity}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\textwidth]{assets/diagrams/uc03_profile_sequence.png}
-    \caption{Biểu đồ tuần tự ca sử dụng Quản lý hồ sơ cá nhân}
-    \label{fig:uc03_profile_sequence}
-\end{figure}
 
 % ============================================================
 \subsection{UC-04: Hoàn thành Onboarding}
@@ -546,19 +501,6 @@ Hình~\ref{fig:usecase_diagram} trình bày biểu đồ ca sử dụng tổng q
     \hline
 \end{longtable}
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.8\textwidth]{assets/diagrams/uc04_onboarding_activity.png}
-    \caption{Biểu đồ hoạt động ca sử dụng Hoàn thành Onboarding}
-    \label{fig:uc04_onboarding_activity}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\textwidth]{assets/diagrams/uc04_onboarding_sequence.png}
-    \caption{Biểu đồ tuần tự ca sử dụng Hoàn thành Onboarding}
-    \label{fig:uc04_onboarding_sequence}
-\end{figure}
 
 % ============================================================
 \subsection{UC-08: Quản lý món ăn yêu thích}
@@ -607,19 +549,6 @@ Hình~\ref{fig:usecase_diagram} trình bày biểu đồ ca sử dụng tổng q
     \hline
 \end{longtable}
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.8\textwidth]{assets/diagrams/uc08_favorites_activity.png}
-    \caption{Biểu đồ hoạt động ca sử dụng Quản lý món ăn yêu thích}
-    \label{fig:uc08_favorites_activity}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\textwidth]{assets/diagrams/uc08_favorites_sequence.png}
-    \caption{Biểu đồ tuần tự ca sử dụng Quản lý món ăn yêu thích}
-    \label{fig:uc08_favorites_sequence}
-\end{figure}
 
 % ============================================================
 \subsection{UC-09: Chatbot AI dinh dưỡng}
@@ -676,13 +605,6 @@ Hình~\ref{fig:usecase_diagram} trình bày biểu đồ ca sử dụng tổng q
 
 \begin{figure}[H]
     \centering
-    \includegraphics[width=0.8\textwidth]{assets/diagrams/uc09_chatbot_activity.png}
-    \caption{Biểu đồ hoạt động ca sử dụng Chatbot AI dinh dưỡng}
-    \label{fig:uc09_chatbot_activity}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
     \includegraphics[width=0.9\textwidth]{assets/diagrams/uc09_chatbot_sequence.png}
     \caption{Biểu đồ tuần tự ca sử dụng Chatbot AI dinh dưỡng}
     \label{fig:uc09_chatbot_sequence}
@@ -736,19 +658,6 @@ Hình~\ref{fig:usecase_diagram} trình bày biểu đồ ca sử dụng tổng q
     \hline
 \end{longtable}
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.8\textwidth]{assets/diagrams/uc10_food_admin_activity.png}
-    \caption{Biểu đồ hoạt động ca sử dụng Quản lý thực phẩm}
-    \label{fig:uc10_food_admin_activity}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\textwidth]{assets/diagrams/uc10_food_admin_sequence.png}
-    \caption{Biểu đồ tuần tự ca sử dụng Quản lý thực phẩm}
-    \label{fig:uc10_food_admin_sequence}
-\end{figure}
 
 % ============================================================
 \subsection{UC-11: Quản lý người dùng}
@@ -796,19 +705,6 @@ Hình~\ref{fig:usecase_diagram} trình bày biểu đồ ca sử dụng tổng q
     \hline
 \end{longtable}
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.8\textwidth]{assets/diagrams/uc11_user_admin_activity.png}
-    \caption{Biểu đồ hoạt động ca sử dụng Quản lý người dùng}
-    \label{fig:uc11_user_admin_activity}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\textwidth]{assets/diagrams/uc11_user_admin_sequence.png}
-    \caption{Biểu đồ tuần tự ca sử dụng Quản lý người dùng}
-    \label{fig:uc11_user_admin_sequence}
-\end{figure}
 
 % ============================================================
 \subsection{UC-12: Quản lý trạng thái Premium}
@@ -866,19 +762,6 @@ Hình~\ref{fig:usecase_diagram} trình bày biểu đồ ca sử dụng tổng q
     \hline
 \end{longtable}
 
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.8\textwidth]{assets/diagrams/uc12_premium_activity.png}
-    \caption{Biểu đồ hoạt động ca sử dụng Đăng ký Premium}
-    \label{fig:uc12_premium_activity}
-\end{figure}
-
-\begin{figure}[H]
-    \centering
-    \includegraphics[width=0.9\textwidth]{assets/diagrams/uc12_premium_sequence.png}
-    \caption{Biểu đồ tuần tự ca sử dụng Đăng ký Premium}
-    \label{fig:uc12_premium_sequence}
-\end{figure}
 
 \section{Thiết kế cơ sở dữ liệu}
 

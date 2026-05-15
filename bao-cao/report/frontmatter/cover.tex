@@ -3,58 +3,78 @@
 % ============================================================
 
 \thispagestyle{empty}
+\newgeometry{left=2.5cm, right=2.5cm, top=2.5cm, bottom=2.5cm}
+
+% --- Double border frame ---
+\begin{tikzpicture}[remember picture, overlay]
+    \draw[line width=1.5pt]
+        ($(current page.north west) + (1.8cm,-1.8cm)$)
+        rectangle
+        ($(current page.south east) + (-1.8cm,1.8cm)$);
+    \draw[line width=0.5pt]
+        ($(current page.north west) + (2.1cm,-2.1cm)$)
+        rectangle
+        ($(current page.south east) + (-2.1cm,2.1cm)$);
+\end{tikzpicture}
 
 \begin{center}
 
-\vspace{1cm}
+\vspace*{0.5cm}
+
+% --- University name ---
+{\large \bfseries ĐẠI HỌC QUỐC GIA HÀ NỘI}
+
+\vspace{0.15cm}
+
+{\large \bfseries TRƯỜNG ĐẠI HỌC CÔNG NGHỆ}
+
+\vspace{0.15cm}
+
+{\normalsize \bfseries KHOA CÔNG NGHỆ THÔNG TIN}
+
+\vspace{0.8cm}
 
 % --- Logo ---
-\includegraphics[width=0.25\textwidth]{assets/images/logo.png}
+\includegraphics[width=2.5cm]{assets/images/logo.jpg}
 
-\vspace{0.5cm}
+\vspace{1.2cm}
 
-{\Large \textbf{\university}}
+% --- Report type ---
+{\Large \bfseries BÁO CÁO DỰ ÁN CÔNG NGHỆ}
 
-\vspace{0.3cm}
+\vspace{0.6cm}
 
-{\large \textbf{\faculty}}
+% --- Major ---
+{\large Chuyên ngành: \major}
 
-\vspace{1.5cm}
+\vspace{1.2cm}
 
-% --- Separator line ---
-{\color{black}\hrule height 2pt}
-
-\vspace{1cm}
-
-{\LARGE \textbf{\reporttype}}
+% --- Project title ---
+{\Large \bfseries \MakeUppercase{\projecttitle}}
 
 \vspace{1.5cm}
 
-{\Large \textbf{\projecttitle}}
-
-\vspace{0.5cm}
-
-\textit{(\projecttitleen)}
-
-\vspace{2cm}
-
-{\color{black}\hrule height 2pt}
-
-\vspace{2cm}
-
-% --- Info table ---
-\begin{tabular}{r l}
-    \textbf{Chuyên ngành:} & \major \\
-    \textbf{Sinh viên thực hiện:} & \studentname \\
-    \textbf{MSSV:} & \studentid \\
-    \textbf{Lớp:} & \studentclass \\
-    \textbf{Giảng viên hướng dẫn:} & \supervisortitle \ \supervisor \\
+% --- Student info table ---
+\begin{tabular}{|>{\bfseries}l|p{8.5cm}|}
+\hline
+Người thực hiện:  & \studentname \\
+                  & \studentnameb \\
+\hline
+Mã học viên/MSSV: & \studentid \\
+                  & \studentidb \\
+\hline
+Lớp:              & \studentclass \\
+\hline
+Giảng viên hướng dẫn: & \supervisortitle~\supervisor \\
+\hline
 \end{tabular}
 
 \vfill
 
-\textbf{\location, \reportyear}
+% --- Location and year ---
+{\bfseries HÀ NỘI -- 2026}
 
 \end{center}
 
+\restoregeometry
 \newpage

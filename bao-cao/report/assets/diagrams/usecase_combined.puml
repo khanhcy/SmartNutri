@@ -1,0 +1,61 @@
+@startuml
+scale 1.8
+skinparam packageStyle rectangle
+skinparam shadowing false
+skinparam packageBorderColor #555555
+skinparam usecaseFontSize 12
+skinparam actorFontSize 13
+skinparam defaultFontSize 12
+
+left to right direction
+
+actor "Người dùng" as User
+
+rectangle "Hệ thống SmartNutri" as System #White {
+    package "Xác thực" as Auth {
+        usecase "UC-01: Đăng ký tài khoản" as UC01
+        usecase "UC-02: Đăng nhập" as UC02
+    }
+    package "Hồ sơ và mục tiêu" as Profile {
+        usecase "UC-03: Quản lý hồ sơ cá nhân" as UC03
+        usecase "UC-04: Hoàn thành Onboarding" as UC04
+        usecase "UC-12: Quản lý trạng thái Premium" as UC12
+    }
+    package "Chức năng người dùng" as UserFn {
+        usecase "UC-05: Quét món ăn bằng AI" as UC05
+        usecase "UC-06: Nhật ký ăn uống" as UC06
+        usecase "UC-07: Theo dõi dinh dưỡng" as UC07
+        usecase "UC-08: Quản lý món ăn yêu thích" as UC08
+        usecase "UC-09: Chatbot AI dinh dưỡng" as UC09
+    }
+    package "Chức năng quản trị" as AdminFn {
+        usecase "UC-10: Quản lý thực phẩm" as UC10
+        usecase "UC-11: Quản lý người dùng" as UC11
+    }
+}
+
+actor "Quản trị viên" as Admin
+actor "Gemini API" as Gemini
+
+' Người dùng kết nối đến các use case
+User --> UC01
+User --> UC02
+User --> UC03
+User --> UC04
+User --> UC05
+User --> UC06
+User --> UC07
+User --> UC08
+User --> UC09
+User --> UC12
+
+' Quản trị viên kết nối đến các use case
+Admin --> UC02
+Admin --> UC10
+Admin --> UC11
+Admin --> UC12
+
+' Gemini API hỗ trợ các use case AI
+UC05 ..> Gemini : «sử dụng»
+UC09 ..> Gemini : «sử dụng»
+@enduml

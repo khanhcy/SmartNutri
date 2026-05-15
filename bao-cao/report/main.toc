@@ -2,91 +2,93 @@
 \contentsline {chapter}{Lời cảm ơn}{2}{chapter*.1}%
 \contentsline {chapter}{Lời cam đoan}{3}{chapter*.2}%
 \contentsline {chapter}{Tóm tắt}{4}{chapter*.3}%
-\contentsline {chapter}{Danh sách hình vẽ}{11}{chapter*.3}%
-\contentsline {chapter}{Danh sách bảng}{12}{chapter*.3}%
-\contentsline {chapter}{Danh mục các từ viết tắt}{13}{chapter*.4}%
-\contentsline {chapter}{\numberline {1}Đặt vấn đề}{14}{chapter.1}%
-\contentsline {section}{\numberline {1.1}Mô tả bài toán}{14}{section.1.1}%
-\contentsline {section}{\numberline {1.2}Mục tiêu dự án}{15}{section.1.2}%
-\contentsline {subsection}{\numberline {1.2.1}Mục tiêu tổng thể}{15}{subsection.1.2.1}%
-\contentsline {subsection}{\numberline {1.2.2}Mục tiêu cụ thể}{15}{subsection.1.2.2}%
-\contentsline {subsection}{\numberline {1.2.3}Đối tượng người dùng}{16}{subsection.1.2.3}%
-\contentsline {section}{\numberline {1.3}Cấu trúc báo cáo}{16}{section.1.3}%
-\contentsline {chapter}{\numberline {2}Kiến thức nền tảng}{17}{chapter.2}%
-\contentsline {section}{\numberline {2.1}Tổng quan về kiến trúc hệ thống}{17}{section.2.1}%
-\contentsline {subsection}{\numberline {2.1.1}Tầng trình bày (Presentation Tier)}{17}{subsection.2.1.1}%
-\contentsline {subsection}{\numberline {2.1.2}Tầng ứng dụng (Application Tier)}{17}{subsection.2.1.2}%
-\contentsline {subsection}{\numberline {2.1.3}Tầng dữ liệu (Data Tier)}{18}{subsection.2.1.3}%
-\contentsline {subsection}{\numberline {2.1.4}Luồng xử lý quét món ăn bằng AI}{19}{subsection.2.1.4}%
-\contentsline {subsection}{\numberline {2.1.5}Cơ chế giao tiếp giữa các tầng}{19}{subsection.2.1.5}%
-\contentsline {section}{\numberline {2.2}Các công nghệ được sử dụng}{20}{section.2.2}%
-\contentsline {subsection}{\numberline {2.2.1}Firebase}{20}{subsection.2.2.1}%
-\contentsline {subsubsection}{\numberline {2.2.1.1}Firebase Authentication}{20}{subsubsection.2.2.1.1}%
-\contentsline {subsubsection}{\numberline {2.2.1.2}Cloud Firestore}{20}{subsubsection.2.2.1.2}%
-\contentsline {subsubsection}{\numberline {2.2.1.3}Firebase Storage}{21}{subsubsection.2.2.1.3}%
-\contentsline {subsubsection}{\numberline {2.2.1.4}Firebase Cloud Functions}{21}{subsubsection.2.2.1.4}%
-\contentsline {subsection}{\numberline {2.2.2}Google Gemini API}{21}{subsection.2.2.2}%
-\contentsline {subsection}{\numberline {2.2.3}Flutter}{22}{subsection.2.2.3}%
-\contentsline {subsection}{\numberline {2.2.4}React, TypeScript và Vite (Admin Web)}{22}{subsection.2.2.4}%
-\contentsline {subsection}{\numberline {2.2.5}Các công nghệ bổ trợ}{23}{subsection.2.2.5}%
-\contentsline {chapter}{\numberline {3}Phân tích thiết kế hệ thống}{24}{chapter.3}%
-\contentsline {section}{\numberline {3.1}Tổng quan hệ thống}{24}{section.3.1}%
-\contentsline {section}{\numberline {3.2}Đặc tả yêu cầu}{24}{section.3.2}%
-\contentsline {subsection}{\numberline {3.2.1}Yêu cầu chức năng}{24}{subsection.3.2.1}%
-\contentsline {subsection}{\numberline {3.2.2}Yêu cầu phi chức năng}{26}{subsection.3.2.2}%
-\contentsline {subsubsection}{\numberline {3.2.2.1}Hiệu năng}{26}{subsubsection.3.2.2.1}%
-\contentsline {subsubsection}{\numberline {3.2.2.2}Độ tin cậy và tính sẵn sàng}{26}{subsubsection.3.2.2.2}%
-\contentsline {subsubsection}{\numberline {3.2.2.3}An ninh và bảo mật}{26}{subsubsection.3.2.2.3}%
-\contentsline {subsubsection}{\numberline {3.2.2.4}Khả bảo trì}{27}{subsubsection.3.2.2.4}%
-\contentsline {subsubsection}{\numberline {3.2.2.5}Khả mở rộng}{27}{subsubsection.3.2.2.5}%
-\contentsline {subsubsection}{\numberline {3.2.2.6}Khả sử dụng}{27}{subsubsection.3.2.2.6}%
-\contentsline {subsubsection}{\numberline {3.2.2.7}Ràng buộc kỹ thuật}{28}{subsubsection.3.2.2.7}%
-\contentsline {section}{\numberline {3.3}Tổng quan ca sử dụng hệ thống}{28}{section.3.3}%
-\contentsline {section}{\numberline {3.4}Mô tả ca sử dụng}{30}{section.3.4}%
-\contentsline {subsection}{\numberline {3.4.1}UC-01: Đăng ký tài khoản}{30}{subsection.3.4.1}%
-\contentsline {subsection}{\numberline {3.4.2}UC-02: Đăng nhập}{32}{subsection.3.4.2}%
-\contentsline {subsection}{\numberline {3.4.3}UC-05: Quét món ăn bằng AI}{35}{subsection.3.4.3}%
-\contentsline {subsection}{\numberline {3.4.4}UC-06: Nhật ký ăn uống}{39}{subsection.3.4.4}%
-\contentsline {subsection}{\numberline {3.4.5}UC-07: Theo dõi dinh dưỡng}{42}{subsection.3.4.5}%
-\contentsline {subsection}{\numberline {3.4.6}UC-03: Quản lý hồ sơ cá nhân}{45}{subsection.3.4.6}%
-\contentsline {subsection}{\numberline {3.4.7}UC-04: Hoàn thành Onboarding}{48}{subsection.3.4.7}%
-\contentsline {subsection}{\numberline {3.4.8}UC-08: Quản lý món ăn yêu thích}{51}{subsection.3.4.8}%
-\contentsline {subsection}{\numberline {3.4.9}UC-09: Chatbot AI dinh dưỡng}{54}{subsection.3.4.9}%
-\contentsline {subsection}{\numberline {3.4.10}UC-10: Quản lý thực phẩm}{58}{subsection.3.4.10}%
-\contentsline {subsection}{\numberline {3.4.11}UC-11: Quản lý người dùng}{61}{subsection.3.4.11}%
-\contentsline {subsection}{\numberline {3.4.12}UC-12: Quản lý trạng thái Premium}{64}{subsection.3.4.12}%
-\contentsline {section}{\numberline {3.5}Thiết kế cơ sở dữ liệu}{68}{section.3.5}%
-\contentsline {subsection}{\numberline {3.5.1}Về sơ đồ ERD}{68}{subsection.3.5.1}%
-\contentsline {subsection}{\numberline {3.5.2}Nguyên tắc phân tách dữ liệu người dùng}{69}{subsection.3.5.2}%
-\contentsline {subsection}{\numberline {3.5.3}Mô tả các collection chính}{69}{subsection.3.5.3}%
-\contentsline {subsubsection}{\numberline {3.5.3.1}Collection: users}{69}{subsubsection.3.5.3.1}%
-\contentsline {subsubsection}{\numberline {3.5.3.2}Collection: foods}{70}{subsubsection.3.5.3.2}%
-\contentsline {subsubsection}{\numberline {3.5.3.3}Sub-collection: users/\{userId\}/meal\_entries}{71}{subsubsection.3.5.3.3}%
-\contentsline {subsubsection}{\numberline {3.5.3.4}Sub-collection: users/\{userId\}/favorites}{71}{subsubsection.3.5.3.4}%
-\contentsline {subsubsection}{\numberline {3.5.3.5}Sub-collection: users/\{userId\}/usage}{72}{subsubsection.3.5.3.5}%
-\contentsline {subsubsection}{\numberline {3.5.3.6}Sub-collection: users/\{userId\}/chat\_history}{72}{subsubsection.3.5.3.6}%
-\contentsline {chapter}{\numberline {4}Xây dựng, triển khai và kiểm thử hệ thống}{73}{chapter.4}%
-\contentsline {section}{\numberline {4.1}Cài đặt hệ thống}{73}{section.4.1}%
-\contentsline {subsection}{\numberline {4.1.1}Môi trường phát triển}{73}{subsection.4.1.1}%
-\contentsline {subsection}{\numberline {4.1.2}Cài đặt ứng dụng di động (Flutter)}{73}{subsection.4.1.2}%
-\contentsline {subsection}{\numberline {4.1.3}Cài đặt Firebase backend}{75}{subsection.4.1.3}%
-\contentsline {subsection}{\numberline {4.1.4}Cài đặt Cloud Functions}{76}{subsection.4.1.4}%
-\contentsline {subsection}{\numberline {4.1.5}Cài đặt trang Admin Web}{77}{subsection.4.1.5}%
-\contentsline {subsection}{\numberline {4.1.6}Cấu hình Gemini API}{78}{subsection.4.1.6}%
-\contentsline {section}{\numberline {4.2}Triển khai hệ thống}{78}{section.4.2}%
-\contentsline {subsection}{\numberline {4.2.1}Trạng thái triển khai hiện tại}{79}{subsection.4.2.1}%
-\contentsline {subsection}{\numberline {4.2.2}Quy trình triển khai}{80}{subsection.4.2.2}%
-\contentsline {section}{\numberline {4.3}Kiểm thử hệ thống và trình bày kết quả thực nghiệm}{80}{section.4.3}%
-\contentsline {subsection}{\numberline {4.3.1}Kiểm thử chức năng}{80}{subsection.4.3.1}%
-\contentsline {subsection}{\numberline {4.3.2}Kiểm thử chức năng quét món ăn bằng AI}{86}{subsection.4.3.2}%
-\contentsline {subsubsection}{\numberline {4.3.2.1}Nhận xét về kết quả kiểm thử quét AI}{88}{subsubsection.4.3.2.1}%
-\contentsline {subsection}{\numberline {4.3.3}Kiểm thử hiệu năng}{89}{subsection.4.3.3}%
-\contentsline {subsubsection}{\numberline {4.3.3.1}Nhận xét về kiểm thử hiệu năng}{91}{subsubsection.4.3.3.1}%
-\contentsline {subsubsection}{\numberline {4.3.3.2}Nhận xét về kiểm thử bảo mật}{94}{subsubsection.4.3.3.2}%
-\contentsline {subsection}{\numberline {4.3.4}Kiểm thử tích hợp}{95}{subsection.4.3.4}%
-\contentsline {subsection}{\numberline {4.3.5}Kiểm thử giao diện}{95}{subsection.4.3.5}%
-\contentsline {section}{\numberline {4.4}Giao diện hệ thống}{95}{section.4.4}%
-\contentsline {subsection}{\numberline {4.4.1}Màn hình đăng nhập và đăng ký}{95}{subsection.4.4.1}%
-\contentsline {chapter}{Kết luận}{99}{chapter*.37}%
-\contentsline {chapter}{Tài liệu tham khảo}{102}{chapter*.38}%
+\contentsline {chapter}{Danh sách hình vẽ}{10}{chapter*.3}%
+\contentsline {chapter}{Danh sách bảng}{11}{chapter*.3}%
+\contentsline {chapter}{Danh mục các từ viết tắt}{12}{chapter*.4}%
+\contentsline {chapter}{\numberline {1}Đặt vấn đề}{13}{chapter.1}%
+\contentsline {section}{\numberline {1.1}Mô tả bài toán}{13}{section.1.1}%
+\contentsline {section}{\numberline {1.2}Mục tiêu dự án}{14}{section.1.2}%
+\contentsline {subsection}{\numberline {1.2.1}Mục tiêu tổng thể}{14}{subsection.1.2.1}%
+\contentsline {subsection}{\numberline {1.2.2}Mục tiêu cụ thể}{14}{subsection.1.2.2}%
+\contentsline {subsection}{\numberline {1.2.3}Đối tượng người dùng}{15}{subsection.1.2.3}%
+\contentsline {section}{\numberline {1.3}Cấu trúc báo cáo}{15}{section.1.3}%
+\contentsline {chapter}{\numberline {2}Kiến thức nền tảng}{16}{chapter.2}%
+\contentsline {section}{\numberline {2.1}Tổng quan về kiến trúc hệ thống}{16}{section.2.1}%
+\contentsline {subsection}{\numberline {2.1.1}Tầng trình bày (Presentation Tier)}{16}{subsection.2.1.1}%
+\contentsline {subsection}{\numberline {2.1.2}Tầng ứng dụng (Application Tier)}{16}{subsection.2.1.2}%
+\contentsline {subsection}{\numberline {2.1.3}Tầng dữ liệu (Data Tier)}{17}{subsection.2.1.3}%
+\contentsline {subsection}{\numberline {2.1.4}Luồng xử lý quét món ăn bằng AI}{18}{subsection.2.1.4}%
+\contentsline {subsection}{\numberline {2.1.5}Cơ chế giao tiếp giữa các tầng}{18}{subsection.2.1.5}%
+\contentsline {section}{\numberline {2.2}Các công nghệ được sử dụng}{19}{section.2.2}%
+\contentsline {subsection}{\numberline {2.2.1}Firebase}{19}{subsection.2.2.1}%
+\contentsline {subsubsection}{\numberline {2.2.1.1}Firebase Authentication}{19}{subsubsection.2.2.1.1}%
+\contentsline {subsubsection}{\numberline {2.2.1.2}Cloud Firestore}{19}{subsubsection.2.2.1.2}%
+\contentsline {subsubsection}{\numberline {2.2.1.3}Firebase Storage}{20}{subsubsection.2.2.1.3}%
+\contentsline {subsubsection}{\numberline {2.2.1.4}Firebase Cloud Functions}{20}{subsubsection.2.2.1.4}%
+\contentsline {subsection}{\numberline {2.2.2}Google Gemini API}{20}{subsection.2.2.2}%
+\contentsline {subsection}{\numberline {2.2.3}Flutter}{21}{subsection.2.2.3}%
+\contentsline {subsection}{\numberline {2.2.4}React, TypeScript và Vite (Admin Web)}{21}{subsection.2.2.4}%
+\contentsline {subsection}{\numberline {2.2.5}Các công nghệ bổ trợ}{22}{subsection.2.2.5}%
+\contentsline {chapter}{\numberline {3}Phân tích thiết kế hệ thống}{23}{chapter.3}%
+\contentsline {section}{\numberline {3.1}Tổng quan hệ thống}{23}{section.3.1}%
+\contentsline {section}{\numberline {3.2}Đặc tả yêu cầu}{23}{section.3.2}%
+\contentsline {subsection}{\numberline {3.2.1}Yêu cầu chức năng}{23}{subsection.3.2.1}%
+\contentsline {subsection}{\numberline {3.2.2}Yêu cầu phi chức năng}{25}{subsection.3.2.2}%
+\contentsline {subsubsection}{\numberline {3.2.2.1}Hiệu năng}{25}{subsubsection.3.2.2.1}%
+\contentsline {subsubsection}{\numberline {3.2.2.2}Độ tin cậy và tính sẵn sàng}{25}{subsubsection.3.2.2.2}%
+\contentsline {subsubsection}{\numberline {3.2.2.3}An ninh và bảo mật}{25}{subsubsection.3.2.2.3}%
+\contentsline {subsubsection}{\numberline {3.2.2.4}Khả bảo trì}{26}{subsubsection.3.2.2.4}%
+\contentsline {subsubsection}{\numberline {3.2.2.5}Khả mở rộng}{26}{subsubsection.3.2.2.5}%
+\contentsline {subsubsection}{\numberline {3.2.2.6}Khả sử dụng}{26}{subsubsection.3.2.2.6}%
+\contentsline {subsubsection}{\numberline {3.2.2.7}Ràng buộc kỹ thuật}{27}{subsubsection.3.2.2.7}%
+\contentsline {section}{\numberline {3.3}Tổng quan ca sử dụng hệ thống}{27}{section.3.3}%
+\contentsline {subsection}{\numberline {3.3.1}Biểu đồ ca sử dụng cho Người dùng}{27}{subsection.3.3.1}%
+\contentsline {subsection}{\numberline {3.3.2}Biểu đồ ca sử dụng cho Quản trị viên}{28}{subsection.3.3.2}%
+\contentsline {section}{\numberline {3.4}Mô tả ca sử dụng}{29}{section.3.4}%
+\contentsline {subsection}{\numberline {3.4.1}UC-01: Đăng ký tài khoản}{29}{subsection.3.4.1}%
+\contentsline {subsection}{\numberline {3.4.2}UC-02: Đăng nhập}{30}{subsection.3.4.2}%
+\contentsline {subsection}{\numberline {3.4.3}UC-05: Quét món ăn bằng AI}{31}{subsection.3.4.3}%
+\contentsline {subsection}{\numberline {3.4.4}UC-06: Nhật ký ăn uống}{34}{subsection.3.4.4}%
+\contentsline {subsection}{\numberline {3.4.5}UC-07: Theo dõi dinh dưỡng}{36}{subsection.3.4.5}%
+\contentsline {subsection}{\numberline {3.4.6}UC-03: Quản lý hồ sơ cá nhân}{38}{subsection.3.4.6}%
+\contentsline {subsection}{\numberline {3.4.7}UC-04: Hoàn thành Onboarding}{39}{subsection.3.4.7}%
+\contentsline {subsection}{\numberline {3.4.8}UC-08: Quản lý món ăn yêu thích}{40}{subsection.3.4.8}%
+\contentsline {subsection}{\numberline {3.4.9}UC-09: Chatbot AI dinh dưỡng}{41}{subsection.3.4.9}%
+\contentsline {subsection}{\numberline {3.4.10}UC-10: Quản lý thực phẩm}{44}{subsection.3.4.10}%
+\contentsline {subsection}{\numberline {3.4.11}UC-11: Quản lý người dùng}{45}{subsection.3.4.11}%
+\contentsline {subsection}{\numberline {3.4.12}UC-12: Quản lý trạng thái Premium}{46}{subsection.3.4.12}%
+\contentsline {section}{\numberline {3.5}Thiết kế cơ sở dữ liệu}{48}{section.3.5}%
+\contentsline {subsection}{\numberline {3.5.1}Về sơ đồ ERD}{48}{subsection.3.5.1}%
+\contentsline {subsection}{\numberline {3.5.2}Nguyên tắc phân tách dữ liệu người dùng}{49}{subsection.3.5.2}%
+\contentsline {subsection}{\numberline {3.5.3}Mô tả các collection chính}{49}{subsection.3.5.3}%
+\contentsline {subsubsection}{\numberline {3.5.3.1}Collection: users}{49}{subsubsection.3.5.3.1}%
+\contentsline {subsubsection}{\numberline {3.5.3.2}Collection: foods}{50}{subsubsection.3.5.3.2}%
+\contentsline {subsubsection}{\numberline {3.5.3.3}Sub-collection: users/\{userId\}/meal\_entries}{51}{subsubsection.3.5.3.3}%
+\contentsline {subsubsection}{\numberline {3.5.3.4}Sub-collection: users/\{userId\}/favorites}{51}{subsubsection.3.5.3.4}%
+\contentsline {subsubsection}{\numberline {3.5.3.5}Sub-collection: users/\{userId\}/usage}{52}{subsubsection.3.5.3.5}%
+\contentsline {subsubsection}{\numberline {3.5.3.6}Sub-collection: users/\{userId\}/chat\_history}{52}{subsubsection.3.5.3.6}%
+\contentsline {chapter}{\numberline {4}Xây dựng, triển khai và kiểm thử hệ thống}{53}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Cài đặt hệ thống}{53}{section.4.1}%
+\contentsline {subsection}{\numberline {4.1.1}Môi trường phát triển}{53}{subsection.4.1.1}%
+\contentsline {subsection}{\numberline {4.1.2}Cài đặt ứng dụng di động (Flutter)}{53}{subsection.4.1.2}%
+\contentsline {subsection}{\numberline {4.1.3}Cài đặt Firebase backend}{55}{subsection.4.1.3}%
+\contentsline {subsection}{\numberline {4.1.4}Cài đặt Cloud Functions}{56}{subsection.4.1.4}%
+\contentsline {subsection}{\numberline {4.1.5}Cài đặt trang Admin Web}{57}{subsection.4.1.5}%
+\contentsline {subsection}{\numberline {4.1.6}Cấu hình Gemini API}{58}{subsection.4.1.6}%
+\contentsline {section}{\numberline {4.2}Triển khai hệ thống}{58}{section.4.2}%
+\contentsline {subsection}{\numberline {4.2.1}Trạng thái triển khai hiện tại}{59}{subsection.4.2.1}%
+\contentsline {subsection}{\numberline {4.2.2}Quy trình triển khai}{60}{subsection.4.2.2}%
+\contentsline {section}{\numberline {4.3}Kiểm thử hệ thống và trình bày kết quả thực nghiệm}{60}{section.4.3}%
+\contentsline {subsection}{\numberline {4.3.1}Kiểm thử chức năng}{60}{subsection.4.3.1}%
+\contentsline {subsection}{\numberline {4.3.2}Kiểm thử chức năng quét món ăn bằng AI}{66}{subsection.4.3.2}%
+\contentsline {subsubsection}{\numberline {4.3.2.1}Nhận xét về kết quả kiểm thử quét AI}{68}{subsubsection.4.3.2.1}%
+\contentsline {subsection}{\numberline {4.3.3}Kiểm thử hiệu năng}{69}{subsection.4.3.3}%
+\contentsline {subsubsection}{\numberline {4.3.3.1}Nhận xét về kiểm thử hiệu năng}{71}{subsubsection.4.3.3.1}%
+\contentsline {subsubsection}{\numberline {4.3.3.2}Nhận xét về kiểm thử bảo mật}{74}{subsubsection.4.3.3.2}%
+\contentsline {subsection}{\numberline {4.3.4}Kiểm thử tích hợp}{75}{subsection.4.3.4}%
+\contentsline {subsection}{\numberline {4.3.5}Kiểm thử giao diện}{75}{subsection.4.3.5}%
+\contentsline {section}{\numberline {4.4}Giao diện hệ thống}{75}{section.4.4}%
+\contentsline {subsection}{\numberline {4.4.1}Các màn hình chính của ứng dụng}{75}{subsection.4.4.1}%
+\contentsline {chapter}{Kết luận}{79}{chapter*.18}%
+\contentsline {chapter}{Tài liệu tham khảo}{82}{chapter*.19}%
 \contentsfinish 

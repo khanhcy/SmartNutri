@@ -1,0 +1,41 @@
+%%{init: {'theme': 'base', 'themeVariables': { 'fontSize': '22px' }}}%%
+flowchart TB
+    User(("👤 Người dùng"))
+
+    subgraph Auth["Nhóm Xác thực"]
+        direction LR
+        UC01["UC-01: Đăng ký"]
+        UC02["UC-02: Đăng nhập"]
+    end
+
+    subgraph Profile["Nhóm Hồ sơ & Mục tiêu"]
+        direction LR
+        UC03["UC-03: Quản lý hồ sơ"]
+        UC04["UC-04: Onboarding"]
+    end
+
+    subgraph Core["Nhóm Chức năng chính"]
+        UC05["UC-05: Quét món ăn bằng AI"]
+        UC06["UC-06: Ghi nhật ký ăn uống"]
+        UC07["UC-07: Xem thống kê"]
+        UC09["UC-09: Chatbot AI"]
+    end
+
+    subgraph Extra["Nhóm Tiện ích"]
+        direction LR
+        UC08["UC-08: Quản lý yêu thích"]
+        UC12["UC-12: Nâng cấp Premium"]
+    end
+
+    Gemini(("🤖 Gemini API
+    (Hệ thống ngoài)"))
+
+    User --> Auth
+    User --> Profile
+    User --> Core
+    User --> Extra
+
+    Auth ~~~ Profile ~~~ Core ~~~ Extra
+
+    UC05 -.-> Gemini
+    UC09 -.-> Gemini

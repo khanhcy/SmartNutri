@@ -1,0 +1,22 @@
+graph TD
+    Admin(("🔧 Quản trị viên"))
+
+    subgraph SmartNutri["⚙️ Trang Quản trị SmartNutri"]
+        subgraph Auth2["Xác thực"]
+            UC02b["UC-02: Đăng nhập"]
+        end
+
+        subgraph AdminFn["Chức năng quản trị"]
+            UC10["UC-10: Quản lý thực phẩm"]
+            UC11["UC-11: Quản lý người dùng"]
+        end
+
+        subgraph AdminExtra["Phân quyền"]
+            UC12b["UC-12: Gán Premium"]
+        end
+    end
+
+    Admin --> UC02b
+    Admin --> UC10
+    Admin --> UC11
+    Admin --> UC12b

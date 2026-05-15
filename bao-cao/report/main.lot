@@ -2,9 +2,9 @@
 \addvspace {10\p@ }
 \addvspace {10\p@ }
 \addvspace {10\p@ }
-\contentsline {table}{\numberline {4.1}{\ignorespaces Các thành phần triển khai của hệ thống SmartNutri}}{78}{table.4.1}%
-\contentsline {table}{\numberline {4.2}{\ignorespaces Kết quả kiểm thử chức năng hệ thống SmartNutri}}{81}{table.4.2}%
-\contentsline {table}{\numberline {4.3}{\ignorespaces Kiểm thử nhận diện món ăn Việt Nam bằng Gemini API qua Cloud Function}}{87}{table.4.3}%
-\contentsline {table}{\numberline {4.4}{\ignorespaces Khung kiểm thử hiệu năng hệ thống SmartNutri}}{90}{table.4.4}%
-\contentsline {table}{\numberline {4.5}{\ignorespaces Kiểm thử bảo mật hệ thống SmartNutri}}{92}{table.4.5}%
+\contentsline {table}{\numberline {4.1}{\ignorespaces Các thành phần triển khai của hệ thống SmartNutri}}{58}{table.4.1}%
+\contentsline {table}{\numberline {4.2}{\ignorespaces Kết quả kiểm thử chức năng hệ thống SmartNutri}}{61}{table.4.2}%
+\contentsline {table}{\numberline {4.3}{\ignorespaces Kiểm thử nhận diện món ăn Việt Nam bằng Gemini API qua Cloud Function}}{67}{table.4.3}%
+\contentsline {table}{\numberline {4.4}{\ignorespaces Khung kiểm thử hiệu năng hệ thống SmartNutri}}{70}{table.4.4}%
+\contentsline {table}{\numberline {4.5}{\ignorespaces Kiểm thử bảo mật hệ thống SmartNutri}}{72}{table.4.5}%
 \contentsfinish 

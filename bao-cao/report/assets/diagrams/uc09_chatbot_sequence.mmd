@@ -1,17 +1,23 @@
 sequenceDiagram
     actor User as Người dùng
     participant App as Flutter App
-    participant API as Gemini API (Direct)
+    participant CF as Cloud Function (chatNutrition)
+    participant Gemini as Gemini API
     participant FS as Firestore
 
     User->>App: Nhập câu hỏi
     App->>App: Chuẩn bị context (hồ sơ, mục tiêu, nhật ký)
     App->>FS: Lưu message (role: user)
-    App->>API: Gửi prompt + lịch sử chat
-    API-->>App: Phản hồi text + suggestions
+    App->>CF: HTTP request + token + câu hỏi + context
+    CF->>CF: Xác thực token
+    CF->>Gemini: Prompt + lịch sử chat
+    Gemini-->>CF: Phản hồi + suggestions
+    CF-->>App: Kết quả phản hồi
     App->>FS: Lưu message (role: assistant)
     App-->>User: Hiển thị câu trả lời
-    alt Người dùng đánh giá
-        User->>App: Nhấn 👍 hoặc 👎
-        App->>FS: Cập nhật rating
+    alt Nội dung y tế nhạy cảm
+        CF->>CF: Từ chối trả lời
+        CF-->>App: Khuyến nghị gặp bác sĩ
+        App->>FS: Lưu message (role: assistant, isError: true)
+        App-->>User: Hiển thị khuyến nghị y tế
     end
