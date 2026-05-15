@@ -1,0 +1,26 @@
+sequenceDiagram
+    actor User as Người dùng
+    participant App as Flutter App
+    participant FS as Firestore
+    participant Auth as Firebase Auth
+
+    User->>App: Mở tab Hồ sơ
+    App->>FS: getDoc(users/{uid})
+    FS-->>App: User data
+    App-->>User: Hiển thị thông tin
+
+    opt Chỉnh sửa
+        User->>App: Nhấn Chỉnh sửa
+        App-->>User: Form chỉnh sửa
+        User->>App: Cập nhật thông tin
+        App->>FS: updateDoc(users/{uid}, data)
+        FS-->>App: OK
+        App-->>User: "Đã cập nhật"
+    end
+
+    opt Đăng xuất
+        User->>App: Nhấn Đăng xuất
+        App->>Auth: signOut()
+        Auth-->>App: OK
+        App-->>User: Về màn hình đăng nhập
+    end

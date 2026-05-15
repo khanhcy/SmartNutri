@@ -1,0 +1,16 @@
+flowchart TD
+    A([Bắt đầu]) --> B[Hiển thị màn hình Premium]
+    B --> C[Hiển thị so sánh gói Free vs Premium]
+    C --> D[Người dùng chọn nâng cấp]
+    D --> E[Hiển thị form thanh toán]
+    E --> F[Xác nhận nâng cấp]
+    F --> G{Hình thức nâng cấp}
+    G -->|In-app Purchase| H[Gọi StoreKit/Google Play]
+    G -->|Admin gán| I[Admin dùng CF setUserSubscription]
+    H --> J{Xác nhận thanh toán}
+    J -->|Thành công| K[Cập nhật subscription trong Firestore]
+    J -->|Thất bại| L[Hiển thị lỗi thanh toán]
+    I --> K
+    K --> M[Hiển thị Premium activated]
+    M --> N([Kết thúc])
+    L --> N

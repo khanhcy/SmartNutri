@@ -1,0 +1,17 @@
+flowchart TD
+    A([Bắt đầu]) --> B[Admin đăng nhập]
+    B --> C[Hiển thị trang quản lý người dùng]
+    C --> D[Tải danh sách users từ Firestore]
+    D --> E[Hiển thị bảng người dùng]
+    E --> F{Chọn thao tác}
+    F -->|Xem chi tiết| G[Hiển thị thông tin + nhật ký]
+    F -->|Set Premium| H[Chọn user + thời hạn]
+    H --> I[Gọi setUserSubscription CF]
+    I --> J[Cập nhật subscription trong Firestore]
+    F -->|Set Admin| K[Chọn user]
+    K --> L[Gọi setAdminRole CF]
+    L --> M[Gán custom claim admin]
+    J --> N[Làm mới danh sách]
+    M --> N
+    N --> E
+    G --> O([Kết thúc])

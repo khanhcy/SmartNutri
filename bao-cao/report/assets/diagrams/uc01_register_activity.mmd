@@ -1,0 +1,21 @@
+flowchart TD
+    A([Bắt đầu]) --> B[Hiển thị form đăng ký]
+    B --> C[Người dùng nhập email, mật khẩu]
+    C --> D{Nhấn Đăng ký}
+    D --> E[Kiểm tra định dạng email]
+    E --> F{Email hợp lệ?}
+    F -->|Không| G[Hiển thị lỗi định dạng email]
+    G --> C
+    F -->|Có| H{Kiểm tra độ mạnh mật khẩu}
+    H -->|Yếu| I[Hiển thị lỗi mật khẩu]
+    I --> C
+    H -->|Mạnh| J[Gọi Firebase Auth tạo tài khoản]
+    J --> K{Tạo thành công?}
+    K -->|Email đã tồn tại| L[Hiển thị lỗi email đã dùng]
+    L --> C
+    K -->|Lỗi mạng| M[Hiển thị lỗi kết nối]
+    M --> C
+    K -->|Thành công| N[Tạo document user trong Firestore]
+    N --> O[Gửi email xác minh]
+    O --> P[Chuyển đến Onboarding]
+    P --> Q([Kết thúc])

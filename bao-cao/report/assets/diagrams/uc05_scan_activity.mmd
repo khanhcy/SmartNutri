@@ -1,0 +1,22 @@
+flowchart TD
+    A([Bắt đầu]) --> B[Người dùng nhấn Scan]
+    B --> C{Chọn nguồn ảnh}
+    C -->|Camera| D[Mở camera]
+    C -->|Thư viện| E[Mở thư viện ảnh]
+    D --> F[Chụp ảnh]
+    E --> G[Chọn ảnh]
+    F --> H[Resize ảnh thành base64]
+    G --> H
+    H --> I[Gửi đến Cloud Function]
+    I --> J[CF kiểm tra quota]
+    J --> K{Còn quota?}
+    K -->|Hết| L[Hiển thị thông báo hết lượt]
+    K -->|Còn| M[CF gọi Gemini API]
+    M --> N{Gemini nhận diện?}
+    N -->|Thành công| O[Hiển thị kết quả món ăn]
+    N -->|Thất bại| P[Hiển thị lỗi, thử lại]
+    O --> Q[Người dùng chỉnh sửa / xác nhận]
+    Q --> R[Lưu vào nhật ký]
+    R --> S([Kết thúc])
+    L --> S
+    P --> C

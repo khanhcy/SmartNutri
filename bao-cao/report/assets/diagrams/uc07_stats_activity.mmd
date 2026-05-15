@@ -1,0 +1,13 @@
+flowchart TD
+    A([Bắt đầu]) --> B[Hiển thị màn hình Thống kê]
+    B --> C[Người dùng chọn khoảng thời gian]
+    C --> D[Tải dữ liệu meal_entries + goals]
+    D --> E[Tính toán tổng calo, macro]
+    E --> F[Hiển thị biểu đồ]
+    F --> G{Chọn loại biểu đồ}
+    G -->|Calo| H[Biểu đồ cột calo theo ngày]
+    G -->|Macro| I[Biểu đồ tròn protein/carb/fat]
+    G -->|Tiến độ| J[Biểu đồ đường cân nặng]
+    H --> K([Kết thúc])
+    I --> K
+    J --> K

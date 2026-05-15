@@ -1,0 +1,31 @@
+graph LR
+    User(("👤 Người dùng"))
+    Admin(("🔧 Admin"))
+
+    subgraph SmartNutri["Hệ thống SmartNutri"]
+        UC01["UC-01: Đăng ký"]
+        UC02["UC-02: Đăng nhập"]
+        UC03["UC-03: Quản lý hồ sơ"]
+        UC04["UC-04: Onboarding"]
+        UC05["UC-05: Quét món ăn AI"]
+        UC06["UC-06: Ghi nhật ký ăn uống"]
+        UC07["UC-07: Xem thống kê"]
+        UC08["UC-08: Quản lý yêu thích"]
+        UC09["UC-09: Chatbot AI"]
+        UC10["UC-10: QL thực phẩm"]
+        UC11["UC-11: QL người dùng"]
+        UC12["UC-12: Nâng cấp Premium"]
+    end
+
+    User --> UC01
+    User --> UC02
+    User --> UC03
+    User --> UC04
+    User --> UC05
+    User --> UC06
+    User --> UC07
+    User --> UC08
+    User --> UC09
+    User --> UC12
+    Admin --> UC10
+    Admin --> UC11

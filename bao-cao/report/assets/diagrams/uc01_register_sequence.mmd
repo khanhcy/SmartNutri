@@ -1,0 +1,27 @@
+sequenceDiagram
+    actor User as Người dùng
+    participant App as Flutter App
+    participant Auth as Firebase Auth
+    participant FS as Firestore
+
+    User->>App: Mở màn hình đăng ký
+    App-->>User: Hiển thị form
+    User->>App: Nhập email, mật khẩu, nhấn Đăng ký
+    App->>App: Validate email + password
+    App->>Auth: createUserWithEmailAndPassword()
+    alt Thành công
+        Auth-->>App: UserCredential
+        Auth->>Auth: Gửi email xác minh
+        App->>FS: setDoc(users/{uid}, {email, createdAt})
+        FS-->>App: OK
+        App-->>User: Chuyển đến Onboarding
+    else Email đã tồn tại
+        Auth-->>App: Lỗi email-already-in-use
+        App-->>User: "Email đã được sử dụng"
+    else Mật khẩu yếu
+        Auth-->>App: Lỗi weak-password
+        App-->>User: "Mật khẩu phải có ít nhất 6 ký tự"
+    else Lỗi mạng
+        Auth-->>App: Lỗi network-request-failed
+        App-->>User: "Lỗi kết nối, vui lòng thử lại"
+    end

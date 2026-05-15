@@ -1,37 +1,37 @@
 \addvspace {10\p@ }
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {2.1}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Kiến trúc tổng thể hệ thống SmartNutri}}{15}{figure.caption.5}%
+\contentsline {figure}{\numberline {2.1}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Kiến trúc tổng thể hệ thống SmartNutri}}{16}{figure.caption.5}%
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {3.1}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Biểu đồ ca sử dụng tổng quan hệ thống SmartNutri}}{21}{figure.caption.6}%
-\contentsline {figure}{\numberline {3.2}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Biểu đồ hoạt động ca sử dụng Đăng ký tài khoản}}{22}{figure.caption.7}%
-\contentsline {figure}{\numberline {3.3}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Biểu đồ tuần tự ca sử dụng Đăng ký tài khoản}}{23}{figure.caption.8}%
-\contentsline {figure}{\numberline {3.4}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Biểu đồ hoạt động ca sử dụng Đăng nhập}}{24}{figure.caption.9}%
-\contentsline {figure}{\numberline {3.5}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Biểu đồ tuần tự ca sử dụng Đăng nhập}}{25}{figure.caption.10}%
-\contentsline {figure}{\numberline {3.6}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Biểu đồ hoạt động ca sử dụng Quét món ăn bằng AI}}{26}{figure.caption.11}%
-\contentsline {figure}{\numberline {3.7}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Biểu đồ tuần tự ca sử dụng Quét món ăn bằng AI}}{27}{figure.caption.12}%
-\contentsline {figure}{\numberline {3.8}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Biểu đồ hoạt động ca sử dụng Nhật ký ăn uống}}{29}{figure.caption.13}%
-\contentsline {figure}{\numberline {3.9}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Biểu đồ tuần tự ca sử dụng Nhật ký ăn uống}}{29}{figure.caption.14}%
-\contentsline {figure}{\numberline {3.10}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Biểu đồ hoạt động ca sử dụng Theo dõi dinh dưỡng}}{31}{figure.caption.15}%
-\contentsline {figure}{\numberline {3.11}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Biểu đồ tuần tự ca sử dụng Theo dõi dinh dưỡng}}{31}{figure.caption.16}%
-\contentsline {figure}{\numberline {3.12}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Biểu đồ hoạt động ca sử dụng Quản lý hồ sơ cá nhân}}{33}{figure.caption.17}%
-\contentsline {figure}{\numberline {3.13}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Biểu đồ tuần tự ca sử dụng Quản lý hồ sơ cá nhân}}{33}{figure.caption.18}%
-\contentsline {figure}{\numberline {3.14}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Biểu đồ hoạt động ca sử dụng Hoàn thành Onboarding}}{35}{figure.caption.19}%
-\contentsline {figure}{\numberline {3.15}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Biểu đồ tuần tự ca sử dụng Hoàn thành Onboarding}}{35}{figure.caption.20}%
-\contentsline {figure}{\numberline {3.16}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Biểu đồ hoạt động ca sử dụng Quản lý món ăn yêu thích}}{37}{figure.caption.21}%
-\contentsline {figure}{\numberline {3.17}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Biểu đồ tuần tự ca sử dụng Quản lý món ăn yêu thích}}{37}{figure.caption.22}%
-\contentsline {figure}{\numberline {3.18}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Biểu đồ hoạt động ca sử dụng Chatbot AI dinh dưỡng}}{39}{figure.caption.23}%
-\contentsline {figure}{\numberline {3.19}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Biểu đồ tuần tự ca sử dụng Chatbot AI dinh dưỡng}}{39}{figure.caption.24}%
-\contentsline {figure}{\numberline {3.20}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Biểu đồ hoạt động ca sử dụng Quản lý thực phẩm}}{41}{figure.caption.25}%
-\contentsline {figure}{\numberline {3.21}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Biểu đồ tuần tự ca sử dụng Quản lý thực phẩm}}{41}{figure.caption.26}%
-\contentsline {figure}{\numberline {3.22}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Biểu đồ hoạt động ca sử dụng Quản lý người dùng}}{43}{figure.caption.27}%
-\contentsline {figure}{\numberline {3.23}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Biểu đồ tuần tự ca sử dụng Quản lý người dùng}}{43}{figure.caption.28}%
-\contentsline {figure}{\numberline {3.24}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Biểu đồ hoạt động ca sử dụng Đăng ký Premium}}{45}{figure.caption.29}%
-\contentsline {figure}{\numberline {3.25}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Biểu đồ tuần tự ca sử dụng Đăng ký Premium}}{45}{figure.caption.30}%
-\contentsline {figure}{\numberline {3.26}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Biểu đồ thực thể - liên kết hệ thống SmartNutri}}{46}{figure.caption.31}%
+\contentsline {figure}{\numberline {3.1}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Biểu đồ ca sử dụng tổng quan hệ thống SmartNutri}}{22}{figure.caption.6}%
+\contentsline {figure}{\numberline {3.2}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Biểu đồ hoạt động ca sử dụng Đăng ký tài khoản}}{24}{figure.caption.7}%
+\contentsline {figure}{\numberline {3.3}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Biểu đồ tuần tự ca sử dụng Đăng ký tài khoản}}{25}{figure.caption.8}%
+\contentsline {figure}{\numberline {3.4}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Biểu đồ hoạt động ca sử dụng Đăng nhập}}{27}{figure.caption.9}%
+\contentsline {figure}{\numberline {3.5}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Biểu đồ tuần tự ca sử dụng Đăng nhập}}{28}{figure.caption.10}%
+\contentsline {figure}{\numberline {3.6}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Biểu đồ hoạt động ca sử dụng Quét món ăn bằng AI}}{30}{figure.caption.11}%
+\contentsline {figure}{\numberline {3.7}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Biểu đồ tuần tự ca sử dụng Quét món ăn bằng AI}}{31}{figure.caption.12}%
+\contentsline {figure}{\numberline {3.8}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Biểu đồ hoạt động ca sử dụng Nhật ký ăn uống}}{33}{figure.caption.13}%
+\contentsline {figure}{\numberline {3.9}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Biểu đồ tuần tự ca sử dụng Nhật ký ăn uống}}{34}{figure.caption.14}%
+\contentsline {figure}{\numberline {3.10}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Biểu đồ hoạt động ca sử dụng Theo dõi dinh dưỡng}}{36}{figure.caption.15}%
+\contentsline {figure}{\numberline {3.11}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Biểu đồ tuần tự ca sử dụng Theo dõi dinh dưỡng}}{37}{figure.caption.16}%
+\contentsline {figure}{\numberline {3.12}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Biểu đồ hoạt động ca sử dụng Quản lý hồ sơ cá nhân}}{39}{figure.caption.17}%
+\contentsline {figure}{\numberline {3.13}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Biểu đồ tuần tự ca sử dụng Quản lý hồ sơ cá nhân}}{40}{figure.caption.18}%
+\contentsline {figure}{\numberline {3.14}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Biểu đồ hoạt động ca sử dụng Hoàn thành Onboarding}}{42}{figure.caption.19}%
+\contentsline {figure}{\numberline {3.15}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Biểu đồ tuần tự ca sử dụng Hoàn thành Onboarding}}{43}{figure.caption.20}%
+\contentsline {figure}{\numberline {3.16}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Biểu đồ hoạt động ca sử dụng Quản lý món ăn yêu thích}}{45}{figure.caption.21}%
+\contentsline {figure}{\numberline {3.17}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Biểu đồ tuần tự ca sử dụng Quản lý món ăn yêu thích}}{46}{figure.caption.22}%
+\contentsline {figure}{\numberline {3.18}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Biểu đồ hoạt động ca sử dụng Chatbot AI dinh dưỡng}}{48}{figure.caption.23}%
+\contentsline {figure}{\numberline {3.19}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Biểu đồ tuần tự ca sử dụng Chatbot AI dinh dưỡng}}{49}{figure.caption.24}%
+\contentsline {figure}{\numberline {3.20}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Biểu đồ hoạt động ca sử dụng Quản lý thực phẩm}}{51}{figure.caption.25}%
+\contentsline {figure}{\numberline {3.21}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Biểu đồ tuần tự ca sử dụng Quản lý thực phẩm}}{52}{figure.caption.26}%
+\contentsline {figure}{\numberline {3.22}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Biểu đồ hoạt động ca sử dụng Quản lý người dùng}}{54}{figure.caption.27}%
+\contentsline {figure}{\numberline {3.23}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Biểu đồ tuần tự ca sử dụng Quản lý người dùng}}{55}{figure.caption.28}%
+\contentsline {figure}{\numberline {3.24}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Biểu đồ hoạt động ca sử dụng Đăng ký Premium}}{57}{figure.caption.29}%
+\contentsline {figure}{\numberline {3.25}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Biểu đồ tuần tự ca sử dụng Đăng ký Premium}}{58}{figure.caption.30}%
+\contentsline {figure}{\numberline {3.26}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Biểu đồ thực thể - liên kết hệ thống SmartNutri}}{59}{figure.caption.31}%
 \addvspace {10\p@ }
-\contentsline {figure}{\numberline {4.1}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Kiến trúc phân tầng ứng dụng Flutter}}{51}{figure.caption.32}%
-\contentsline {figure}{\numberline {4.2}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Màn hình đăng nhập}}{55}{figure.caption.33}%
-\contentsline {figure}{\numberline {4.3}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Màn hình trang chủ}}{56}{figure.caption.34}%
-\contentsline {figure}{\numberline {4.4}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Màn hình quét món ăn}}{57}{figure.caption.35}%
-\contentsline {figure}{\numberline {4.5}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Màn hình theo dõi dinh dưỡng}}{58}{figure.caption.36}%
+\contentsline {figure}{\numberline {4.1}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Kiến trúc phân tầng ứng dụng Flutter}}{64}{figure.caption.32}%
+\contentsline {figure}{\numberline {4.2}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Màn hình đăng nhập}}{69}{figure.caption.33}%
+\contentsline {figure}{\numberline {4.3}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Màn hình trang chủ}}{70}{figure.caption.34}%
+\contentsline {figure}{\numberline {4.4}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Màn hình quét món ăn}}{71}{figure.caption.35}%
+\contentsline {figure}{\numberline {4.5}{\ignorespaces \xpg@aux {}{vietnamese}\ignorespaces Màn hình theo dõi dinh dưỡng}}{72}{figure.caption.36}%
 \contentsfinish 

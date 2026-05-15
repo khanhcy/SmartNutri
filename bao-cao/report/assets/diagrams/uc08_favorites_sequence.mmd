@@ -1,0 +1,26 @@
+sequenceDiagram
+    actor User as Người dùng
+    participant App as Flutter App
+    participant FS as Firestore
+    participant Cat as FoodCatalog
+
+    User->>App: Mở danh sách yêu thích
+    App->>FS: query(users/{uid}/favorites)
+    FS-->>App: Danh sách foodId
+    App->>Cat: Resolve foodId -> FoodItem
+    Cat-->>App: Danh sách FoodItem
+    App-->>User: Hiển thị món yêu thích
+
+    opt Thêm vào yêu thích
+        User->>App: Nhấn tim trên món
+        App->>FS: setDoc(users/{uid}/favorites/{foodId}, {foodId, addedAt})
+        FS-->>App: OK
+        App-->>User: Đã thêm vào yêu thích
+    end
+
+    opt Bỏ yêu thích
+        User->>App: Bỏ tim
+        App->>FS: deleteDoc(users/{uid}/favorites/{foodId})
+        FS-->>App: OK
+        App-->>User: Đã bỏ yêu thích
+    end

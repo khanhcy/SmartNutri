@@ -9,26 +9,26 @@
 
 \section*{Bối cảnh}
 
-[TODO: Mô tả bối cảnh thực tế — vấn đề dinh dưỡng, nhu cầu theo dõi ăn uống của người Việt, hạn chế của các giải pháp hiện tại.]
+Tại Việt Nam, sự gia tăng của các bệnh liên quan đến dinh dưỡng như thừa cân, béo phì, đái tháo đường và các vấn đề về tim mạch đang trở thành mối quan tâm sức khỏe cộng đồng đáng kể. Một trong những nguyên nhân chính là thói quen ăn uống thiếu kiểm soát và việc thiếu công cụ hỗ trợ theo dõi dinh dưỡng phù hợp với ẩm thực Việt Nam. Hầu hết các ứng dụng theo dõi dinh dưỡng hiện có trên thị trường đều được thiết kế cho người dùng phương Tây, với cơ sở dữ liệu thực phẩm tập trung vào các món ăn Âu — Mỹ. Điều này gây khó khăn cho người Việt khi muốn ghi nhận các món ăn truyền thống như phở, bún bò, cơm tấm, hay các món xào đặc trưng. Bên cạnh đó, việc nhập liệu thủ công thông tin dinh dưỡng cho từng món ăn là một rào cản lớn về thời gian và công sức, khiến người dùng khó duy trì thói quen theo dõi lâu dài. Từ những thực trạng trên, một ứng dụng di động hỗ trợ theo dõi dinh dưỡng được xây dựng riêng cho người Việt, có khả năng nhận diện món ăn qua hình ảnh bằng trí tuệ nhân tạo, là một nhu cầu thiết thực.
 
 \section*{Mục tiêu}
 
-[TODO: Mô tả mục tiêu chính của dự án — xây dựng ứng dụng di động giúp người dùng Việt Nam theo dõi dinh dưỡng, quét thực phẩm bằng AI, v.v.]
+Dự án SmartNutri hướng đến mục tiêu xây dựng một ứng dụng di động hỗ trợ người Việt theo dõi dinh dưỡng hằng ngày một cách thuận tiện và trực quan. Cụ thể, ứng dụng cung cấp các chức năng: đăng ký và xác thực người dùng, khảo sát mục tiêu dinh dưỡng cá nhân qua quy trình onboarding, ghi nhật ký ăn uống hằng ngày, theo dõi lượng calo và các chất dinh dưỡng đa lượng (protein, carbohydrate, chất béo), nhận diện món ăn qua ảnh chụp bằng trí tuệ nhân tạo, trò chuyện với chatbot AI để được tư vấn dinh dưỡng, và quản lý danh sách món ăn yêu thích. Ngoài ra, hệ thống còn bao gồm một trang quản trị web dành cho quản trị viên để quản lý cơ sở dữ liệu thực phẩm và người dùng.
 
 \section*{Giải pháp}
 
-[TODO: Mô tả giải pháp — Flutter mobile app + Firebase backend + Cloud Functions + React admin web. Tích hợp AI (Gemini) để nhận diện món ăn và phân tích dinh dưỡng.]
+SmartNutri được thiết kế theo kiến trúc ba tầng (three-tier architecture). Tầng trình bày là ứng dụng di động được phát triển bằng Flutter, hỗ trợ nền tảng Android, và trang quản trị web xây dựng bằng React kết hợp TypeScript và Vite. Tầng ứng dụng bao gồm các Cloud Functions chạy trên nền tảng Firebase, đảm nhiệm các tác vụ yêu cầu xử lý phía máy chủ như nhận diện món ăn qua ảnh, gợi ý bữa ăn, tra cứu mã vạch sản phẩm và các thao tác quản trị. Google Gemini API — mô hình ngôn ngữ lớn đa phương thức của Google — được tích hợp để phân tích ảnh món ăn và cung cấp thông tin dinh dưỡng ước tính, cũng như trả lời câu hỏi tư vấn dinh dưỡng qua chatbot. Tầng dữ liệu sử dụng Cloud Firestore làm cơ sở dữ liệu chính với cấu trúc NoSQL dạng document, Firebase Storage để lưu trữ hình ảnh, và Firebase Authentication để xác thực người dùng.
 
 \section*{Công nghệ sử dụng}
 
-Frontend: Flutter (Dart). Backend: Firebase (Auth, Firestore, Storage, Cloud Functions). Admin: React (TypeScript, Vite). AI: Google Gemini API.
+Ứng dụng di động được xây dựng bằng Flutter (Dart), một framework đa nền tảng cho phép biên dịch sang native code với hiệu năng cao. Hệ thống backend sử dụng các dịch vụ của Firebase bao gồm Authentication (xác thực qua email/mật khẩu và Google Sign-In), Cloud Firestore (cơ sở dữ liệu thời gian thực), Firebase Storage (lưu trữ file) và Cloud Functions (môi trường serverless với Node.js và TypeScript). Trang quản trị web được phát triển bằng React 18, TypeScript và Vite. Google Gemini API (model Gemini 2.5 Flash) được sử dụng cho các tác vụ AI: nhận diện món ăn từ ảnh, gợi ý bữa ăn theo mục tiêu dinh dưỡng và trò chuyện tư vấn dinh dưỡng.
 
 \section*{Kết quả đạt được}
 
-[TODO: Tóm tắt kết quả — ứng dụng hoạt động trên Android, hỗ trợ đăng ký/đăng nhập, quét món ăn bằng AI, theo dõi dinh dưỡng hàng ngày, v.v.]
+Dự án đã xây dựng thành công một ứng dụng di động hoạt động trên nền tảng Android với giao diện tiếng Việt hoàn chỉnh. Các chức năng chính bao gồm: đăng ký và đăng nhập qua email hoặc tài khoản Google; quy trình onboarding thu thập thông tin cá nhân và thiết lập mục tiêu dinh dưỡng; quản lý hồ sơ người dùng; ghi nhật ký ăn uống theo ngày với khả năng thêm món từ danh mục thực phẩm hoặc nhập thủ công; quét và nhận diện món ăn qua ảnh sử dụng Gemini API; theo dõi lượng calo và chất dinh dưỡng đa lượng dưới dạng biểu đồ; chatbot AI tư vấn dinh dưỡng; quản lý danh sách món ăn yêu thích; và hệ thống phân quyền gói Free/Premium. Trang quản trị web hỗ trợ quản trị viên thực hiện các thao tác CRUD đối với cơ sở dữ liệu thực phẩm, quản lý người dùng và phân quyền. Hệ thống được triển khai trên hạ tầng đám mây của Firebase.
 
 \section*{Ý nghĩa}
 
-[TODO: Ý nghĩa thực tiễn của dự án — giúp người Việt dễ dàng theo dõi và cải thiện chế độ dinh dưỡng.]
+SmartNutri mang lại giá trị thực tiễn cho người dùng Việt Nam khi cung cấp một công cụ theo dõi dinh dưỡng được thiết kế phù hợp với văn hóa ẩm thực trong nước. Khả năng nhận diện món ăn qua ảnh bằng AI giúp giảm đáng kể thời gian và công sức nhập liệu, từ đó khuyến khích người dùng duy trì thói quen theo dõi sức khỏe lâu dài. Về mặt kỹ thuật, dự án minh họa một mô hình phát triển ứng dụng di động hiện đại, kết hợp giữa framework đa nền tảng, dịch vụ đám mây serverless và trí tuệ nhân tạo — một hướng tiếp cận có thể áp dụng cho nhiều lĩnh vực khác ngoài dinh dưỡng.
 
 \newpage

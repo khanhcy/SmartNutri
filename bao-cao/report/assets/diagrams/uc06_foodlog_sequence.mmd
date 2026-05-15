@@ -1,0 +1,29 @@
+sequenceDiagram
+    actor User as Người dùng
+    participant App as Flutter App
+    participant FS as Firestore
+
+    User->>App: Mở màn hình Nhật ký
+    App->>FS: query(meal_entries, date=today)
+    FS-->>App: Danh sách món
+    App-->>User: Hiển thị nhật ký
+
+    alt Thêm món từ catalog
+        User->>App: Tìm kiếm món
+        App->>FS: query(foods, name contains...)
+        FS-->>App: Kết quả tìm kiếm
+        User->>App: Chọn món + nhập khẩu phần
+        App->>FS: addDoc(users/{uid}/meal_entries, entry)
+        FS-->>App: OK
+        App-->>User: Đã thêm món
+    else Thêm món thủ công
+        User->>App: Nhập thông tin món
+        App->>FS: addDoc(users/{uid}/meal_entries, entry)
+        FS-->>App: OK
+        App-->>User: Đã thêm món
+    else Xóa món
+        User->>App: Vuốt xóa / nhấn nút xóa
+        App->>FS: deleteDoc(users/{uid}/meal_entries/{id})
+        FS-->>App: OK
+        App-->>User: Đã xóa
+    end

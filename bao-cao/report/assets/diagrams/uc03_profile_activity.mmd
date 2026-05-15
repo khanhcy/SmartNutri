@@ -1,0 +1,18 @@
+flowchart TD
+    A([Bắt đầu]) --> B[Hiển thị màn hình Hồ sơ]
+    B --> C{Người dùng chọn}
+    C -->|Xem hồ sơ| D[Hiển thị thông tin cá nhân]
+    C -->|Chỉnh sửa| E[Hiển thị form chỉnh sửa]
+    E --> F[Người dùng cập nhật thông tin]
+    F --> G[Nhấn Lưu]
+    G --> H[Validate dữ liệu]
+    H --> I{Dữ liệu hợp lệ?}
+    I -->|Không| J[Hiển thị lỗi]
+    J --> E
+    I -->|Có| K[Cập nhật Firestore]
+    K --> L[Hiển thị thành công]
+    C -->|Đăng xuất| M[Gọi Auth.signOut]
+    M --> N[Chuyển về Đăng nhập]
+    D --> O([Kết thúc])
+    L --> O
+    N --> O

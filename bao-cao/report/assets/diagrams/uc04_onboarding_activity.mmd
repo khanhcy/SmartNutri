@@ -1,0 +1,14 @@
+flowchart TD
+    A([Bắt đầu]) --> B[Hiển thị màn hình chào mừng]
+    B --> C[Bước 1: Nhập thông tin cơ bản]
+    C --> D[Tuổi, giới tính, chiều cao, cân nặng]
+    D --> E[Bước 2: Chọn mức độ vận động]
+    E --> F[Người dùng chọn activity level]
+    F --> G[Bước 3: Đặt mục tiêu]
+    G --> H[Nhập mục tiêu cân nặng, calo]
+    H --> I{Hệ thống tính toán}
+    I --> J[Tính TDEE và macro targets]
+    J --> K[Lưu hồ sơ + mục tiêu vào Firestore]
+    K --> L[Đánh dấu onboardingCompleted = true]
+    L --> M[Chuyển đến Màn hình chính]
+    M --> N([Kết thúc])

@@ -1,0 +1,40 @@
+graph TB
+    subgraph Presentation["Tầng Presentation"]
+        direction LR
+        Pages["Pages / Screens"]
+        Widgets["Shared Widgets"]
+        Routes["GoRouter"]
+    end
+
+    subgraph Business["Tầng Business Logic"]
+        direction LR
+        Providers["ChangeNotifier / Providers"]
+        Services["Services"]
+    end
+
+    subgraph Data["Tầng Data"]
+        direction LR
+        Models["Domain Models"]
+        Firebase["Firebase SDK"]
+    end
+
+    subgraph External["Dịch vụ ngoài"]
+        direction LR
+        Auth["Firebase Auth"]
+        Firestore["Firestore"]
+        Storage["Firebase Storage"]
+        CF["Cloud Functions"]
+        Gemini["Gemini API"]
+    end
+
+    Pages --> Providers
+    Widgets --> Providers
+    Routes --> Pages
+    Providers --> Services
+    Services --> Models
+    Services --> Firebase
+    Firebase --> Auth
+    Firebase --> Firestore
+    Firebase --> Storage
+    Firebase --> CF
+    CF --> Gemini

@@ -1,0 +1,21 @@
+flowchart TD
+    A([Bắt đầu]) --> B[Admin đăng nhập]
+    B --> C[Hiển thị trang quản lý thực phẩm]
+    C --> D[Tải danh sách foods từ Firestore]
+    D --> E[Hiển thị bảng thực phẩm]
+    E --> F{Chọn thao tác}
+    F -->|Thêm mới| G[Hiển thị form thêm]
+    G --> H[Nhập thông tin thực phẩm]
+    H --> I[Validate + lưu vào Firestore]
+    I --> J[Cập nhật danh sách]
+    F -->|Sửa| K[Hiển thị form sửa]
+    K --> L[Cập nhật thông tin]
+    L --> M[Validate + update Firestore]
+    M --> J
+    F -->|Xóa| N[Xác nhận xóa]
+    N --> O[Đánh dấu inactive / xóa]
+    O --> J
+    F -->|Import CSV| P[Tải file CSV]
+    P --> Q[Gọi seedFoods CF]
+    Q --> J
+    J --> E

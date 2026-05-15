@@ -1,0 +1,27 @@
+sequenceDiagram
+    actor User as Người dùng
+    participant App as Flutter App
+    participant FS as Firestore
+    participant CF as Cloud Functions
+
+    User->>App: Mở màn hình Premium
+    App->>FS: getDoc(users/{uid})
+    FS-->>App: subscription info
+    App-->>User: So sánh Free vs Premium
+
+    User->>App: Nhấn Nâng cấp
+    App-->>User: Form nâng cấp
+
+    alt In-app Purchase (tương lai)
+        App->>App: Gọi Google Play Billing
+        App-->>App: Xác nhận purchase
+    else Admin gán (hiện tại)
+        Note over App,CF: Admin thao tác từ Admin Web
+        App->>CF: setUserSubscription({targetUid, plan: "premium"})
+        CF->>FS: updateDoc(users/{uid}, {subscription})
+        CF-->>App: {ok: true}
+    end
+
+    App->>FS: getDoc(users/{uid})
+    FS-->>App: subscription mới
+    App-->>User: Premium đã kích hoạt

@@ -1,0 +1,59 @@
+erDiagram
+    users ||--o{ meal_entries : "có"
+    users ||--o{ favorites : "yêu thích"
+    users ||--o{ usage : "theo dõi"
+    users ||--o{ chat_history : "trò chuyện"
+    foods ||--o{ meal_entries : "được dùng"
+    foods ||--o{ favorites : "được chọn"
+
+    users {
+        string uid PK
+        string email
+        string displayName
+        json subscription
+        json aiScanUsage
+    }
+
+    foods {
+        string id PK
+        string name
+        number calorieKcal
+        number proteinG
+        number carbG
+        number fatG
+        string category
+        number defaultPortionG
+    }
+
+    meal_entries {
+        string entryId PK
+        string uid FK
+        string foodName
+        number portionG
+        number calorieKcal
+        number proteinG
+        number carbG
+        number fatG
+        string date
+        string mealType
+    }
+
+    favorites {
+        string foodId PK
+        string foodId_attr FK
+        timestamp addedAt
+    }
+
+    usage {
+        string monthKey PK
+        number aiScanUsed
+        number aiScanLimit
+        timestamp updatedAt
+    }
+
+    chat_history {
+        string messageId PK
+        string role
+        string content
+        timestamp timestamp
+    }

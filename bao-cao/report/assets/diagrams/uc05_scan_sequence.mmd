@@ -1,0 +1,24 @@
+sequenceDiagram
+    actor User as Người dùng
+    participant App as Flutter App
+    participant CF as Cloud Function
+    participant Gemini as Gemini API
+    participant FS as Firestore
+
+    User->>App: Chụp/chọn ảnh món ăn
+    App->>App: Resize ảnh (base64)
+    App->>CF: identifyFoodImage(imageBase64, knownFoodNames)
+    CF->>FS: Kiểm tra quota AI scan
+    alt Hết quota
+        CF-->>App: Lỗi quota_exceeded
+        App-->>User: "Bạn đã hết lượt quét miễn phí"
+    else Còn quota / Premium
+        CF->>Gemini: Gửi ảnh + prompt nhận diện
+        Gemini-->>CF: JSON danh sách món ăn
+        CF->>FS: Cập nhật quota (nếu free)
+        CF-->>App: Kết quả nhận diện (items[])
+    end
+    App-->>User: Hiển thị món ăn + dinh dưỡng
+    User->>App: Xác nhận / chỉnh sửa
+    App->>FS: Lưu meal_entry
+    App-->>User: Đã thêm vào nhật ký

@@ -1,0 +1,17 @@
+flowchart TD
+    A([Bắt đầu]) --> B[Hiển thị danh sách yêu thích]
+    B --> C[Tải favorites từ Firestore]
+    C --> D[Resolve foodId sang FoodItem]
+    D --> E[Hiển thị danh sách món]
+    E --> F{Người dùng chọn}
+    F -->|Xem chi tiết| G[Hiển thị thông tin dinh dưỡng]
+    F -->|Thêm vào nhật ký| H[Chuyển sang UC-06]
+    F -->|Bỏ yêu thích| I[Xóa khỏi favorites]
+    I --> J[Cập nhật Firestore]
+    J --> E
+    F -->|Thêm món mới| K[Tìm kiếm món]
+    K --> L{Nhấn tim}
+    L --> M[Thêm vào favorites]
+    M --> J
+    G --> N([Kết thúc])
+    H --> N

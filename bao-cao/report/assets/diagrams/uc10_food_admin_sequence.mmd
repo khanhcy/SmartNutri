@@ -1,0 +1,31 @@
+sequenceDiagram
+    actor Admin as Admin
+    participant Web as React Admin Web
+    participant Auth as Firebase Auth
+    participant FS as Firestore
+    participant CF as Cloud Functions
+
+    Admin->>Web: Đăng nhập
+    Web->>Auth: signInWithEmailAndPassword()
+    Auth-->>Web: Token + claims
+    Web->>FS: query(foods, limit=50)
+    FS-->>Web: Danh sách thực phẩm
+    Web-->>Admin: Bảng quản lý
+
+    alt Thêm thực phẩm
+        Admin->>Web: Nhập form + nhấn Lưu
+        Web->>FS: setDoc(foods/{id}, foodData)
+        FS-->>Web: OK
+        Web-->>Admin: Đã thêm
+    else Sửa thực phẩm
+        Admin->>Web: Sửa fields + nhấn Cập nhật
+        Web->>FS: updateDoc(foods/{id}, data)
+        FS-->>Web: OK
+        Web-->>Admin: Đã cập nhật
+    else Import CSV
+        Admin->>Web: Upload file CSV
+        Web->>CF: seedFoods({foods: [...]})
+        CF->>FS: batch write foods
+        CF-->>Web: {ok: true, count: N}
+        Web-->>Admin: Đã import N món
+    end

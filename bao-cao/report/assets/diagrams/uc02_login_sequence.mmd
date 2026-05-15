@@ -1,0 +1,28 @@
+sequenceDiagram
+    actor User as Người dùng
+    participant App as Flutter App
+    participant Auth as Firebase Auth
+    participant FS as Firestore
+
+    User->>App: Mở màn hình đăng nhập
+    App-->>User: Hiển thị form + nút Google
+    alt Email/Password
+        User->>App: Nhập email, mật khẩu
+        App->>Auth: signInWithEmailAndPassword()
+    else Google Sign-In
+        User->>App: Nhấn "Đăng nhập Google"
+        App->>Auth: signInWithPopup(Google)
+    end
+    alt Thành công
+        Auth-->>App: UserCredential
+        App->>FS: getDoc(users/{uid})
+        FS-->>App: User data
+        alt onboardingCompleted = true
+            App-->>User: Vào màn hình chính
+        else chưa hoàn thành
+            App-->>User: Chuyển đến Onboarding
+        end
+    else Sai mật khẩu / Email không tồn tại
+        Auth-->>App: Lỗi
+        App-->>User: "Sai thông tin đăng nhập"
+    end

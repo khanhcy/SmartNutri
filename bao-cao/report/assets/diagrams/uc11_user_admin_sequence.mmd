@@ -1,0 +1,29 @@
+sequenceDiagram
+    actor Admin as Admin
+    participant Web as React Admin Web
+    participant Auth as Firebase Auth
+    participant CF as Cloud Functions
+    participant FS as Firestore
+
+    Admin->>Web: Đăng nhập
+    Web->>Auth: signInWithEmailAndPassword()
+    Auth-->>Web: Token (có admin claim)
+    Web->>FS: query(users)
+    FS-->>Web: Danh sách người dùng
+    Web-->>Admin: Bảng người dùng
+
+    alt Gán Premium
+        Admin->>Web: Chọn user, set plan=premium + thời hạn
+        Web->>CF: setUserSubscription({targetUid, plan, premiumUntil})
+        CF->>Auth: verifyAuth (admin check)
+        CF->>FS: updateDoc(users/{uid}, {subscription})
+        CF-->>Web: {ok: true}
+        Web-->>Admin: Đã cập nhật
+    else Gán Admin Role
+        Admin->>Web: Chọn user, nhấn Set Admin
+        Web->>CF: setAdminRole({targetUid})
+        CF->>Auth: verifyAuth (admin check)
+        CF->>Auth: setCustomUserClaims(targetUid, {admin: true})
+        CF-->>Web: {success: true}
+        Web-->>Admin: Đã gán quyền admin
+    end

@@ -1,0 +1,16 @@
+flowchart TD
+    A([Bắt đầu]) --> B[Hiển thị màn hình Chatbot]
+    B --> C[Tải lịch sử chat từ Firestore]
+    C --> D[Hiển thị đoạn chat]
+    D --> E[Người dùng nhập câu hỏi]
+    E --> F[Gửi câu hỏi + context đến Gemini API]
+    F --> G{API phản hồi?}
+    G -->|Thành công| H[Hiển thị câu trả lời]
+    G -->|Lỗi| I[Hiển thị thông báo lỗi]
+    H --> J[Lưu vào chat_history]
+    I --> J
+    J --> K{Người dùng đánh giá?}
+    K -->|👍 / 👎| L[Cập nhật rating]
+    K -->|Không| M[Tiếp tục chat]
+    L --> M
+    M --> E

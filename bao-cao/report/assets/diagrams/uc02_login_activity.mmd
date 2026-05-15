@@ -1,0 +1,21 @@
+flowchart TD
+    A([Bắt đầu]) --> B[Hiển thị form đăng nhập]
+    B --> C{Chọn phương thức}
+    C -->|Email/Password| D[Nhập email + mật khẩu]
+    C -->|Google| E[Mở Google Sign-In]
+    D --> F[Nhấn Đăng nhập]
+    E --> G[Chọn tài khoản Google]
+    G --> H[Gọi Firebase Auth Google]
+    F --> I[Gọi Firebase Auth Email]
+    H --> J{Xác thực OK?}
+    I --> J
+    J -->|Sai thông tin| K[Hiển thị lỗi đăng nhập]
+    K --> B
+    J -->|Lỗi mạng| L[Hiển thị lỗi kết nối]
+    L --> B
+    J -->|Thành công| M[Tải hồ sơ từ Firestore]
+    M --> N{Đã hoàn thành Onboarding?}
+    N -->|Chưa| O[Chuyển đến Onboarding]
+    N -->|Rồi| P[Chuyển đến Màn hình chính]
+    O --> Q([Kết thúc])
+    P --> Q

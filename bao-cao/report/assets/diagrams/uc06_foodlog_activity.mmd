@@ -1,0 +1,20 @@
+flowchart TD
+    A([Bắt đầu]) --> B[Hiển thị màn hình Nhật ký]
+    B --> C[Người dùng chọn ngày]
+    C --> D[Hiển thị danh sách món đã ăn]
+    D --> E{Chọn thao tác}
+    E -->|Thêm món| F{Phương thức thêm}
+    F -->|Tìm kiếm| G[Tìm món trong catalog]
+    F -->|Quét AI| H[Chuyển sang UC-05]
+    F -->|Nhập tay| I[Nhập thông tin món]
+    G --> J[Chọn món + nhập khẩu phần]
+    I --> K[Nhập tên + dinh dưỡng + khẩu phần]
+    J --> L[Lưu meal_entry]
+    K --> L
+    H --> L
+    L --> M[Cập nhật daily_stats]
+    M --> D
+    E -->|Xóa món| N[Xác nhận xóa]
+    N --> O[Xóa meal_entry]
+    O --> D
+    E -->|Quay lại| P([Kết thúc])

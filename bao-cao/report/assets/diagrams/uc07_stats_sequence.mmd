@@ -1,0 +1,19 @@
+sequenceDiagram
+    actor User as Người dùng
+    participant App as Flutter App
+    participant FS as Firestore
+
+    User->>App: Mở màn hình Thống kê
+    App->>FS: getDoc(goals/{uid})
+    FS-->>App: Mục tiêu dinh dưỡng
+    App->>FS: query(meal_entries, date range)
+    FS-->>App: Dữ liệu nhật ký
+    App->>App: Tính tổng calo, macro theo ngày
+    App-->>User: Biểu đồ calo
+    User->>App: Chọn tab Macro
+    App->>App: Gom nhóm protein/carb/fat
+    App-->>User: Biểu đồ tròn macro
+    User->>App: Chọn tab Cân nặng
+    App->>FS: query(weight_log, date range)
+    FS-->>App: Dữ liệu cân nặng
+    App-->>User: Biểu đồ đường cân nặng

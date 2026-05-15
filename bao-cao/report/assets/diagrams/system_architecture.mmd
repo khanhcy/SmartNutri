@@ -1,0 +1,25 @@
+graph TB
+    subgraph Presentation["Tầng Trình bày"]
+        Mobile["📱 Flutter Mobile App"]
+        AdminWeb["🌐 React Admin Web"]
+    end
+
+    subgraph Application["Tầng Ứng dụng"]
+        CF["Cloud Functions"]
+        Gemini["Google Gemini API"]
+        Auth["Firebase Auth"]
+    end
+
+    subgraph Data["Tầng Dữ liệu"]
+        Firestore["(Firestore)"]
+        Storage["(Firebase Storage)"]
+    end
+
+    Mobile <-->|"Xác thực"| Auth
+    Mobile <-->|"Đọc/Ghi dữ liệu"| Firestore
+    Mobile <-->|"Upload ảnh"| Storage
+    Mobile -->|"Gọi API"| CF
+    CF -->|"Phân tích ảnh"| Gemini
+    CF -->|"Đọc/Ghi"| Firestore
+    AdminWeb -->|"Xác thực"| Auth
+    AdminWeb -->|"CRUD"| Firestore

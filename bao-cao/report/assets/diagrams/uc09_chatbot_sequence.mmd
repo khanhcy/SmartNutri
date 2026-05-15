@@ -1,0 +1,17 @@
+sequenceDiagram
+    actor User as Người dùng
+    participant App as Flutter App
+    participant API as Gemini API (Direct)
+    participant FS as Firestore
+
+    User->>App: Nhập câu hỏi
+    App->>App: Chuẩn bị context (hồ sơ, mục tiêu, nhật ký)
+    App->>FS: Lưu message (role: user)
+    App->>API: Gửi prompt + lịch sử chat
+    API-->>App: Phản hồi text + suggestions
+    App->>FS: Lưu message (role: assistant)
+    App-->>User: Hiển thị câu trả lời
+    alt Người dùng đánh giá
+        User->>App: Nhấn 👍 hoặc 👎
+        App->>FS: Cập nhật rating
+    end

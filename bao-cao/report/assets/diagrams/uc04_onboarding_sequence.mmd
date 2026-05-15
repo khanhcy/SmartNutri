@@ -1,0 +1,18 @@
+sequenceDiagram
+    actor User as Người dùng
+    participant App as Flutter App
+    participant FS as Firestore
+
+    User->>App: Mở app lần đầu
+    App-->>User: Màn hình chào mừng
+    User->>App: Nhập tuổi, giới tính, chiều cao, cân nặng
+    App-->>User: Bước 2 - Mức độ vận động
+    User->>App: Chọn activity level
+    App-->>User: Bước 3 - Mục tiêu
+    User->>App: Nhập mục tiêu cân nặng
+    App->>App: Tính TDEE + macro
+    App->>FS: setDoc(profiles/{uid}, profileData)
+    App->>FS: setDoc(goals/{uid}, goalData)
+    App->>FS: updateDoc(users/{uid}, {onboardingCompleted: true})
+    FS-->>App: OK
+    App-->>User: Chuyển đến màn hình chính
