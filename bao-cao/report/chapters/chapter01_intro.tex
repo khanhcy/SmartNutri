@@ -6,44 +6,49 @@
 
 \section{Mô tả bài toán}
 
-[TODO: Viết về bối cảnh thực tế — nhu cầu theo dõi dinh dưỡng của người Việt, các vấn đề sức khỏe liên quan đến chế độ ăn uống, hạn chế của việc ghi chép thủ công hoặc các app nước ngoài không phù hợp với món ăn Việt.]
+Những năm gần đây, nhận thức của người Việt về vai trò của dinh dưỡng đối với sức khỏe đã được nâng cao đáng kể. Các vấn đề như thừa cân, béo phì, rối loạn chuyển hóa và các bệnh mãn tính liên quan đến chế độ ăn uống đang có xu hướng gia tăng tại Việt Nam. Điều này thúc đẩy nhu cầu về các công cụ hỗ trợ theo dõi và quản lý dinh dưỡng cá nhân một cách thuận tiện và chính xác.
 
-Trong bối cảnh hiện nay, vấn đề dinh dưỡng và sức khỏe ngày càng được người dân quan tâm. Tuy nhiên, việc theo dõi chế độ ăn uống hàng ngày vẫn gặp nhiều khó khăn:
+Tuy nhiên, việc theo dõi dinh dưỡng hằng ngày tại Việt Nam hiện đang gặp phải một số trở ngại đáng kể:
 
 \begin{itemize}
-    \item Người dùng gặp khó khăn trong việc ước lượng chính xác lượng calo và chất dinh dưỡng trong các món ăn Việt Nam.
-    \item Các ứng dụng theo dõi dinh dưỡng phổ biến (như MyFitnessPal) chủ yếu tập trung vào cơ sở dữ liệu món ăn phương Tây, thiếu dữ liệu về món ăn Việt.
-    \item Việc ghi chép thủ công tốn thời gian và dễ bị bỏ cuộc.
-    \item Thiếu một giải pháp toàn diện kết hợp giữa nhận diện món ăn bằng AI, theo dõi dinh dưỡng, và gợi ý bữa ăn phù hợp với khẩu vị người Việt.
+    \item \textbf{Khó ước lượng dinh dưỡng trong món ăn Việt:} Ẩm thực Việt Nam rất đa dạng, với hàng trăm món ăn khác nhau giữa các vùng miền. Mỗi món thường là sự kết hợp của nhiều nguyên liệu, gia vị và cách chế biến khác nhau, khiến người dùng rất khó ước lượng chính xác lượng calo và các chất dinh dưỡng đa lượng (protein, carbohydrate, chất béo) có trong khẩu phần mình tiêu thụ. Ngay cả với những người có kiến thức dinh dưỡng cơ bản, việc ước lượng thành phần của một tô phở, một đĩa cơm tấm hay một phần bún thịt nướng vẫn là một thách thức.
+
+    \item \textbf{Ghi chép thủ công mất thời gian:} Phương pháp ghi chép nhật ký ăn uống truyền thống — dù là trên giấy hay trên các ứng dụng — đều yêu cầu người dùng phải nhập liệu thủ công từng món ăn, tra cứu thông tin dinh dưỡng và ước lượng khẩu phần. Quá trình này tốn nhiều thời gian và công sức, dễ dẫn đến tình trạng người dùng bỏ cuộc sau một thời gian ngắn sử dụng.
+
+    \item \textbf{Ứng dụng nước ngoài chưa phù hợp:} Các ứng dụng theo dõi dinh dưỡng phổ biến trên thị trường như MyFitnessPal, Lose It! hay Cronometer được phát triển chủ yếu cho thị trường phương Tây. Cơ sở dữ liệu thực phẩm của các ứng dụng này tập trung vào các món ăn Âu — Mỹ, thiếu vắng hoặc có rất ít thông tin về các món ăn Việt Nam. Bên cạnh đó, giao diện và ngôn ngữ hiển thị bằng tiếng Anh cũng là một rào cản đối với phần lớn người dùng Việt.
+
+    \item \textbf{Thiếu giải pháp tích hợp AI cho món Việt:} Hiện chưa có một ứng dụng nào kết hợp được ba yếu tố: hỗ trợ tiếng Việt hoàn toàn, khả năng nhận diện món ăn Việt qua hình ảnh bằng trí tuệ nhân tạo, và cơ sở dữ liệu dinh dưỡng dành riêng cho ẩm thực Việt Nam. Khoảng trống này tạo ra nhu cầu về một giải pháp được thiết kế riêng cho người Việt, tận dụng sức mạnh của AI để đơn giản hóa việc theo dõi dinh dưỡng hằng ngày.
 \end{itemize}
 
-Vì vậy, việc xây dựng một ứng dụng di động thông minh, hỗ trợ tiếng Việt, có khả năng nhận diện món ăn bằng AI và theo dõi dinh dưỡng là cần thiết và mang tính thực tiễn cao.
+Từ những thực trạng trên, việc xây dựng ứng dụng SmartNutri — một ứng dụng di động hỗ trợ tiếng Việt, tích hợp trí tuệ nhân tạo để nhận diện món ăn qua ảnh chụp và theo dõi dinh dưỡng — là hướng đi thiết thực, đáp ứng đúng nhu cầu của người dùng Việt Nam trong bối cảnh hiện nay.
 
 \section{Mục tiêu dự án}
 
 \subsection{Mục tiêu tổng thể}
 
-Xây dựng ứng dụng di động SmartNutri — một nền tảng theo dõi dinh dưỡng thông minh dành riêng cho người Việt Nam, tích hợp trí tuệ nhân tạo để nhận diện món ăn và phân tích dinh dưỡng.
+Mục tiêu tổng thể của dự án là xây dựng ứng dụng di động SmartNutri — một nền tảng theo dõi dinh dưỡng thông minh dành cho người Việt, tích hợp trí tuệ nhân tạo để nhận diện món ăn qua hình ảnh và hỗ trợ người dùng theo dõi, quản lý chế độ ăn uống hằng ngày một cách thuận tiện.
 
 \subsection{Mục tiêu cụ thể}
 
 \begin{enumerate}
-    \item Xây dựng hệ thống xác thực người dùng qua email và Google.
-    \item Xây dựng cơ sở dữ liệu món ăn Việt Nam với thông tin dinh dưỡng chi tiết.
-    \item Phát triển tính năng quét và nhận diện món ăn bằng AI (Gemini).
-    \item Xây dựng tính năng theo dõi dinh dưỡng hàng ngày, hàng tuần.
-    \item Phát triển giao diện người dùng thân thiện, hỗ trợ tiếng Việt.
-    \item Xây dựng trang quản trị cho phép quản lý dữ liệu thực phẩm và người dùng.
-    \item Hỗ trợ gợi ý bữa ăn dựa trên mục tiêu dinh dưỡng của từng người dùng.
+    \item \textbf{Xác thực người dùng:} Xây dựng hệ thống đăng ký và đăng nhập qua email/mật khẩu và tài khoản Google, sử dụng Firebase Authentication.
+    \item \textbf{Quản lý hồ sơ và mục tiêu dinh dưỡng:} Cho phép người dùng nhập thông tin cá nhân (tuổi, giới tính, chiều cao, cân nặng, mức độ vận động) và thiết lập mục tiêu dinh dưỡng (calo, protein, carbohydrate, chất béo) thông qua quy trình onboarding.
+    \item \textbf{Ghi nhật ký ăn uống:} Cung cấp công cụ để người dùng ghi lại các món ăn đã tiêu thụ trong ngày, bao gồm thêm món từ danh mục thực phẩm có sẵn và nhập thủ công.
+    \item \textbf{Quét món ăn bằng AI:} Tích hợp Google Gemini API để nhận diện món ăn từ ảnh chụp, trả về thông tin dinh dưỡng ước tính và tự động thêm vào nhật ký.
+    \item \textbf{Theo dõi dinh dưỡng:} Hiển thị lượng calo, protein, carbohydrate và chất béo đã tiêu thụ theo ngày dưới dạng biểu đồ, so sánh với mục tiêu đã đặt ra.
+    \item \textbf{Chatbot AI tư vấn dinh dưỡng:} Xây dựng chatbot tích hợp Gemini API để trả lời câu hỏi về dinh dưỡng ở mức tham khảo, dựa trên hồ sơ và mục tiêu của người dùng.
+    \item \textbf{Trang quản trị:} Xây dựng giao diện web cho phép quản trị viên quản lý cơ sở dữ liệu thực phẩm (thêm, sửa, xóa, import) và quản lý người dùng (xem danh sách, phân quyền, gán gói Premium).
 \end{enumerate}
+
+Bên cạnh các mục tiêu đã triển khai, dự án cũng đặt nền tảng ban đầu cho một số định hướng phát triển trong tương lai như gợi ý bữa ăn theo mục tiêu dinh dưỡng và hệ thống gói Premium với các tính năng nâng cao.
 
 \subsection{Đối tượng người dùng}
 
 \begin{itemize}
-    \item Người dùng phổ thông quan tâm đến sức khỏe và dinh dưỡng.
+    \item Người dùng phổ thông quan tâm đến sức khỏe và có nhu cầu theo dõi dinh dưỡng hằng ngày.
     \item Người đang trong quá trình giảm cân, tăng cân hoặc duy trì cân nặng.
-    \item Người tập gym, vận động viên cần theo dõi macro dinh dưỡng.
-    \item Chuyên gia dinh dưỡng cần công cụ hỗ trợ tư vấn.
+    \item Người tập gym, vận động viên cần theo dõi lượng chất dinh dưỡng đa lượng.
+    \item Quản trị viên hệ thống thực hiện quản lý dữ liệu thực phẩm và người dùng qua trang web.
 \end{itemize}
 
 \section{Cấu trúc báo cáo}
