@@ -32,29 +32,29 @@ Các actor chính của hệ thống:
     \endhead
     \hline
     \endfoot
-    UC-01: Đăng ký & Người dùng tạo tài khoản mới bằng email và mật khẩu, hoặc đăng ký qua Google. \\
+    UC-01: Đăng ký tài khoản & Người dùng tạo tài khoản mới bằng email và mật khẩu. Hệ thống kiểm tra tính hợp lệ, gửi email xác minh và tạo document người dùng trong Firestore. \\
     \hline
-    UC-02: Đăng nhập & Người dùng đăng nhập vào hệ thống bằng email/mật khẩu hoặc Google. \\
+    UC-02: Đăng nhập & Người dùng đăng nhập bằng email/mật khẩu hoặc tài khoản Google. Hệ thống xác thực qua Firebase Authentication, tải hồ sơ và chuyển đến màn hình phù hợp (onboarding hoặc trang chủ). \\
     \hline
-    UC-03: Quản lý hồ sơ & Người dùng cập nhật thông tin cá nhân: tên, tuổi, cân nặng, chiều cao, mục tiêu dinh dưỡng. \\
+    UC-03: Quản lý hồ sơ cá nhân & Người dùng xem và cập nhật thông tin cá nhân (tên, tuổi, giới tính, chiều cao, cân nặng, mức độ vận động). Dữ liệu được lưu trong collection \texttt{profiles/\{uid\}}. \\
     \hline
-    UC-04: Onboarding & Hệ thống thu thập thông tin ban đầu của người dùng để cá nhân hóa trải nghiệm. \\
+    UC-04: Hoàn thành Onboarding & Người dùng nhập thông tin ban đầu (thể trạng, mức vận động, mục tiêu dinh dưỡng). Hệ thống tính toán chỉ tiêu calo và macro, lưu vào \texttt{goals/\{uid\}} và đánh dấu hoàn tất onboarding. \\
     \hline
-    UC-05: Quét món ăn bằng AI & Người dùng chụp ảnh hoặc chọn ảnh món ăn; hệ thống gửi ảnh đến Gemini API để nhận diện và trả về thông tin dinh dưỡng. \\
+    UC-05: Quét món ăn bằng AI & Người dùng chụp hoặc chọn ảnh món ăn. Ảnh được gửi đến Cloud Function, Cloud Function gọi Gemini API để nhận diện và trả về tên món, calo và macro ước tính. Người dùng xác nhận trước khi lưu vào nhật ký. \\
     \hline
-    UC-06: Nhật ký ăn uống & Người dùng xem và quản lý nhật ký các món ăn đã tiêu thụ trong ngày. \\
+    UC-06: Nhật ký ăn uống & Người dùng xem danh sách món ăn đã tiêu thụ trong ngày, thêm món mới từ danh mục thực phẩm hoặc nhập thủ công, và xóa món khỏi nhật ký. Dữ liệu lưu trong \texttt{users/\{uid\}/meal\_entries}. \\
     \hline
-    UC-07: Theo dõi dinh dưỡng & Người dùng xem biểu đồ và thống kê về lượng calo, protein, carb, fat đã tiêu thụ theo ngày/tuần. \\
+    UC-07: Theo dõi dinh dưỡng & Người dùng xem biểu đồ và số liệu thống kê về lượng calo, protein, carbohydrate, chất béo đã tiêu thụ theo ngày, so sánh với mục tiêu đã đặt. \\
     \hline
-    UC-08: Món ăn yêu thích & Người dùng lưu các món ăn vào danh sách yêu thích để truy cập nhanh. \\
+    UC-08: Quản lý món ăn yêu thích & Người dùng thêm món ăn vào danh sách yêu thích để truy cập nhanh khi ghi nhật ký, hoặc bỏ yêu thích. Dữ liệu lưu trong \texttt{users/\{uid\}/favorites}. \\
     \hline
-    UC-09: Chatbot AI dinh dưỡng & Người dùng trò chuyện với AI để nhận tư vấn về dinh dưỡng và chế độ ăn uống. \\
+    UC-09: Chatbot AI dinh dưỡng & Người dùng đặt câu hỏi về dinh dưỡng và nhận phản hồi từ Gemini API. Hệ thống đính kèm hồ sơ và mục tiêu dinh dưỡng của người dùng làm ngữ cảnh để cá nhân hóa câu trả lời. Lịch sử chat được lưu trong \texttt{users/\{uid\}/chat\_history}. \\
     \hline
-    UC-10: Quản lý thực phẩm (Admin) & Admin thêm/sửa/xóa thực phẩm trong cơ sở dữ liệu, quản lý danh mục. \\
+    UC-10: Quản lý thực phẩm (Admin) & Quản trị viên thêm, sửa, xóa thực phẩm trong danh mục \texttt{foods}, và import thực phẩm hàng loạt qua CSV. Dữ liệu được ứng dụng di động truy vấn để hiển thị cho người dùng. \\
     \hline
-    UC-11: Quản lý người dùng (Admin) & Admin xem danh sách người dùng, khóa/mở khóa tài khoản. \\
+    UC-11: Quản lý người dùng (Admin) & Quản trị viên xem danh sách người dùng đã đăng ký, phân quyền admin và gán trạng thái Premium cho người dùng thông qua Cloud Functions. \\
     \hline
-    UC-12: Đăng ký Premium & Người dùng đăng ký gói Premium để mở khóa các tính năng nâng cao. \\
+    UC-12: Quản lý trạng thái Premium & Hệ thống hỗ trợ quản lý trạng thái gói Premium (Free/Premium) cho mỗi người dùng, bao gồm thời hạn và nguồn gán (admin, mô phỏng). Hiện tại, việc gán Premium được thực hiện qua Cloud Function bởi quản trị viên; tích hợp thanh toán thật (In-app Purchase) là định hướng phát triển tiếp theo. \\
     \hline
 \end{longtable}
 
@@ -62,38 +62,57 @@ Các actor chính của hệ thống:
 
 \subsubsection{Hiệu năng}
 \begin{itemize}
-    \item Thời gian phản hồi API nhận diện món ăn không quá 10 giây.
-    \item Ứng dụng khởi động trong vòng 3 giây trên thiết bị tầm trung.
-    \item Đồng bộ dữ liệu giữa client và Firestore trong thời gian thực.
+    \item Ứng dụng khởi động và hiển thị màn hình chính trong thời gian chấp nhận được (mục tiêu dưới 3 giây trên thiết bị Android tầm trung).
+    \item Truy vấn nhật ký ăn uống theo ngày hiển thị kết quả nhanh, tận dụng Firestore local cache cho dữ liệu đã từng truy cập.
+    \item Thời gian quét món ăn bằng AI phụ thuộc vào độ trễ mạng và thời gian phản hồi của Gemini API; mục tiêu hiển thị kết quả trong vòng 10 giây kể từ khi gửi ảnh.
+    \item Biểu đồ dinh dưỡng được tính toán và hiển thị mượt mà trên tập dữ liệu nhật ký theo tuần.
 \end{itemize}
 
 \subsubsection{Độ tin cậy và tính sẵn sàng}
 \begin{itemize}
-    \item Hệ thống hoạt động ổn định 24/7 (phụ thuộc vào Firebase SLA).
-    \item Dữ liệu người dùng được backup tự động bởi Firebase.
-    \item Xử lý lỗi mạng và offline một cách graceful.
+    \item Hệ thống backend phụ thuộc vào hạ tầng Firebase của Google; tính sẵn sàng của ứng dụng ở mức tương đương Firebase SLA.
+    \item Dữ liệu người dùng được lưu trên Firestore với cơ chế sao lưu tự động của Firebase.
+    \item Ứng dụng hỗ trợ chế độ offline cơ bản: dữ liệu đã tải được giữ trong Firestore local cache, cho phép người dùng xem nhật ký và danh sách thực phẩm khi không có kết nối mạng. Các thao tác ghi (thêm món, quét AI) yêu cầu kết nối mạng để đồng bộ.
 \end{itemize}
 
 \subsubsection{An ninh và bảo mật}
 \begin{itemize}
-    \item Xác thực người dùng qua Firebase Authentication với JWT token.
-    \item Firestore Security Rules giới hạn quyền truy cập dữ liệu theo user ID.
-    \item Kết nối giữa client và server sử dụng SSL/TLS.
-    \item API key của Gemini được lưu trữ an toàn trên Cloud Functions, không lộ ra client.
+    \item Xác thực người dùng qua Firebase Authentication, sử dụng token JWT để xác định danh tính trong mọi request đến Firestore và Cloud Functions.
+    \item Firestore Security Rules đảm bảo mỗi người dùng chỉ có thể đọc và ghi dữ liệu thuộc về chính mình (phân tách theo UID).
+    \item Toàn bộ kết nối giữa client và Firebase sử dụng SSL/TLS.
+    \item Gemini API key được lưu dưới dạng biến môi trường trên Cloud Functions, không xuất hiện trong mã nguồn phía client, tránh nguy cơ bị trích xuất từ file APK.
+    \item Trang admin yêu cầu tài khoản có admin claim mới có thể gọi các Cloud Function quản trị (setAdminRole, setUserSubscription).
 \end{itemize}
 
-\subsubsection{Khả bảo trì và khả chuyển đổi}
+\subsubsection{Khả bảo trì}
 \begin{itemize}
-    \item Code được tổ chức theo feature-first structure, tách biệt rõ ràng giữa các module.
-    \item Sử dụng TypeScript cho Cloud Functions và Admin Web để đảm bảo type safety.
-    \item Hỗ trợ đa nền tảng (Android/iOS) từ một codebase Flutter.
+    \item Code Flutter được tổ chức theo cấu trúc feature-first: mỗi tính năng nằm trong thư mục riêng, tách biệt giữa domain (model, service) và presentation (widget, page).
+    \item Cloud Functions và Admin Web sử dụng TypeScript, cung cấp kiểm tra kiểu tĩnh, giảm thiểu lỗi runtime và hỗ trợ quá trình bảo trì.
+    \item Các service class trong Flutter đảm nhận toàn bộ logic giao tiếp với Firebase, tránh việc gọi Firebase trực tiếp từ widget.
 \end{itemize}
 
-\subsubsection{Các ràng buộc khác}
+\subsubsection{Khả mở rộng}
 \begin{itemize}
-    \item Ứng dụng hỗ trợ Android 5.0 (API 21) trở lên.
-    \item Giao diện người dùng sử dụng tiếng Việt làm ngôn ngữ chính.
-    \item Tuân thủ các quy định về quyền riêng tư dữ liệu (GDPR, luật bảo vệ dữ liệu cá nhân).
+    \item Cấu trúc feature-first cho phép thêm tính năng mới bằng cách tạo module mới mà không ảnh hưởng đến các module hiện có.
+    \item Firestore là NoSQL document database, không yêu cầu schema cố định, cho phép thêm trường mới vào document mà không cần migrate dữ liệu cũ.
+    \item Cloud Functions có thể được thêm mới hoặc cập nhật độc lập mà không cần phát hành lại ứng dụng di động.
+    \item Kiến trúc hiện tại đã có nền tảng để mở rộng sang iOS khi cần (dùng chung codebase Flutter).
+\end{itemize}
+
+\subsubsection{Khả sử dụng}
+\begin{itemize}
+    \item Giao diện người dùng hoàn toàn bằng tiếng Việt, phù hợp với đối tượng người dùng phổ thông tại Việt Nam.
+    \item Luồng thao tác được thiết kế đơn giản: người dùng mới được dẫn qua onboarding từng bước; người dùng đã đăng nhập có thể thêm món ăn vào nhật ký chỉ với vài thao tác.
+    \item Tính năng quét món ăn bằng ảnh giúp giảm thiểu thao tác nhập liệu thủ công.
+    \item Giao diện sử dụng các thành phần Material Design quen thuộc, bố cục nhất quán giữa các màn hình.
+\end{itemize}
+
+\subsubsection{Ràng buộc kỹ thuật}
+\begin{itemize}
+    \item Ứng dụng di động hỗ trợ Android 5.0 (API 21) trở lên.
+    \item Backend phụ thuộc hoàn toàn vào hệ sinh thái Firebase; không có máy chủ backend tự quản lý.
+    \item Gemini API có giới hạn về số request mỗi phút và độ chính xác phụ thuộc vào chất lượng ảnh đầu vào và độ phủ của dữ liệu huấn luyện đối với ẩm thực Việt Nam.
+    \item Tính năng quét AI và chatbot yêu cầu kết nối mạng để hoạt động.
 \end{itemize}
 
 \section{Tổng quan ca sử dụng hệ thống}
@@ -243,38 +262,43 @@ Hình~\ref{fig:usecase_diagram} trình bày biểu đồ ca sử dụng tổng q
     \endfoot
     Tên ca sử dụng & Quét món ăn bằng AI \\
     \hline
-    Mô tả & Người dùng chụp ảnh hoặc tải ảnh món ăn lên; hệ thống sử dụng AI để nhận diện món ăn và trả về thông tin dinh dưỡng. \\
+    Mô tả & Người dùng chụp ảnh hoặc chọn ảnh món ăn từ thư viện. Ảnh được gửi lên Cloud Function, Cloud Function gọi Gemini API để nhận diện món ăn và trả về thông tin dinh dưỡng ước tính. Người dùng kiểm tra, chỉnh sửa (nếu cần) rồi xác nhận lưu vào nhật ký. \\
     \hline
-    Actor & Người dùng (đã đăng nhập) \\
+    Actor & Người dùng đã đăng nhập \\
     \hline
     Luồng cơ bản &
         \begin{enumerate}[nosep]
-            \item Người dùng nhấn nút ``Scan'' trên màn hình chính.
+            \item Người dùng chọn chức năng quét món ăn từ màn hình chính.
             \item Hệ thống mở camera hoặc cho phép chọn ảnh từ thư viện.
             \item Người dùng chụp ảnh hoặc chọn ảnh món ăn.
-            \item Hệ thống gửi ảnh đến Cloud Function ``scanFood''.
-            \item Cloud Function gọi Gemini API để phân tích ảnh.
-            \item Gemini trả về tên món ăn và thông tin dinh dưỡng ước tính.
-            \item Hệ thống hiển thị kết quả nhận diện cho người dùng.
-            \item Người dùng xác nhận và thêm món ăn vào nhật ký.
+            \item Ứng dụng resize ảnh, chuyển thành chuỗi base64 và gửi đến Cloud Function \texttt{identify\-Food\-Image} kèm Firebase Auth token.
+            \item Cloud Function xác thực token, kiểm tra quota quét AI của người dùng trong Firestore, sau đó gọi Gemini API kèm prompt phân tích và danh sách thực phẩm đã có trong cơ sở dữ liệu để ưu tiên khớp tên.
+            \item Gemini API trả về danh sách món ăn kèm thông tin dinh dưỡng ước tính (tên món, calo, protein, carbohydrate, chất béo, khối lượng phần ăn, độ tự tin) dưới dạng JSON.
+            \item Cloud Function cập nhật số lượt quét đã sử dụng trong Firestore (đối với gói free), sau đó trả kết quả về ứng dụng.
+            \item Ứng dụng hiển thị kết quả nhận diện cho người dùng kiểm tra.
+            \item Người dùng chỉnh sửa thông tin dinh dưỡng nếu cần (tên món, khối lượng, calo,\ldots).
+            \item Người dùng xác nhận, hệ thống lưu món ăn vào nhật ký (subcollection \texttt{meal\_entries}).
         \end{enumerate} \\
     \hline
     Luồng thay thế &
         \begin{enumerate}[nosep]
-            \item[5a.] Gemini không nhận diện được món ăn: Hiển thị ``Không thể nhận diện món ăn, vui lòng thử lại''.
-            \item[5b.] Gemini API lỗi/quá tải: Fallback về xử lý trực tiếp từ client với cấu hình đơn giản hơn.
-            \item[5c.] Người dùng hủy thao tác: Quay về màn hình chính.
+            \item[3a.] Ảnh không hợp lệ (dung lượng quá lớn, định dạng không hỗ trợ): Hiển thị thông báo ``Ảnh không hợp lệ, vui lòng chọn ảnh khác'' và cho phép chọn lại.
+            \item[5a.] Hết quota quét AI (gói free): Cloud Function trả về lỗi quota\_exceeded. Ứng dụng hiển thị ``Bạn đã hết lượt quét miễn phí trong tháng này'' và gợi ý nâng cấp Premium hoặc nhập thủ công.
+            \item[5b.] Gemini API không nhận diện được món ăn (confidence dưới ngưỡng): Cloud Function trả về danh sách rỗng. Ứng dụng hiển thị ``Không thể nhận diện món ăn, vui lòng thử lại với ảnh khác''.
+            \item[5c.] Lỗi mạng hoặc Gemini API lỗi/quá tải: Cloud Function trả về lỗi. Ứng dụng hiển thị ``Đã xảy ra lỗi, vui lòng thử lại sau'' và cho phép người dùng thử lại hoặc nhập thủ công.
+            \item[3b/8a.] Người dùng hủy thao tác: Quay về màn hình trước đó (màn hình chính hoặc màn hình nhật ký).
         \end{enumerate} \\
     \hline
-    Tiền điều kiện & Người dùng đã đăng nhập, thiết bị có kết nối mạng. \\
+    Tiền điều kiện & Người dùng đã đăng nhập; thiết bị có kết nối mạng. \\
     \hline
-    Hậu điều kiện & Món ăn được thêm vào nhật ký dinh dưỡng của người dùng trong ngày. \\
+    Hậu điều kiện & Món ăn được lưu vào nhật ký dinh dưỡng của người dùng trong ngày hiện tại (subcollection \texttt{users/\{uid\}/meal\_entries}). Đối với gói free, số lượt quét AI trong tháng được tăng lên 1. \\
     \hline
     Business Rules &
         \begin{itemize}[nosep]
-            \item Ảnh phải có độ phân giải tối thiểu 224x224 pixels.
-            \item Kết quả dinh dưỡng từ AI là ước tính, người dùng có thể chỉnh sửa.
-            \item Chỉ hỗ trợ nhận diện món ăn Việt Nam và phổ biến.
+            \item Kết quả dinh dưỡng từ AI chỉ mang tính tham khảo; người dùng phải được xem lại và có quyền chỉnh sửa trước khi lưu vào nhật ký.
+            \item Gemini API không được gọi trực tiếp từ ứng dụng di động. Toàn bộ request đến Gemini phải đi qua Cloud Function để bảo vệ API key.
+            \item Người dùng gói free bị giới hạn 5 lượt quét AI mỗi tháng. Người dùng gói Premium không bị giới hạn.
+            \item Ảnh gửi lên phải có định dạng JPEG hoặc PNG, dung lượng không vượt quá giới hạn của Cloud Function request body.
         \end{itemize} \\
     \hline
 \end{longtable}
@@ -609,38 +633,43 @@ Hình~\ref{fig:usecase_diagram} trình bày biểu đồ ca sử dụng tổng q
     \endfoot
     Tên ca sử dụng & Chatbot AI dinh dưỡng \\
     \hline
-    Mô tả & Người dùng gửi câu hỏi về dinh dưỡng và nhận phản hồi từ trợ lý AI dựa trên ngữ cảnh hồ sơ, mục tiêu và dữ liệu ăn uống hiện có. \\
+    Mô tả & Người dùng đặt câu hỏi về dinh dưỡng, chế độ ăn uống và món ăn. Hệ thống sử dụng Gemini API để phản hồi ở mức tham khảo, dựa trên ngữ cảnh cá nhân của người dùng (hồ sơ, mục tiêu dinh dưỡng, nhật ký ăn uống gần đây). \\
     \hline
     Actor & Người dùng đã đăng nhập \\
     \hline
     Luồng cơ bản &
         \begin{enumerate}[nosep]
-            \item Người dùng mở màn hình chatbot dinh dưỡng.
-            \item Hệ thống tải lịch sử hội thoại gần nhất từ `users/\{uid\}/chat\_history`.
-            \item Người dùng nhập câu hỏi và gửi tin nhắn.
-            \item Hệ thống xây dựng ngữ cảnh từ hồ sơ, mục tiêu và nhật ký ăn uống.
-            \item Hệ thống gửi yêu cầu đến dịch vụ AI đã cấu hình.
-            \item Dịch vụ AI trả về nội dung phản hồi và gợi ý câu hỏi tiếp theo.
-            \item Hệ thống lưu cặp tin nhắn người dùng/trợ lý vào lịch sử hội thoại.
-            \item Hệ thống hiển thị phản hồi cho người dùng.
+            \item Người dùng mở màn hình chatbot từ thanh điều hướng.
+            \item Hệ thống tải lịch sử trò chuyện gần nhất từ \texttt{users/\{uid\}/chat\_history} và hiển thị. Nếu chưa có lịch sử, hiển thị tin nhắn chào mừng.
+            \item Người dùng nhập câu hỏi và nhấn gửi.
+            \item Ứng dụng kiểm tra câu hỏi không rỗng, sau đó lưu tin nhắn của người dùng vào \texttt{chat\_history} với \texttt{role: user}.
+            \item Ứng dụng xây dựng ngữ cảnh từ hồ sơ cá nhân, mục tiêu dinh dưỡng và nhật ký ăn uống gần đây của người dùng.
+            \item Ứng dụng gửi câu hỏi kèm ngữ cảnh đến Cloud Function \texttt{chatNutrition} qua HTTP request có kèm Firebase Auth token.
+            \item Cloud Function xác thực token, gọi Gemini API với prompt được thiết kế để giới hạn phạm vi trả lời trong lĩnh vực dinh dưỡng.
+            \item Gemini API trả về nội dung phản hồi và gợi ý câu hỏi tiếp theo.
+            \item Cloud Function trả kết quả về ứng dụng. Ứng dụng lưu tin nhắn phản hồi vào \texttt{chat\_history} với \texttt{role: assistant}.
+            \item Ứng dụng hiển thị phản hồi cho người dùng.
         \end{enumerate} \\
     \hline
     Luồng thay thế &
         \begin{enumerate}[nosep]
-            \item[2a.] Chưa có lịch sử hội thoại: Hệ thống hiển thị tin nhắn chào mừng mặc định.
-            \item[5a.] Dịch vụ AI chưa được cấu hình: Hệ thống hiển thị thông báo không thể sử dụng AI lúc này.
-            \item[5b.] Lỗi mạng hoặc lỗi từ dịch vụ AI: Hệ thống hiển thị tin nhắn lỗi và cho phép người dùng thử lại.
+            \item[3a.] Câu hỏi trống: Ứng dụng hiển thị thông báo ``Vui lòng nhập câu hỏi'' và không gửi request.
+            \item[6a.] Lỗi mạng hoặc Cloud Function không khả dụng: Ứng dụng hiển thị ``Không thể kết nối, vui lòng thử lại sau'' và cho phép người dùng thử lại.
+            \item[7a.] Gemini API không phản hồi hoặc trả về lỗi: Cloud Function trả về lỗi. Ứng dụng hiển thị ``Trợ lý AI hiện không khả dụng, vui lòng thử lại sau''. Tin nhắn lỗi được lưu vào \texttt{chat\_history} với \texttt{isError: true} để người dùng biết tin nhắn này không nhận được phản hồi.
+            \item[7b.] Người dùng gửi câu hỏi liên quan đến chẩn đoán y tế hoặc nội dung nhạy cảm: Gemini được cấu hình qua prompt để từ chối trả lời và khuyến nghị người dùng tham khảo ý kiến bác sĩ hoặc chuyên gia y tế.
+            \item[3b.] Người dùng đóng màn hình chatbot: Quay về màn hình trước đó.
         \end{enumerate} \\
     \hline
-    Tiền điều kiện & Người dùng đã đăng nhập; dịch vụ AI được cấu hình hợp lệ. \\
+    Tiền điều kiện & Người dùng đã đăng nhập; thiết bị có kết nối mạng; Gemini API khả dụng. \\
     \hline
-    Hậu điều kiện & Tin nhắn mới được hiển thị trên giao diện chat và được lưu vào lịch sử hội thoại nếu thao tác lưu thành công. \\
+    Hậu điều kiện & Cặp tin nhắn (user + assistant hoặc user + error) được lưu vào \texttt{users/\{uid\}/chat\_history}. Phản hồi được hiển thị trên giao diện chat. \\
     \hline
     Business Rules &
         \begin{itemize}[nosep]
-            \item Chatbot chỉ đưa ra thông tin tham khảo, không thay thế tư vấn y tế chuyên môn.
-            \item Lịch sử hội thoại của người dùng phải được tách biệt theo tài khoản.
-            \item Nội dung phản hồi cần phù hợp với ngữ cảnh dinh dưỡng của người dùng nếu có dữ liệu liên quan.
+            \item Toàn bộ câu trả lời từ chatbot chỉ mang tính tham khảo về dinh dưỡng, không thay thế tư vấn của bác sĩ hoặc chuyên gia dinh dưỡng.
+            \item Chatbot không được đưa ra chẩn đoán y tế, kê đơn thuốc, hoặc khuyến nghị điều trị bệnh. Đối với các câu hỏi mang tính y tế nghiêm trọng, chatbot phải khuyến nghị người dùng tìm đến cơ sở y tế.
+            \item Gemini API được gọi thông qua Cloud Function, không gọi trực tiếp từ ứng dụng di động, nhằm bảo vệ API key.
+            \item Lịch sử trò chuyện được lưu riêng theo từng người dùng (phân tách theo UID) và chỉ chủ sở hữu mới có quyền truy cập.
         \end{itemize} \\
     \hline
 \end{longtable}
@@ -782,7 +811,7 @@ Hình~\ref{fig:usecase_diagram} trình bày biểu đồ ca sử dụng tổng q
 \end{figure}
 
 % ============================================================
-\subsection{UC-12: Đăng ký Premium}
+\subsection{UC-12: Quản lý trạng thái Premium}
 
 \begin{longtable}{|p{4cm}|p{11cm}|}
     \hline
@@ -791,39 +820,48 @@ Hình~\ref{fig:usecase_diagram} trình bày biểu đồ ca sử dụng tổng q
     \endhead
     \hline
     \endfoot
-    Tên ca sử dụng & Đăng ký Premium \\
+    Tên ca sử dụng & Quản lý trạng thái Premium \\
     \hline
-    Mô tả & Người dùng xem quyền lợi gói Premium và thực hiện thao tác đăng ký hoặc nâng cấp để mở khóa các tính năng nâng cao. \\
+    Mô tả & Người dùng xem trạng thái gói tài khoản hiện tại (Free hoặc Premium). Hệ thống phân biệt giữa hai gói để giới hạn hoặc mở khóa các chức năng tương ứng (ví dụ: số lượt quét AI mỗi tháng). Trong phạm vi hiện tại của dự án, việc gán Premium được thực hiện thông qua Cloud Function bởi quản trị viên ở mức mô phỏng; tích hợp thanh toán thật qua Google Play Billing là định hướng phát triển trong tương lai. \\
     \hline
-    Actor & Người dùng đã đăng nhập \\
+    Actor & Người dùng đã đăng nhập; Quản trị viên (cho thao tác gán Premium) \\
     \hline
-    Luồng cơ bản &
+    Luồng cơ bản (phía người dùng) &
         \begin{enumerate}[nosep]
-            \item Người dùng mở màn hình gói dịch vụ hoặc màn hình paywall.
-            \item Hệ thống hiển thị thông tin gói Free và Premium.
-            \item Người dùng chọn nâng cấp lên Premium.
-            \item Hệ thống kiểm tra trạng thái subscription hiện tại của người dùng.
-            \item Hệ thống ghi nhận yêu cầu nâng cấp theo cơ chế thanh toán hoặc cơ chế demo đang được cấu hình.
-            \item Hệ thống cập nhật thông tin `subscription` trong document người dùng.
-            \item Hệ thống cập nhật giao diện và mở khóa quyền lợi Premium tương ứng.
+            \item Người dùng mở màn hình Premium hoặc màn hình hồ sơ.
+            \item Hệ thống đọc thông tin \texttt{subscription} từ document \texttt{users/\{uid\}}.
+            \item Hệ thống hiển thị trạng thái gói hiện tại (Free hoặc Premium), kèm các quyền lợi tương ứng.
+            \item Nếu là Premium, hiển thị thời hạn (nếu có) và danh sách tính năng đã mở khóa.
+        \end{enumerate} \\
+    \hline
+    Luồng cơ bản (phía quản trị viên) &
+        \begin{enumerate}[nosep]
+            \item Quản trị viên đăng nhập vào trang admin.
+            \item Quản trị viên chọn người dùng cần gán Premium từ danh sách.
+            \item Quản trị viên chọn gói \texttt{premium}, thiết lập thời hạn (nếu có) và nhấn xác nhận.
+            \item Trang admin gọi Cloud Function \texttt{setUserSubscription} với tham số \texttt{targetUid}, \texttt{plan}, \texttt{premiumUntil}.
+            \item Cloud Function xác thực quyền admin, cập nhật trường \texttt{subscription} trong document \texttt{users/\{uid\}} với \texttt{plan: premium}, \texttt{status: active}, \texttt{source: admin}.
+            \item Hệ thống cập nhật giao diện admin và mở khóa quyền lợi Premium cho người dùng được gán.
         \end{enumerate} \\
     \hline
     Luồng thay thế &
         \begin{enumerate}[nosep]
-            \item[4a.] Người dùng đã là Premium: Hệ thống hiển thị trạng thái gói hiện tại.
-            \item[5a.] Thanh toán hoặc thao tác nâng cấp thất bại: Hệ thống thông báo lỗi và giữ nguyên trạng thái hiện tại.
-            \item[6a.] Cập nhật Firestore thất bại: Hệ thống hiển thị thông báo lỗi và yêu cầu thử lại.
+            \item[2a.] Người dùng chưa có thông tin \texttt{subscription}: Hệ thống mặc định hiển thị gói Free.
+            \item[3a.] Premium đã hết hạn (\texttt{premiumUntil} < hiện tại): Hệ thống hiển thị gói Free và thông báo gói Premium đã hết hạn.
+            \item[4a.] (Admin) Người dùng được gán lại gói Free: Cloud Function cập nhật \texttt{plan: free}, \texttt{status: none}. Các giới hạn của gói Free được áp dụng trở lại.
+            \item[5a.] (Admin) Token không có admin claim: Cloud Function từ chối với lỗi \texttt{not\_an\_admin}.
         \end{enumerate} \\
     \hline
-    Tiền điều kiện & Người dùng đã đăng nhập và có kết nối mạng. \\
+    Tiền điều kiện & Người dùng đã đăng nhập; quản trị viên có tài khoản với admin claim. \\
     \hline
-    Hậu điều kiện & Trạng thái gói dịch vụ của người dùng được cập nhật nếu thao tác nâng cấp thành công. \\
+    Hậu điều kiện & Trạng thái gói của người dùng được hiển thị chính xác trên cả ứng dụng di động và trang admin. Nếu admin thay đổi gói, document \texttt{users/\{uid\}} được cập nhật và ứng dụng di động phản ánh trạng thái mới trong lần kiểm tra tiếp theo. \\
     \hline
     Business Rules &
         \begin{itemize}[nosep]
-            \item Người dùng Free bị giới hạn số lượt sử dụng một số tính năng AI theo tháng.
-            \item Người dùng Premium được mở khóa giới hạn cao hơn hoặc các tính năng nâng cao tùy cấu hình hệ thống.
-            \item Trạng thái subscription phải được lưu trong document `users/\{uid\}` và được kiểm tra trước khi cấp quyền.
+            \item Hệ thống phân biệt hai gói: \texttt{Free} (mặc định) và \texttt{Premium}. Gói Free giới hạn 5 lượt quét AI mỗi tháng; gói Premium không giới hạn lượt quét.
+            \item Trạng thái subscription được lưu trong trường \texttt{subscription} của document \texttt{users/\{uid\}}, gồm các thuộc tính: \texttt{plan} (free/premium), \texttt{status} (none/active), \texttt{source} (default/admin/mock), \texttt{premiumUntil} (tùy chọn), \texttt{updatedAt}.
+            \item Trong phạm vi dự án hiện tại, việc nâng cấp lên Premium được thực hiện thông qua Cloud Function bởi quản trị viên ở mức mô phỏng, chưa tích hợp thanh toán thật.
+            \item Định hướng phát triển: tích hợp Google Play Billing để người dùng có thể tự đăng ký và thanh toán Premium ngay trong ứng dụng; khi đó trường \texttt{source} sẽ được đặt là \texttt{iap} thay vì \texttt{admin} hay \texttt{mock}.
         \end{itemize} \\
     \hline
 \end{longtable}
@@ -844,22 +882,28 @@ Hình~\ref{fig:usecase_diagram} trình bày biểu đồ ca sử dụng tổng q
 
 \section{Thiết kế cơ sở dữ liệu}
 
-Hệ thống sử dụng Cloud Firestore — cơ sở dữ liệu NoSQL dạng document. Dữ liệu được tổ chức theo cấu trúc collection và document, trong đó mỗi document có thể chứa các sub-collection.
+Hệ thống SmartNutri sử dụng \textbf{Cloud Firestore} — cơ sở dữ liệu NoSQL dạng document của Firebase. Khác với cơ sở dữ liệu quan hệ (RDBMS), Firestore không sử dụng bảng với schema cố định. Dữ liệu được tổ chức thành các \textbf{collection} (tập hợp document), mỗi \textbf{document} là một bản ghi JSON có cấu trúc linh hoạt. Một document có thể chứa các \textbf{sub-collection} — tập hợp document con nằm bên trong nó, tạo thành cấu trúc phân cấp.
 
-\subsection{Sơ đồ thực thể - liên kết (ERD)}
+\subsection{Về sơ đồ ERD}
+
+Sơ đồ dưới đây (Hình~\ref{fig:erd_diagram}) mô tả \textbf{quan hệ logic} giữa các nhóm dữ liệu trong hệ thống. Do Firestore là NoSQL, sơ đồ này không biểu diễn quan hệ khóa ngoại như trong cơ sở dữ liệu quan hệ. Các mũi tên trong sơ đồ thể hiện mối liên kết dữ liệu được thực thi ở tầng ứng dụng hoặc thông qua Firestore Security Rules, không phải ràng buộc ở tầng cơ sở dữ liệu.
 
 \begin{figure}[H]
     \centering
     \includegraphics[width=0.9\textwidth]{assets/diagrams/erd_diagram.png}
-    \caption{Biểu đồ thực thể - liên kết hệ thống SmartNutri}
+    \caption{Sơ đồ quan hệ logic giữa các nhóm dữ liệu trong SmartNutri}
     \label{fig:erd_diagram}
 \end{figure}
+
+\subsection{Nguyên tắc phân tách dữ liệu người dùng}
+
+Toàn bộ dữ liệu cá nhân của người dùng được tổ chức dưới đường dẫn \texttt{users/\{userId\}/}. Các sub-collection như \texttt{meal\_entries}, \texttt{favorites}, \texttt{usage}, \texttt{chat\_history} đều nằm trong document của từng người dùng. Firestore Security Rules đảm bảo mỗi người dùng chỉ có quyền đọc/ghi dữ liệu thuộc \texttt{users/\{userId\}/} của chính mình, trong đó \texttt{\{userId\}} được xác định từ Firebase Authentication token.
 
 \subsection{Mô tả các collection chính}
 
 \subsubsection{Collection: users}
 
-Lưu trữ thông tin người dùng. Mỗi document được định danh bằng user ID từ Firebase Authentication.
+Collection gốc \texttt{users} lưu trữ thông tin tài khoản của từng người dùng. Mỗi document được định danh bằng UID từ Firebase Authentication. Document này cũng là nơi chứa các sub-collection cho dữ liệu cá nhân.
 
 \begin{longtable}{|p{3.5cm}|p{3.5cm}|p{7.5cm}|}
     \hline
@@ -868,33 +912,41 @@ Lưu trữ thông tin người dùng. Mỗi document được định danh bằn
     \endhead
     \hline
     \endfoot
-    email & String & Email người dùng \\
+    email & String & Email đăng ký của người dùng \\
     \hline
-    displayName & String & Tên hiển thị \\
+    displayName & String & Tên hiển thị (có thể trống) \\
     \hline
-    photoURL & String & URL ảnh đại diện \\
+    mealCount & Number & Tổng số bữa ăn đã ghi nhận \\
     \hline
-    height & Number & Chiều cao (cm) \\
+    lastMealDate & String & Ngày ghi nhận bữa ăn gần nhất (yyyy-MM-dd) \\
     \hline
-    weight & Number & Cân nặng (kg) \\
+    subscription.plan & String & Gói dịch vụ: \texttt{free} (mặc định) hoặc \texttt{premium} \\
     \hline
-    age & Number & Tuổi \\
+    subscription.status & String & Trạng thái gói: \texttt{none}, \texttt{active} \\
     \hline
-    gender & String & Giới tính \\
+    subscription.source & String & Nguồn gán gói: \texttt{default}, \texttt{admin}, \texttt{mock}, \texttt{iap} \\
     \hline
-    goal & String & Mục tiêu dinh dưỡng \\
+    subscription.premiumUntil & Timestamp & Thời điểm hết hạn Premium (nếu có) \\
     \hline
-    dailyCalorieTarget & Number & Mục tiêu calo/ngày \\
+    subscription.updatedAt & Timestamp & Thời điểm cập nhật subscription gần nhất \\
     \hline
-    isPremium & Boolean & Trạng thái Premium \\
+    aiScanUsage.monthKey & String & Tháng áp dụng quota quét AI (yyyy-MM) \\
+    \hline
+    aiScanUsage.aiScanUsed & Number & Số lượt quét AI đã sử dụng trong tháng \\
+    \hline
+    aiScanUsage.aiScanLimit & Number & Giới hạn lượt quét AI trong tháng \\
+    \hline
+    onboardingCompleted & Boolean & Đánh dấu đã hoàn tất onboarding \\
     \hline
     createdAt & Timestamp & Thời điểm tạo tài khoản \\
     \hline
 \end{longtable}
 
+\textbf{Ghi chú:} Thông tin hồ sơ cá nhân (tuổi, giới tính, chiều cao, cân nặng, mức vận động) được lưu trong collection riêng \texttt{profiles/\{userId\}}. Mục tiêu dinh dưỡng (calo, protein, carbohydrate, chất béo) được lưu trong collection \texttt{goals/\{userId\}}. Việc tách riêng này giúp cập nhật hồ sơ và mục tiêu độc lập mà không cần ghi lại toàn bộ document người dùng.
+
 \subsubsection{Collection: foods}
 
-Lưu trữ cơ sở dữ liệu thực phẩm và món ăn.
+Collection \texttt{foods} lưu trữ danh mục thực phẩm và món ăn — đây là dữ liệu dùng chung cho toàn bộ người dùng. Mỗi document đại diện cho một thực phẩm hoặc món ăn với thông tin dinh dưỡng chuẩn trên 100g.
 
 \begin{longtable}{|p{3.5cm}|p{3.5cm}|p{7.5cm}|}
     \hline
@@ -903,35 +955,43 @@ Lưu trữ cơ sở dữ liệu thực phẩm và món ăn.
     \endhead
     \hline
     \endfoot
-    name & String & Tên món ăn (tiếng Việt) \\
+    id & String & Mã định danh thực phẩm (document ID) \\
     \hline
-    nameEn & String & Tên món ăn (tiếng Anh) \\
+    name & String & Tên món ăn (tiếng Việt có dấu) \\
     \hline
-    category & String & Danh mục (cơm, phở, canh, ...) \\
+    category & String & Danh mục (cơm, phở, canh, thịt, rau,\ldots) \\
     \hline
-    calories & Number & Lượng calo (kcal/100g) \\
+    calorieKcal & Number & Năng lượng (kcal/100g) \\
     \hline
-    protein & Number & Lượng protein (g/100g) \\
+    proteinG & Number & Protein (g/100g) \\
     \hline
-    carbs & Number & Lượng carbohydrate (g/100g) \\
+    carbG & Number & Carbohydrate (g/100g) \\
     \hline
-    fat & Number & Lượng chất béo (g/100g) \\
+    fatG & Number & Chất béo (g/100g) \\
     \hline
-    fiber & Number & Lượng chất xơ (g/100g) \\
+    defaultPortionG & Number & Khẩu phần mặc định (gram) \\
     \hline
-    imageURL & String & URL hình ảnh món ăn \\
+    tags & Array<String> & Từ khóa tìm kiếm \\
     \hline
-    servingSize & String & Đơn vị khẩu phần \\
+    imageUrl & String & URL hình ảnh món ăn (nếu có) \\
     \hline
-    isActive & Boolean & Trạng thái hiển thị \\
+    region & String & Vùng miền (Bắc/Trung/Nam, tùy chọn) \\
+    \hline
+    brand & String & Thương hiệu (tùy chọn) \\
+    \hline
+    verified & Boolean & Đã được kiểm duyệt bởi admin \\
     \hline
     createdAt & Timestamp & Thời điểm tạo \\
     \hline
+    updatedAt & Timestamp & Thời điểm cập nhật gần nhất \\
+    \hline
 \end{longtable}
+
+\textbf{Ghi chú:} Người dùng đã xác thực có quyền đọc toàn bộ collection \texttt{foods}. Chỉ quản trị viên (có admin claim) mới có quyền ghi. Trường \texttt{verified} giúp phân biệt thực phẩm đã được kiểm duyệt với thực phẩm mới thêm/chưa duyệt.
 
 \subsubsection{Sub-collection: users/\{userId\}/meal\_entries}
 
-Lưu trữ nhật ký ăn uống hàng ngày của từng người dùng. Mỗi bản ghi thể hiện một món ăn hoặc thực phẩm được người dùng thêm vào một bữa ăn cụ thể.
+Lưu trữ nhật ký ăn uống hằng ngày của từng người dùng. Mỗi document là một bản ghi món ăn được thêm vào một bữa cụ thể trong ngày.
 
 \begin{longtable}{|p{3.5cm}|p{3.5cm}|p{7.5cm}|}
     \hline
@@ -942,21 +1002,21 @@ Lưu trữ nhật ký ăn uống hàng ngày của từng người dùng. Mỗi 
     \endfoot
     uid & String & ID người dùng sở hữu bản ghi \\
     \hline
-    date & String & Ngày ghi nhận bữa ăn \\
+    date & String & Ngày ghi nhận (yyyy-MM-dd) \\
     \hline
-    mealType & String & Loại bữa ăn (sáng, trưa, tối, bữa phụ) \\
+    mealType & String & Loại bữa ăn (breakfast, lunch, dinner, snack) \\
     \hline
     foodName & String & Tên món ăn hoặc thực phẩm \\
     \hline
-    portionG & Number & Khối lượng khẩu phần tính theo gram \\
+    portionG & Number & Khối lượng khẩu phần (gram) \\
     \hline
-    calorieKcal & Number & Năng lượng tính theo kcal \\
+    calorieKcal & Number & Năng lượng (kcal) \\
     \hline
-    proteinG & Number & Lượng protein tính theo gram \\
+    proteinG & Number & Protein (g) \\
     \hline
-    carbG & Number & Lượng carbohydrate tính theo gram \\
+    carbG & Number & Carbohydrate (g) \\
     \hline
-    fatG & Number & Lượng chất béo tính theo gram \\
+    fatG & Number & Chất béo (g) \\
     \hline
     loggedAt & Timestamp & Thời điểm ghi nhận \\
     \hline
@@ -964,7 +1024,7 @@ Lưu trữ nhật ký ăn uống hàng ngày của từng người dùng. Mỗi 
 
 \subsubsection{Sub-collection: users/\{userId\}/favorites}
 
-Lưu trữ danh sách món ăn yêu thích của từng người dùng. Collection này giúp người dùng truy cập nhanh các món thường xuyên sử dụng trên màn hình Home hoặc Search.
+Lưu trữ danh sách món ăn yêu thích của từng người dùng. Document ID chính là \texttt{foodId} của món ăn, giúp kiểm tra nhanh một món đã được yêu thích hay chưa.
 
 \begin{longtable}{|p{3.5cm}|p{3.5cm}|p{7.5cm}|}
     \hline
@@ -973,38 +1033,15 @@ Lưu trữ danh sách món ăn yêu thích của từng người dùng. Collecti
     \endhead
     \hline
     \endfoot
-    foodId & String & ID món ăn được yêu thích; thường trùng với ID document \\
+    foodId & String & ID của món ăn trong collection \texttt{foods} \\
     \hline
-    addedAt & Timestamp & Thời điểm người dùng thêm món vào danh sách yêu thích \\
-    \hline
-\end{longtable}
-
-\subsubsection{Thông tin subscription trong users/\{userId\}}
-
-Thông tin gói dịch vụ được lưu trực tiếp trong document người dùng dưới field `subscription`. Cách lưu này giúp ứng dụng nhanh chóng xác định quyền lợi hiện tại của người dùng mà không cần truy vấn thêm collection riêng.
-
-\begin{longtable}{|p{3.5cm}|p{3.5cm}|p{7.5cm}|}
-    \hline
-    \textbf{Trường} & \textbf{Kiểu dữ liệu} & \textbf{Mô tả} \\
-    \hline
-    \endhead
-    \hline
-    \endfoot
-    subscription.plan & String & Tên gói dịch vụ, ví dụ `free` hoặc `premium` \\
-    \hline
-    subscription.status & String & Trạng thái gói, ví dụ `none`, `active` hoặc trạng thái mở rộng khác \\
-    \hline
-    subscription.source & String & Nguồn cập nhật gói, ví dụ `default`, `admin`, `mock` hoặc `iap` \\
-    \hline
-    subscription.premiumUntil & Timestamp & Thời điểm hết hạn Premium nếu có \\
-    \hline
-    subscription.updatedAt & Timestamp & Thời điểm cập nhật trạng thái subscription gần nhất \\
+    addedAt & Timestamp & Thời điểm thêm vào danh sách yêu thích \\
     \hline
 \end{longtable}
 
 \subsubsection{Sub-collection: users/\{userId\}/usage}
 
-Lưu trữ số lượt sử dụng tính năng AI theo từng tháng, phục vụ việc giới hạn quota cho người dùng Free và theo dõi quyền lợi của người dùng Premium.
+Theo dõi số lượt sử dụng tính năng quét AI theo từng tháng, phục vụ giới hạn quota cho người dùng gói Free.
 
 \begin{longtable}{|p{3.5cm}|p{3.5cm}|p{7.5cm}|}
     \hline
@@ -1013,19 +1050,19 @@ Lưu trữ số lượt sử dụng tính năng AI theo từng tháng, phục v�
     \endhead
     \hline
     \endfoot
-    monthKey & String & Khóa tháng theo định dạng `yyyy-MM` \\
+    monthKey & String & Khóa tháng (yyyy-MM) — cũng là document ID \\
     \hline
     aiScanUsed & Number & Số lượt quét AI đã sử dụng trong tháng \\
     \hline
-    aiScanLimit & Number & Giới hạn lượt quét AI trong tháng \\
+    aiScanLimit & Number & Giới hạn lượt quét AI trong tháng (mặc định: 5) \\
     \hline
-    updatedAt & Timestamp & Thời điểm cập nhật usage gần nhất \\
+    updatedAt & Timestamp & Thời điểm cập nhật gần nhất \\
     \hline
 \end{longtable}
 
 \subsubsection{Sub-collection: users/\{userId\}/chat\_history}
 
-Lưu trữ lịch sử hội thoại giữa người dùng và chatbot dinh dưỡng. Dữ liệu này được dùng để hiển thị lại cuộc trò chuyện gần nhất và cung cấp ngữ cảnh cho các lượt chat tiếp theo.
+Lưu trữ lịch sử trò chuyện giữa người dùng và chatbot AI dinh dưỡng, dùng để hiển thị lại đoạn hội thoại và cung cấp ngữ cảnh cho các lượt chat tiếp theo.
 
 \begin{longtable}{|p{3.5cm}|p{3.5cm}|p{7.5cm}|}
     \hline
@@ -1034,13 +1071,13 @@ Lưu trữ lịch sử hội thoại giữa người dùng và chatbot dinh dư�
     \endhead
     \hline
     \endfoot
-    role & String & Vai trò của tin nhắn, gồm `user` hoặc `assistant` \\
+    role & String & Vai trò người gửi: \texttt{user} hoặc \texttt{assistant} \\
     \hline
     content & String & Nội dung tin nhắn \\
     \hline
-    suggestions & Array<String> & Danh sách gợi ý câu hỏi tiếp theo, thường có trong tin nhắn của assistant \\
+    suggestions & Array<String> & Gợi ý câu hỏi tiếp theo (từ assistant) \\
     \hline
-    isError & Boolean & Đánh dấu tin nhắn lỗi nếu quá trình xử lý AI thất bại \\
+    isError & Boolean & Đánh dấu tin nhắn lỗi (true nếu AI không phản hồi) \\
     \hline
     timestamp & Timestamp & Thời điểm ghi nhận tin nhắn \\
     \hline

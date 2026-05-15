@@ -4,7 +4,9 @@ import 'package:provider/provider.dart';
 import 'package:smartnutri/src/core/services/meal_service.dart';
 import 'package:smartnutri/src/core/ui/components/sn_card.dart';
 import 'package:smartnutri/src/core/ui/theme/app_spacing.dart';
+import 'package:smartnutri/src/core/utils/date_utils.dart';
 import 'package:smartnutri/src/features/meal_log/domain/meal_entry.dart';
+import 'package:smartnutri/src/features/meal_log/presentation/widgets/copy_meal_sheet.dart';
 
 class TodayMealsSection extends StatelessWidget {
   const TodayMealsSection({super.key, required this.entries, required this.uid});
@@ -34,6 +36,18 @@ class TodayMealsSection extends StatelessWidget {
               style: Theme.of(context).textTheme.bodySmall,
               textAlign: TextAlign.center,
             ),
+            Padding(
+              padding: const EdgeInsets.only(top: AppSpacing.sm),
+              child: OutlinedButton.icon(
+                onPressed: () => showCopyMealSheet(
+                  context,
+                  uid: uid,
+                  targetDate: AppDateUtils.todayStr(),
+                ),
+                icon: const Icon(Icons.copy, size: 18),
+                label: const Text('Sao chép bữa ăn'),
+              ),
+            ),
           ],
         ),
       );
@@ -60,6 +74,18 @@ class TodayMealsSection extends StatelessWidget {
                 (e) => _EntryTile(entry: e, uid: uid),
               ),
             ],
+            Padding(
+              padding: const EdgeInsets.only(top: AppSpacing.sm),
+              child: OutlinedButton.icon(
+                onPressed: () => showCopyMealSheet(
+                  context,
+                  uid: uid,
+                  targetDate: AppDateUtils.todayStr(),
+                ),
+                icon: const Icon(Icons.copy, size: 18),
+                label: const Text('Sao chép bữa ăn'),
+              ),
+            ),
         ],
       ),
     );
@@ -112,27 +138,23 @@ class _EntryTile extends StatelessWidget {
       ),
       confirmDismiss: (_) async {
         final mealService = context.read<MealService>();
-        final confirmed = await showDialog<bool>(
-          context: context,
-          builder: (ctx) => AlertDialog(
-            title: const Text('Xóa bữa ăn?'),
-            content: Text('Xóa "${entry.foodName}" khỏi nhật ký?'),
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(ctx, false),
-                child: const Text('Hủy'),
-              ),
-              FilledButton(
-                onPressed: () => Navigator.pop(ctx, true),
-                child: const Text('Xóa'),
-              ),
-            ],
-          ),
-        );
-        if (!context.mounted) return false;
-        if (confirmed != true) return false;
         try {
           await mealService.deleteEntry(uid, entry.id);
+          if (!context.mounted) return true;
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              SnackBar(
+                content: Text("Đã xóa '${entry.foodName}'"),
+                action: SnackBarAction(
+                  label: 'Hoàn tác',
+                  onPressed: () {
+                    mealService.addEntry(uid, entry);
+                  },
+                ),
+                duration: const Duration(seconds: 5),
+              ),
+            );
           return true;
         } on FirebaseException catch (e) {
           if (!context.mounted) return false;

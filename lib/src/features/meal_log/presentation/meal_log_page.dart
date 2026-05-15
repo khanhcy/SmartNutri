@@ -14,6 +14,7 @@ import 'package:smartnutri/src/features/meal_log/presentation/weekly_summary_car
 import 'package:smartnutri/src/features/nutrition/domain/nutrition_goal.dart';
 import 'package:smartnutri/src/features/profile/domain/user_profile.dart';
 
+import 'widgets/copy_meal_sheet.dart';
 import 'widgets/date_navigator.dart';
 import 'widgets/empty_day.dart';
 import 'widgets/meal_groups.dart';
@@ -130,7 +131,7 @@ class _MealLogPageState extends State<MealLogPage> {
                 else
                   MealGroups(entries: entries, uid: uid),
                 const SizedBox(height: AppSpacing.md),
-                RepaintBoundary(child: WeeklySummaryCard(goal: goal)),
+                WeeklySummaryCard(goal: goal),
                 const SizedBox(height: AppSpacing.md),
                 Row(
                   children: [
@@ -157,8 +158,21 @@ class _MealLogPageState extends State<MealLogPage> {
                         label: const Text('Nhập thủ công'),
                       ),
                     ),
+                    const SizedBox(width: AppSpacing.sm),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () => showCopyMealSheet(
+                          context,
+                          uid: uid,
+                          targetDate: _dateStr,
+                        ),
+                        icon: const Icon(Icons.copy, size: 18),
+                        label: const Text('Sao chép'),
+                      ),
+                    ),
                   ],
                 ),
+                const SizedBox(height: AppSpacing.xl),
               ],
             ),
           );

@@ -7,43 +7,46 @@
 
 \section*{Kết quả đạt được}
 
-[TODO: Tổng kết những gì đã đạt được trong dự án — các chức năng đã hoàn thiện, công nghệ đã áp dụng thành công, kết quả kiểm thử.]
+Dự án SmartNutri đã xây dựng thành công một ứng dụng di động theo dõi dinh dưỡng dành cho người Việt, hoạt động trên nền tảng Android. Ứng dụng được phát triển bằng Flutter, sử dụng Firebase làm nền tảng backend và tích hợp trí tuệ nhân tạo từ Google Gemini API.
 
-Trong quá trình thực hiện dự án SmartNutri, em đã đạt được các kết quả sau:
+Về xác thực và quản lý người dùng, hệ thống cung cấp đầy đủ chức năng đăng ký tài khoản qua email/mật khẩu, đăng nhập bằng email và Google Sign-In. Người dùng sau khi đăng nhập được dẫn qua quy trình onboarding để thu thập thông tin cá nhân (tuổi, giới tính, chiều cao, cân nặng, mức độ vận động) và thiết lập mục tiêu dinh dưỡng. Hồ sơ cá nhân và mục tiêu có thể được cập nhật bất kỳ lúc nào từ màn hình cài đặt, với chỉ tiêu calo và chất dinh dưỡng đa lượng được tự động tính toán lại dựa trên dữ liệu mới.
 
-\begin{itemize}
-    \item Xây dựng thành công ứng dụng di động theo dõi dinh dưỡng trên nền tảng Flutter, hỗ trợ Android.
-    \item Tích hợp Firebase làm backend, bao gồm Authentication, Firestore, Storage và Cloud Functions.
-    \item Tích hợp thành công Google Gemini API cho tính năng nhận diện món ăn bằng hình ảnh.
-    \item Xây dựng chatbot AI tư vấn dinh dưỡng.
-    \item Xây dựng trang quản trị web cho phép quản lý dữ liệu thực phẩm và người dùng.
-    \item Hỗ trợ giao diện tiếng Việt hoàn toàn.
-\end{itemize}
+Về theo dõi dinh dưỡng, ứng dụng cho phép người dùng ghi nhật ký ăn uống theo ngày thông qua hai cách: chọn món từ danh mục thực phẩm có sẵn hoặc nhập thủ công. Mỗi món ăn được ghi nhận với đầy đủ thông tin về khối lượng phần ăn, calo và các chất dinh dưỡng đa lượng. Người dùng có thể chỉnh sửa khẩu phần hoặc xóa món đã ghi. Màn hình thống kê dinh dưỡng hiển thị biểu đồ so sánh giữa lượng đã tiêu thụ và mục tiêu trong ngày, giúp người dùng nắm bắt trực quan tiến độ của mình.
+
+Tính năng quét món ăn bằng AI là một trong những điểm nhấn của dự án. Người dùng có thể chụp ảnh món ăn và hệ thống sẽ gọi Gemini API thông qua Cloud Functions để nhận diện món ăn, ước tính thông tin dinh dưỡng và trả về kết quả dưới dạng có cấu trúc. Cơ chế gọi Gemini qua Cloud Functions đảm bảo API key không bị lộ ra phía client. Kết quả kiểm thử trên bảy món ăn Việt phổ biến cho thấy Gemini có khả năng nhận diện tốt trong điều kiện ảnh chụp thông thường, với độ tin cậy dao động từ 74\% đến 91\%. Ngoài ra, chatbot AI dinh dưỡng cho phép người dùng đặt câu hỏi và nhận phản hồi được cá nhân hóa dựa trên hồ sơ và nhật ký ăn uống của chính họ.
+
+Về quản trị, dự án đã xây dựng trang web quản lý bằng React, TypeScript và Vite, cho phép quản trị viên thực hiện các thao tác CRUD đối với danh mục thực phẩm, xem danh sách người dùng đã đăng ký, gán gói Premium và phân quyền admin. Trang admin được deploy lên Firebase Hosting và giao tiếp với Firestore qua Firebase Web SDK.
 
 \section*{Hạn chế}
 
-[TODO: Nêu các hạn chế hiện tại của hệ thống.]
+Bên cạnh những kết quả đạt được, hệ thống vẫn tồn tại một số hạn chế cần được khắc phục trong các giai đoạn phát triển tiếp theo:
 
 \begin{itemize}
-    \item Độ chính xác của AI trong việc nhận diện món ăn Việt Nam còn phụ thuộc vào chất lượng ảnh và độ đa dạng của món ăn.
-    \item Chưa hỗ trợ iOS (mới phát triển và kiểm thử trên Android).
-    \item Chưa tích hợp thanh toán thật cho tính năng Premium.
-    \item Cơ sở dữ liệu món ăn Việt Nam còn hạn chế, cần được mở rộng thêm.
-    \item Chưa có tính năng đồng bộ dữ liệu sức khỏe với các nền tảng khác (Google Fit, Apple Health).
+    \item \textbf{Cơ sở dữ liệu món ăn Việt chưa phong phú:} Danh mục thực phẩm hiện tại mới bao phủ một phần nhỏ trong số hàng trăm món ăn Việt Nam. Nhiều món ăn đặc trưng theo vùng miền hoặc các biến thể chế biến khác nhau chưa có trong cơ sở dữ liệu. Điều này ảnh hưởng đến trải nghiệm người dùng khi muốn tra cứu các món ăn ít phổ biến.
+
+    \item \textbf{Kết quả AI chỉ mang tính ước tính:} Gemini API phân tích dinh dưỡng dựa trên hình ảnh và tri thức được huấn luyện, không phải từ phân tích thành phần thực tế. Độ chính xác phụ thuộc đáng kể vào chất lượng ảnh (ánh sáng, góc chụp, độ phân giải), cách trình bày món ăn và mức độ phức tạp của thành phần. Người dùng cần kiểm tra và điều chỉnh kết quả trước khi lưu vào nhật ký.
+
+    \item \textbf{Chưa kiểm thử trên nhiều thiết bị thật:} Ứng dụng mới được kiểm thử chủ yếu trên Android Emulator và một số thiết bị hạn chế. Chưa có dữ liệu kiểm thử trên diện rộng với nhiều dòng máy, kích thước màn hình và phiên bản Android khác nhau. Các vấn đề về tương thích có thể phát sinh khi triển khai rộng.
+
+    \item \textbf{Gói Premium chưa tích hợp thanh toán thực tế:} Cơ chế phân biệt gói Free và Premium hiện được thực hiện thông qua thao tác gán thủ công từ phía admin (gọi Cloud Function \texttt{setUserSubscription}). Hệ thống chưa tích hợp Google Play Billing hoặc cổng thanh toán nào để người dùng có thể tự nâng cấp gói. Đây là một trong những rào cản chính để đưa ứng dụng vào vận hành thương mại.
 \end{itemize}
 
 \section*{Hướng phát triển}
 
-Trong tương lai, hệ thống có thể được mở rộng với các tính năng sau:
+Từ những kết quả đã đạt được và các hạn chế đã nhận diện, nhóm đề xuất các hướng phát triển sau cho dự án SmartNutri:
 
 \begin{itemize}
-    \item Hỗ trợ nền tảng iOS.
-    \item Mở rộng cơ sở dữ liệu món ăn với sự đóng góp từ cộng đồng.
-    \item Tích hợp thanh toán in-app purchase cho gói Premium.
-    \item Tích hợp với Google Fit và Apple Health.
-    \item Phát triển tính năng lập kế hoạch bữa ăn hàng tuần (meal planning).
-    \item Thêm tính năng chia sẻ và cộng đồng (social features).
-    \item Cải thiện mô hình AI với fine-tuning trên tập dữ liệu món ăn Việt Nam.
+    \item \textbf{Mở rộng cơ sở dữ liệu món ăn Việt:} Bổ sung thêm các món ăn từ nhiều vùng miền, bao gồm cả món ăn đường phố, món ăn gia đình và món ăn nhà hàng. Mỗi món cần được ghi nhận với thông tin dinh dưỡng đã được đối chiếu với nguồn tham khảo đáng tin cậy (Viện Dinh dưỡng Quốc gia, USDA, hoặc bảng thành phần thực phẩm Việt Nam). Về dài hạn, có thể xem xét cơ chế để người dùng hoặc chuyên gia đóng góp và xác thực dữ liệu thực phẩm.
+
+    \item \textbf{Cải thiện độ chính xác của AI:} Nghiên cứu fine-tune Gemini hoặc các mô hình thị giác khác trên tập dữ liệu ảnh món ăn Việt Nam có gán nhãn. Thiết kế prompt chi tiết hơn, bao gồm các đặc trưng nhận diện theo vùng miền và cách chế biến. Bổ sung cơ chế kiểm tra chéo giữa kết quả AI và thông tin dinh dưỡng từ cơ sở dữ liệu thực phẩm để tăng độ nhất quán.
+
+    \item \textbf{Tích hợp thanh toán Google Play Billing:} Triển khai tính năng thanh toán in-app thông qua Google Play Billing để người dùng có thể tự đăng ký và gia hạn gói Premium. Hệ thống cần xử lý đồng bộ trạng thái subscription giữa Google Play và Firestore để đảm bảo quyền lợi người dùng được cập nhật chính xác.
+
+    \item \textbf{Thêm tính năng nhắc nhở bữa ăn:} Phát triển tính năng gửi thông báo nhắc nhở người dùng ghi nhật ký bữa ăn vào các khung giờ chính trong ngày. Có thể kết hợp với dữ liệu thống kê để đưa ra nhắc nhở thông minh — ví dụ: nhắc người dùng ăn nhẹ nếu lượng calo trong ngày còn thấp hơn nhiều so với mục tiêu.
+
+    \item \textbf{Phát hành ứng dụng lên Google Play Store:} Hoàn thiện các bước chuẩn bị để xuất bản ứng dụng lên Google Play, bao gồm: ký APK/AAB với keystore chính thức, thiết lập Firebase project production riêng biệt với môi trường phát triển, tối ưu kích thước APK, và chuẩn bị nội dung cho trang đăng ký trên Play Console (mô tả, ảnh chụp màn hình, chính sách bảo mật).
 \end{itemize}
+
+Dự án SmartNutri đã đặt được nền tảng vững chắc cho một ứng dụng theo dõi dinh dưỡng thông minh dành cho người Việt. Với các cải tiến và mở rộng theo định hướng trên, ứng dụng có tiềm năng trở thành một công cụ hữu ích, góp phần nâng cao nhận thức và thói quen dinh dưỡng lành mạnh trong cộng đồng.
 
 \newpage

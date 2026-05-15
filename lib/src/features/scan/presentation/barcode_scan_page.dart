@@ -4,10 +4,11 @@ import 'package:provider/provider.dart';
 import 'package:smartnutri/src/core/services/barcode_service.dart';
 import 'package:smartnutri/src/core/services/connectivity_service.dart';
 import 'package:smartnutri/src/core/ui/theme/app_spacing.dart';
-import 'package:smartnutri/src/features/meal_log/presentation/add_meal_bottom_sheet.dart';
 import 'package:smartnutri/src/features/meal_log/presentation/custom_meal_sheet.dart';
 import 'package:smartnutri/src/features/home/presentation/widgets/ai_suggestions_card.dart';
 import 'package:smartnutri/src/features/scan/domain/barcode_result.dart';
+import 'package:smartnutri/src/features/scan/domain/scan_result.dart';
+import 'package:smartnutri/src/features/scan/presentation/confirm_scan_sheet.dart';
 
 class BarcodeScanPage extends StatefulWidget {
   const BarcodeScanPage({super.key});
@@ -82,9 +83,14 @@ class _BarcodeScanPageState extends State<BarcodeScanPage> {
   }
 
   void _addFood(BarcodeResult result) {
-    showAddMealSheet(
+    showConfirmScanSheet(
       context,
-      preselectedFood: result.foodItem,
+      scannedItem: ScannedFoodItem(
+        foodItem: result.foodItem,
+        confidence: 1.0,
+        rawName: result.foodItem.name,
+        isAiEstimated: false,
+      ),
       initialMealType: mealTypeForNow(),
     );
   }

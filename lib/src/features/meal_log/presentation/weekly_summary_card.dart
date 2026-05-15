@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import 'package:smartnutri/src/core/services/auth_service.dart';
 import 'package:smartnutri/src/core/services/meal_service.dart';
 import 'package:smartnutri/src/core/ui/components/sn_card.dart';
+import 'package:smartnutri/src/core/ui/theme/app_colors.dart';
 import 'package:smartnutri/src/core/ui/theme/app_spacing.dart';
 import 'package:smartnutri/src/core/utils/date_utils.dart';
 import 'package:smartnutri/src/features/nutrition/domain/nutrition_goal.dart';
@@ -135,7 +136,7 @@ class _WeeklySummaryCardState extends State<WeeklySummaryCard> {
           ),
           const SizedBox(height: AppSpacing.md),
           SizedBox(
-            height: 100,
+            height: 140,
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: _days.map((day) {
@@ -157,32 +158,33 @@ class _WeeklySummaryCardState extends State<WeeklySummaryCard> {
                           Text(
                             '${day.kcal.round()}',
                             style: TextStyle(
-                              fontSize: 8,
+                              fontSize: 9,
+                              fontWeight: FontWeight.w600,
                               color: overTarget
-                                  ? Colors.red
+                                  ? AppColors.danger
                                   : colorScheme.onSurface,
                             ),
                           ),
-                        const SizedBox(height: 2),
+                        const SizedBox(height: 3),
                         AnimatedContainer(
                           duration:
                               const Duration(milliseconds: 400),
                           curve: Curves.easeOut,
-                          height: ratio * 72,
+                          height: ratio * 86,
                           decoration: BoxDecoration(
                             color: overTarget
-                                ? Colors.red.shade300
+                                ? AppColors.danger.withValues(alpha: 0.55)
                                 : isToday
                                     ? colorScheme.primary
                                     : colorScheme.primaryContainer,
                             borderRadius: BorderRadius.circular(4),
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        const SizedBox(height: 6),
                         Text(
                           _shortDay(day.date),
                           style: TextStyle(
-                            fontSize: 10,
+                            fontSize: 11,
                             fontWeight: isToday
                                 ? FontWeight.bold
                                 : FontWeight.normal,
@@ -198,7 +200,7 @@ class _WeeklySummaryCardState extends State<WeeklySummaryCard> {
               }).toList(),
             ),
           ),
-          const SizedBox(height: AppSpacing.xs),
+          const SizedBox(height: AppSpacing.sm),
           Row(
             children: [
               Container(
@@ -215,7 +217,7 @@ class _WeeklySummaryCardState extends State<WeeklySummaryCard> {
                   width: 10,
                   height: 10,
                   decoration: BoxDecoration(
-                      color: Colors.red.shade300,
+                      color: AppColors.danger.withValues(alpha: 0.55),
                       borderRadius: BorderRadius.circular(2))),
               const SizedBox(width: 4),
               Text('Vượt mục tiêu',
@@ -223,22 +225,24 @@ class _WeeklySummaryCardState extends State<WeeklySummaryCard> {
             ],
           ),
           if (_daysPrevWeek.isNotEmpty) ...[
-            const Divider(height: AppSpacing.lg),
+            const Divider(height: AppSpacing.lg + 4),
             Row(
               children: [
                 Icon(
                   deltaUp ? Icons.trending_up : Icons.trending_down,
                   size: 18,
-                  color: deltaUp ? Colors.red : Colors.green,
+                  color: deltaUp ? AppColors.danger : AppColors.success,
                 ),
                 const SizedBox(width: 6),
-                Text(
-                  deltaUp
-                      ? 'Tăng ${deltaPercent.abs().toStringAsFixed(1)}% so với tuần trước'
-                      : 'Giảm ${deltaPercent.abs().toStringAsFixed(1)}% so với tuần trước',
-                  style: Theme.of(context).textTheme.bodySmall,
+                Expanded(
+                  child: Text(
+                    deltaUp
+                        ? 'Tăng ${deltaPercent.abs().toStringAsFixed(1)}% so với tuần trước'
+                        : 'Giảm ${deltaPercent.abs().toStringAsFixed(1)}% so với tuần trước',
+                    style: Theme.of(context).textTheme.bodySmall,
+                  ),
                 ),
-                const Spacer(),
+                const SizedBox(width: 8),
                 Text(
                   'TB tuần trước: ${_avgPrevDay.round()} kcal/ngày',
                   style: Theme.of(context).textTheme.bodySmall?.copyWith(

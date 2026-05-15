@@ -172,26 +172,24 @@ class _EntryRow extends StatelessWidget {
       ),
       confirmDismiss: (_) async {
         final mealService = context.read<MealService>();
-        final confirmed = await showDialog<bool>(
-          context: context,
-          builder: (ctx) => AlertDialog(
-            title: const Text('Xóa bữa ăn?'),
-            content: Text('Xóa "${entry.foodName}" khỏi nhật ký?'),
-            actions: [
-              TextButton(
-                  onPressed: () => Navigator.pop(ctx, false),
-                  child: const Text('Hủy')),
-              FilledButton(
-                  onPressed: () => Navigator.pop(ctx, true),
-                  child: const Text('Xóa')),
-            ],
-          ),
-        );
-        if (!context.mounted) return false;
-        if (confirmed != true) return false;
         try {
           await mealService.deleteEntry(uid, entry.id);
           HapticFeedback.mediumImpact();
+          if (!context.mounted) return true;
+          ScaffoldMessenger.of(context)
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              SnackBar(
+                content: Text("Đã xóa '${entry.foodName}'"),
+                action: SnackBarAction(
+                  label: 'Hoàn tác',
+                  onPressed: () {
+                    mealService.addEntry(uid, entry);
+                  },
+                ),
+                duration: const Duration(seconds: 5),
+              ),
+            );
           return true;
         } on FirebaseException catch (e) {
           if (!context.mounted) return false;

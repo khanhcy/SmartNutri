@@ -23,6 +23,7 @@ class MainShellPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final label = _labels[shell.currentIndex];
+    final isMealLogTab = shell.currentIndex == 2;
 
     return SNScaffold(
       appBar: SNAppBar(
@@ -30,22 +31,24 @@ class MainShellPage extends StatelessWidget {
         actions: [const _ChatButton(), const _NotificationBell()],
       ),
       body: shell,
-      floatingActionButton: _ScanFAB(shell: shell),
-      bottomNavigationBar: NavigationBar(
-        height: 72,
-        selectedIndex: shell.currentIndex,
-        onDestinationSelected: (i) => shell.goBranch(
-          i,
-          initialLocation: i == shell.currentIndex,
+      floatingActionButton: isMealLogTab ? null : _ScanFAB(shell: shell),
+      bottomNavigationBar: SafeArea(
+        child: NavigationBar(
+          height: 72,
+          selectedIndex: shell.currentIndex,
+          onDestinationSelected: (i) => shell.goBranch(
+            i,
+            initialLocation: i == shell.currentIndex,
+          ),
+          destinations: [
+            for (int i = 0; i < _labels.length; i++)
+              NavigationDestination(
+                icon: Icon(_icons[i]),
+                selectedIcon: Icon(_icons[i], fill: 1),
+                label: _labels[i],
+              ),
+          ],
         ),
-        destinations: [
-          for (int i = 0; i < _labels.length; i++)
-            NavigationDestination(
-              icon: Icon(_icons[i]),
-              selectedIcon: Icon(_icons[i], fill: 1),
-              label: _labels[i],
-            ),
-        ],
       ),
     );
   }

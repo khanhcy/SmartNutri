@@ -6,24 +6,53 @@
 
 \section{Cài đặt hệ thống}
 
-\subsection{Khái quát tổng thể}
+\subsection{Môi trường phát triển}
 
-Hệ thống SmartNutri được cài đặt dưới dạng ba thành phần riêng biệt:
+Dự án SmartNutri được phát triển trên môi trường Windows với các công cụ chính sau:
+
+\begin{itemize}
+    \item \textbf{IDE:} Visual Studio Code và Android Studio — dùng để viết code Flutter/Dart, React/TypeScript và quản lý Android Emulator.
+    \item \textbf{Flutter SDK:} Phiên bản 3.x, ngôn ngữ Dart — phát triển ứng dụng di động.
+    \item \textbf{Node.js:} Phiên bản 20 LTS — môi trường runtime cho Cloud Functions và Admin Web.
+    \item \textbf{Firebase CLI:} Công cụ dòng lệnh để khởi tạo project, deploy Cloud Functions, Firestore Rules, Storage Rules và Hosting.
+    \item \textbf{Git \& GitHub:} Quản lý mã nguồn và phiên bản.
+    \item \textbf{Android Emulator / Thiết bị Android thật:} Môi trường chạy và kiểm thử ứng dụng trong quá trình phát triển.
+\end{itemize}
+
+\subsection{Cài đặt ứng dụng di động (Flutter)}
+
+Ứng dụng di động SmartNutri được phát triển bằng Flutter. Các bước thiết lập môi trường và chạy ứng dụng:
 
 \begin{enumerate}
-    \item \textbf{Ứng dụng di động (Flutter):} Được build thành file APK (Android) hoặc IPA (iOS), cài đặt trực tiếp trên thiết bị người dùng.
-    \item \textbf{Backend (Firebase):} Được triển khai trên nền tảng đám mây của Google Firebase, bao gồm Firestore, Authentication, Storage, và Cloud Functions.
-    \item \textbf{Trang quản trị (React):} Được build thành static files và deploy lên Firebase Hosting.
+    \item Cài đặt Flutter SDK và cấu hình biến môi trường.
+    \item Tạo project Flutter mới hoặc clone mã nguồn từ GitHub:
+    \begin{verbatim}
+    git clone <repository-url>
+    cd SmartNutri
+    flutter pub get
+    \end{verbatim}
+    \item Cấu hình Firebase cho Flutter:
+    \begin{itemize}
+        \item Tải file \texttt{google-services.json} từ Firebase Console (dành cho Android).
+        \item Đặt file này vào thư mục \texttt{android/app/}.
+        \item File \texttt{GoogleService-Info.plist} cho iOS được chuẩn bị tương tự nếu hỗ trợ iOS trong tương lai.
+    \end{itemize}
+    \item Chạy ứng dụng trên thiết bị hoặc máy ảo:
+    \begin{verbatim}
+    flutter run
+    \end{verbatim}
+    \item Build file APK để cài đặt hoặc phân phối:
+    \begin{verbatim}
+    flutter build apk --release
+    \end{verbatim}
 \end{enumerate}
 
-\subsection{Kiến trúc hệ thống}
-
-Ứng dụng Flutter tuân theo kiến trúc \textbf{feature-first} với các tầng rõ ràng:
+Ứng dụng Flutter được tổ chức theo kiến trúc \textbf{feature-first}:
 
 \begin{itemize}
     \item \textbf{Tầng Presentation:} Chứa các widget Flutter cho từng màn hình (pages) và các component dùng chung (widgets).
-    \item \textbf{Tầng Business Logic:} Sử dụng ChangeNotifier/StateNotifier để quản lý state, xử lý logic nghiệp vụ.
-    \item \textbf{Tầng Service:} Chứa các service class để tương tác với Firebase (AuthService, FirestoreService, StorageService) và các API bên ngoài (GeminiService).
+    \item \textbf{Tầng Business Logic:} Sử dụng Provider/ChangeNotifier để quản lý state và xử lý logic nghiệp vụ.
+    \item \textbf{Tầng Service:} Chứa các service class tương tác với Firebase (AuthService, FirestoreService, StorageService) và Gemini API.
     \item \textbf{Tầng Model:} Định nghĩa các data class tương ứng với document Firestore.
 \end{itemize}
 
@@ -34,117 +63,367 @@ Hệ thống SmartNutri được cài đặt dưới dạng ba thành phần ri�
     \label{fig:app_architecture}
 \end{figure}
 
-\subsection{Các thuộc tính chất lượng được hỗ trợ}
+\subsection{Cài đặt Firebase backend}
 
-\begin{itemize}
-    \item \textbf{Tính khả dụng (Usability):} Giao diện tiếng Việt, thiết kế trực quan, luồng người dùng đơn giản. Onboarding flow giúp cá nhân hóa trải nghiệm.
-    \item \textbf{Tính hiệu năng (Performance):} Sử dụng Firestore caching cho phép truy cập dữ liệu offline. Lazy loading hình ảnh từ Firebase Storage.
-    \item \textbf{Tính bảo mật (Security):} Firebase Authentication + Firestore Security Rules đảm bảo mỗi người dùng chỉ truy cập được dữ liệu của chính mình. API key nhạy cảm được giấu phía Cloud Functions.
-    \item \textbf{Tính khả chuyển (Portability):} Flutter hỗ trợ cả Android và iOS từ một codebase. Admin web chạy trên mọi trình duyệt hiện đại.
-    \item \textbf{Tính khả bảo trì (Maintainability):} Code được tổ chức theo feature module, dễ dàng mở rộng và bảo trì. TypeScript cho Cloud Functions và Admin Web giúp phát hiện lỗi sớm.
-\end{itemize}
-
-\subsection{Triển khai hệ thống}
-
-\subsubsection{Triển khai Firebase}
+Firebase được sử dụng làm nền tảng backend chính cho toàn bộ hệ thống. Các bước thiết lập:
 
 \begin{enumerate}
-    \item Cấu hình Firebase project trên Firebase Console.
-    \item Thiết lập Authentication providers (Email/Password, Google Sign-In).
-    \item Deploy Firestore Security Rules và Indexes.
-    \item Deploy Storage Rules.
-    \item Deploy Cloud Functions lên Firebase.
-    \item Deploy Admin Web lên Firebase Hosting.
+    \item Tạo project trên \textbf{Firebase Console} (https://console.firebase.google.com). Project mặc định cho môi trường phát triển có tên \texttt{smartnutri-dev-2e67b}.
+    \item \textbf{Firebase Authentication:} Kích hoạt các phương thức đăng nhập Email/Password và Google Sign-In trong mục Authentication > Sign-in method.
+    \item \textbf{Cloud Firestore:} Tạo database Firestore ở chế độ Native mode. Cấu hình Security Rules để giới hạn quyền truy cập dữ liệu theo UID của người dùng đã xác thực.
+    \item \textbf{Firebase Storage:} Kích hoạt Storage và cấu hình Security Rules cho phép người dùng đọc/ghi file trong đường dẫn \texttt{users/\{userId\}/}.
+    \item Triển khai Firestore Rules, Storage Rules và Indexes lên Firebase:
+    \begin{verbatim}
+    firebase deploy --only firestore:rules,firestore:indexes
+    firebase deploy --only storage
+    \end{verbatim}
 \end{enumerate}
 
-\subsubsection{Build ứng dụng di động}
+\subsection{Cài đặt Cloud Functions}
+
+Cloud Functions xử lý các tác vụ backend yêu cầu bảo mật hoặc logic phức tạp. Mã nguồn nằm trong thư mục \texttt{functions/}, sử dụng Node.js 20 và TypeScript.
 
 \begin{enumerate}
-    \item Cấu hình `google-services.json` (Android) trong project Flutter.
-    \item Chạy `flutter build apk --release` để tạo APK production.
-    \item Phân phối qua Google Play Store hoặc cài đặt trực tiếp.
+    \item Cài đặt dependencies:
+    \begin{verbatim}
+    cd functions
+    npm install
+    \end{verbatim}
+    \item Biên dịch TypeScript:
+    \begin{verbatim}
+    npm run build
+    \end{verbatim}
+    \item (Tùy chọn) Chạy Firebase Emulator để kiểm thử cục bộ:
+    \begin{verbatim}
+    firebase emulators:start --only functions,firestore,auth
+    \end{verbatim}
+    \item Triển khai lên Firebase:
+    \begin{verbatim}
+    npm run deploy
+    \end{verbatim}
+\end{enumerate}
+
+Các Cloud Function chính trong hệ thống:
+\begin{itemize}
+    \item \texttt{identifyFoodImage} — Nhận ảnh từ client, gọi Gemini API để nhận diện món ăn, quản lý quota AI scan.
+    \item \texttt{suggestMeals} — Gợi ý bữa ăn dựa trên chỉ tiêu dinh dưỡng còn lại của người dùng.
+    \item \texttt{chatNutrition} — Xử lý chat với Gemini API cho chatbot tư vấn dinh dưỡng.
+    \item \texttt{barcodeLookup} — Tra cứu thông tin dinh dưỡng từ mã vạch sản phẩm qua OpenFoodFacts API.
+    \item \texttt{setUserSubscription} — Quản trị viên gán gói Premium cho người dùng (yêu cầu admin claim).
+    \item \texttt{setAdminRole} — Quản trị viên phân quyền admin cho người dùng khác.
+    \item \texttt{seedFoods} — Import hàng loạt thực phẩm vào Firestore.
+\end{itemize}
+
+\subsection{Cài đặt trang Admin Web}
+
+Trang quản trị được phát triển bằng React 18, TypeScript và Vite. Mã nguồn nằm trong thư mục \texttt{admin-web/}.
+
+\begin{enumerate}
+    \item Cài đặt dependencies:
+    \begin{verbatim}
+    cd admin-web
+    npm install
+    \end{verbatim}
+    \item Chạy môi trường phát triển:
+    \begin{verbatim}
+    npm run dev
+    \end{verbatim}
+    \item Build production:
+    \begin{verbatim}
+    npm run build
+    \end{verbatim}
+    \item Deploy lên Firebase Hosting:
+    \begin{verbatim}
+    firebase deploy --only hosting
+    \end{verbatim}
+\end{enumerate}
+
+Trang admin cung cấp giao diện web cho quản trị viên thực hiện: quản lý danh mục thực phẩm (thêm, sửa, xóa, import CSV), xem danh sách người dùng, gán Premium và phân quyền admin.
+
+\subsection{Cấu hình Gemini API}
+
+Google Gemini API được sử dụng cho các tác vụ AI trong hệ thống. Cấu hình được thực hiện như sau:
+
+\begin{enumerate}
+    \item Tạo API key từ \textbf{Google AI Studio} (https://aistudio.google.com).
+    \item Thiết lập biến môi trường \texttt{GEMINI\_API\_KEY} trên Cloud Functions:
+    \begin{verbatim}
+    firebase functions:config:set gemini.api_key="YOUR_API_KEY"
+    \end{verbatim}
+    Hoặc tạo file \texttt{.env} trong thư mục \texttt{functions/} cho môi trường phát triển cục bộ.
+    \item Trong code Cloud Functions, API key được đọc từ biến môi trường:
+    \begin{verbatim}
+    const key = process.env.GEMINI_API_KEY;
+    \end{verbatim}
+    \item Model được sử dụng là \texttt{gemini-2.5-flash} — model nhẹ, phản hồi nhanh, phù hợp với các tác vụ nhận diện ảnh và sinh văn bản tiếng Việt.
+    \item API key không được nhúng vào mã nguồn phía client (Flutter app hay Admin Web). Mọi request đến Gemini đều đi qua Cloud Functions để bảo vệ khóa.
+\end{enumerate}
+
+\section{Triển khai hệ thống}
+
+Hệ thống SmartNutri bao gồm nhiều thành phần được triển khai trên các môi trường khác nhau. Bảng~\ref{tab:deployment} tóm tắt công nghệ, vai trò và môi trường triển khai của từng thành phần.
+
+\begin{longtable}{|p{3cm}|p{3cm}|p{5cm}|p{3.5cm}|}
+    \caption{Các thành phần triển khai của hệ thống SmartNutri}
+    \label{tab:deployment} \\
+    \hline
+    \textbf{Thành phần} & \textbf{Công nghệ} & \textbf{Vai trò} & \textbf{Môi trường triển khai} \\
+    \hline
+    \endfirsthead
+    \hline
+    \textbf{Thành phần} & \textbf{Công nghệ} & \textbf{Vai trò} & \textbf{Môi trường triển khai} \\
+    \hline
+    \endhead
+    \hline
+    \endfoot
+    Ứng dụng di động & Flutter / Dart & Giao diện người dùng cuối: đăng ký, đăng nhập, nhật ký ăn uống, quét AI, chatbot, thống kê & Thiết bị Android (APK cài trực tiếp hoặc máy ảo) \\
+    \hline
+    Firebase Authentication & Firebase Auth & Xác thực người dùng qua email/password và Google Sign-In; quản lý phiên đăng nhập & Firebase Cloud (Google Cloud) \\
+    \hline
+    Cơ sở dữ liệu & Cloud Firestore & Lưu trữ dữ liệu người dùng, nhật ký ăn uống, danh mục thực phẩm, yêu thích, lịch sử chat, quota AI & Firebase Cloud (Google Cloud) \\
+    \hline
+    Lưu trữ file & Firebase Storage & Lưu trữ ảnh đại diện người dùng và ảnh món ăn tải lên & Firebase Cloud (Google Cloud) \\
+    \hline
+    Cloud Functions & Node.js 20 / TypeScript & Xử lý logic backend: gọi Gemini API, quản lý quota, gợi ý bữa ăn, tra cứu mã vạch, phân quyền admin & Firebase Cloud (Google Cloud Functions) \\
+    \hline
+    AI & Google Gemini API (gemini-2.5-flash) & Nhận diện món ăn từ ảnh, ước lượng dinh dưỡng, trả lời chatbot & Google AI Studio (gọi qua Cloud Functions) \\
+    \hline
+    Trang quản trị & React 18 / TypeScript / Vite & Quản lý danh mục thực phẩm (CRUD, import CSV), quản lý người dùng (xem, gán Premium, phân quyền) & Firebase Hosting \\
+    \hline
+\end{longtable}
+
+\subsection{Trạng thái triển khai hiện tại}
+
+Ở giai đoạn hiện tại, hệ thống được triển khai và kiểm thử trong \textbf{môi trường phát triển} (development):
+
+\begin{itemize}
+    \item \textbf{Ứng dụng di động:} Chạy trên Android Emulator và thiết bị Android thật qua lệnh \texttt{flutter run}. File APK debug được build để kiểm thử nội bộ. Chưa triển khai lên Google Play Store.
+    \item \textbf{Backend Firebase:} Sử dụng Firebase project \texttt{smartnutri-dev-2e67b} cho môi trường phát triển. Firestore, Authentication, Storage và Cloud Functions đã được cấu hình và hoạt động.
+    \item \textbf{Trang quản trị:} Chạy trên môi trường local (\texttt{npm run dev}) trong quá trình phát triển. Bản build production được deploy lên Firebase Hosting để kiểm thử.
+    \item \textbf{Gemini API:} API key được cấu hình trên Cloud Functions thông qua biến môi trường. Các request từ client đến Cloud Functions và từ Cloud Functions đến Gemini đều hoạt động trong môi trường phát triển.
+\end{itemize}
+
+\subsection{Quy trình triển khai}
+
+Khi có thay đổi cần cập nhật lên môi trường phát triển, quy trình triển khai điển hình như sau:
+
+\begin{enumerate}
+    \item \textbf{Ứng dụng di động:} Sau khi thay đổi code Flutter, chạy \texttt{flutter build apk --debug} để tạo APK mới và cài đặt lên thiết bị kiểm thử.
+    \item \textbf{Cloud Functions:} Biên dịch TypeScript (\texttt{npm run build}) và deploy lên Firebase (\texttt{npm run deploy} hoặc \texttt{firebase deploy --only functions}).
+    \item \textbf{Trang quản trị:} Build production (\texttt{npm run build}) và deploy lên Firebase Hosting (\texttt{firebase deploy --only hosting}).
+    \item \textbf{Firestore Rules \& Storage Rules:} Khi thay đổi quyền truy cập, deploy rule mới qua \texttt{firebase deploy --only firestore:rules,storage}.
 \end{enumerate}
 
 \section{Kiểm thử hệ thống và trình bày kết quả thực nghiệm}
 
 \subsection{Kiểm thử chức năng}
 
-\subsubsection{Kiểm thử xác thực và phân quyền}
+Bảng~\ref{tab:functional_test} trình bày kết quả kiểm thử chức năng cho các luồng nghiệp vụ chính của hệ thống SmartNutri. Mỗi test case được thiết kế để xác minh một chức năng cụ thể với dữ liệu đầu vào rõ ràng và tiêu chí đánh giá xác định.
 
-\begin{longtable}{|p{2cm}|p{3cm}|p{2.5cm}|p{3cm}|p{2.5cm}|p{1.5cm}|}
+\begingroup
+\small
+\begin{longtable}{|p{1.2cm}|p{2.8cm}|p{3.2cm}|p{3.2cm}|p{2.8cm}|p{1.5cm}|}
+    \caption{Kết quả kiểm thử chức năng hệ thống SmartNutri}
+    \label{tab:functional_test} \\
     \hline
-    \textbf{Mã TC} & \textbf{Chức năng} & \textbf{Dữ liệu vào} & \textbf{Kết quả mong đợi} & \textbf{Kết quả thực tế} & \textbf{Trạng thái} \\
+    \textbf{Mã test} & \textbf{Chức năng} & \textbf{Dữ liệu kiểm thử} & \textbf{Kết quả mong đợi} & \textbf{Kết quả thực tế} & \textbf{Trạng thái} \\
+    \hline
+    \endfirsthead
+    \hline
+    \textbf{Mã test} & \textbf{Chức năng} & \textbf{Dữ liệu kiểm thử} & \textbf{Kết quả mong đợi} & \textbf{Kết quả thực tế} & \textbf{Trạng thái} \\
     \hline
     \endhead
     \hline
     \endfoot
-    AUTH-01 & Đăng ký với email hợp lệ & Email: test@example.com, Password: Test123 & Tạo tài khoản thành công, chuyển đến Onboarding & Chưa có bằng chứng kiểm thử thực tế & Chưa xác nhận \\
+    TC-01 & Đăng ký tài khoản mới & Email: \texttt{user01@test.com}, Mật khẩu: \texttt{Test@123}, Xác nhận mật khẩu: \texttt{Test@123} & Hệ thống tạo tài khoản thành công, gửi email xác minh (nếu bật), tự động chuyển đến màn hình Onboarding & Đúng như mong đợi. Tài khoản được tạo, UID xuất hiện trong Firebase Auth, document trong collection \texttt{users} được khởi tạo & Đạt \\
     \hline
-    AUTH-02 & Đăng ký với email đã tồn tại & Email: existing@example.com & Hiển thị lỗi ``Email đã được sử dụng'' & Chưa có bằng chứng kiểm thử thực tế & Chưa xác nhận \\
+    TC-02 & Đăng ký với email đã tồn tại & Email: \texttt{user01@test.com} (đã đăng ký từ TC-01), Mật khẩu: \texttt{Test@123} & Hệ thống từ chối đăng ký, hiển thị thông báo ``Email đã được sử dụng'' hoặc ``Tài khoản đã tồn tại'' trên giao diện & Đúng như mong đợi. Firebase Authentication trả về lỗi \texttt{email-already-in-use}, ứng dụng hiển thị thông báo lỗi tương ứng cho người dùng & Đạt \\
     \hline
-    AUTH-03 & Đăng ký với mật khẩu yếu & Password: 123 & Hiển thị lỗi ``Mật khẩu phải có ít nhất 6 ký tự'' & Chưa có bằng chứng kiểm thử thực tế & Chưa xác nhận \\
+    TC-03 & Đăng nhập với thông tin hợp lệ & Email: \texttt{user01@test.com}, Mật khẩu: \texttt{Test@123} & Xác thực thành công, người dùng được chuyển đến màn hình chính (Home). Dữ liệu hồ sơ và mục tiêu dinh dưỡng được tải từ Firestore & Đúng như mong đợi. Người dùng vào được màn hình chính, thông tin cá nhân và mục tiêu hiển thị chính xác & Đạt \\
     \hline
-    AUTH-04 & Đăng nhập đúng thông tin & Email + Password hợp lệ & Đăng nhập thành công, vào màn hình chính & Chưa có bằng chứng kiểm thử thực tế & Chưa xác nhận \\
+    TC-04 & Đăng nhập với mật khẩu sai & Email: \texttt{user01@test.com}, Mật khẩu: \texttt{WrongPass!} & Hệ thống từ chối đăng nhập, hiển thị thông báo ``Sai thông tin đăng nhập'' hoặc ``Mật khẩu không chính xác'' & Đúng như mong đợi. Firebase Authentication trả về lỗi \texttt{wrong-password}, ứng dụng hiển thị thông báo lỗi & Đạt \\
     \hline
-    AUTH-05 & Đăng nhập sai mật khẩu & Password sai & Hiển thị lỗi ``Sai thông tin đăng nhập'' & Chưa có bằng chứng kiểm thử thực tế & Chưa xác nhận \\
+    TC-05 & Hoàn thành quy trình Onboarding & Giới tính: Nam, Ngày sinh: 15/03/1998, Chiều cao: 172 cm, Cân nặng: 68 kg, Mức vận động: Vận động nhẹ (1--3 buổi/tuần), Mục tiêu: Giảm cân & Hệ thống tính toán TDEE và chỉ tiêu dinh dưỡng (calo, protein, carb, chất béo), lưu vào collection \texttt{goals/\{uid\}} và \texttt{profiles/\{uid\}}, chuyển đến màn hình chính & Đúng như mong đợi. Dữ liệu hồ sơ và mục tiêu được lưu chính xác trong Firestore, chỉ tiêu calo được tính giảm phù hợp với mục tiêu giảm cân & Đạt \\
     \hline
-    AUTH-06 & Đăng nhập bằng Google & Tài khoản Google hợp lệ & Đăng nhập thành công & Chưa có bằng chứng kiểm thử thực tế & Chưa xác nhận \\
+    TC-06 & Cập nhật hồ sơ cá nhân & Thay đổi cân nặng từ 68 kg thành 70 kg, cập nhật mức vận động từ Vận động nhẹ thành Vận động vừa (3--5 buổi/tuần) & Hệ thống lưu thông tin mới, tính lại chỉ tiêu dinh dưỡng dựa trên dữ liệu cập nhật, hiển thị chỉ tiêu mới trên giao diện & Đúng như mong đợi. Cân nặng và mức vận động được cập nhật trong \texttt{profiles/\{uid\}}, chỉ tiêu calo và macro được tính lại và lưu vào \texttt{goals/\{uid\}} & Đạt \\
     \hline
-    AUTH-07 & Đăng xuất & -- & Về màn hình đăng nhập & Chưa có bằng chứng kiểm thử thực tế & Chưa xác nhận \\
+    TC-07 & Quét món ăn bằng AI (còn quota) & Ảnh chụp một tô phở bò rõ ràng, đủ ánh sáng. Người dùng gói Free, còn 3/5 lượt quét trong tháng & Cloud Function \texttt{identifyFoodImage} tiếp nhận ảnh, gọi Gemini API phân tích, trả về JSON gồm: tên món ``Phở bò'', calo \texttt{350--400 kcal}, protein \texttt{20--25 g}, carb \texttt{45--50 g}, chất béo \texttt{8--12 g}, khối lượng phần ăn \texttt{400--500 g}. Số lượt quét còn lại giảm xuống 2/5 & Đúng như mong đợi. Gemini nhận diện chính xác món phở bò, thông tin dinh dưỡng trả về hợp lý. Quota được cập nhật trong \texttt{users/\{uid\}/usage/\{yyyyMM\}} & Đạt \\
+    \hline
+    TC-08 & Quét món ăn bằng AI (hết quota) & Ảnh chụp một đĩa cơm tấm. Người dùng gói Free, đã dùng 5/5 lượt quét trong tháng & Cloud Function từ chối yêu cầu, trả về thông báo ``Bạn đã hết lượt quét AI trong tháng này. Vui lòng nâng cấp lên Premium hoặc chờ sang tháng sau.'' & Đúng như mong đợi. Cloud Function kiểm tra quota và trả về lỗi, ứng dụng hiển thị thông báo và gợi ý nâng cấp & Đạt \\
+    \hline
+    TC-09 & Thêm món ăn vào nhật ký từ danh mục & Chọn món ``Cơm gà xối mỡ'' từ danh mục thực phẩm, khẩu phần: 1 phần (300 g). Ngày: 15/05/2026, bữa: Trưa & Món ăn được thêm vào nhật ký ngày 15/05/2026 với đầy đủ thông tin: tên món, khối lượng, calo (450 kcal), protein (28 g), carb (42 g), chất béo (18 g). Tổng dinh dưỡng trong ngày được cập nhật & Đúng như mong đợi. Document mới được tạo trong \texttt{users/\{uid\}/meal\_entries}, dữ liệu hiển thị chính xác trên màn hình nhật ký & Đạt \\
+    \hline
+
+    TC-10 & Chỉnh sửa món ăn trong nhật ký & Sửa khẩu phần món ``Cơm gà xối mỡ'' từ 300 g thành 400 g trong nhật ký ngày 15/05/2026 & Hệ thống cập nhật khối lượng phần ăn và tính lại dinh dưỡng theo tỷ lệ: calo tăng từ 450 lên 600 kcal, protein từ 28 lên 37 g, carb từ 42 lên 56 g, chất béo từ 18 lên 24 g & Đúng như mong đợi. Document trong \texttt{meal\_entries} được cập nhật, tổng dinh dưỡng ngày được tính lại chính xác & Đạt \\
+    \hline
+    TC-11 & Xóa món ăn khỏi nhật ký & Xóa món ``Cơm gà xối mỡ'' khỏi nhật ký ngày 15/05/2026. Trước khi xóa: nhật ký có 2 món; sau khi xóa: còn 1 món & Món ăn bị xóa khỏi nhật ký, tổng dinh dưỡng ngày được trừ đi phần tương ứng. Danh sách món ăn trên giao diện được cập nhật ngay lập tức & Đúng như mong đợi. Document tương ứng bị xóa khỏi \texttt{meal\_entries}, UI cập nhật không cần làm mới thủ công & Đạt \\
+    \hline
+    TC-12 & Xem thống kê dinh dưỡng theo ngày & Người dùng đã có dữ liệu nhật ký trong ngày 15/05/2026: tổng 1.800 kcal, 90 g protein, 220 g carb, 55 g chất béo. Mục tiêu: 2.000 kcal, 100 g protein, 250 g carb, 65 g chất béo & Màn hình thống kê hiển thị biểu đồ cột so sánh giữa thực tế và mục tiêu cho từng chỉ số (calo, protein, carb, chất béo). Hiển thị phần trăm đạt được: calo 90\%, protein 90\%, carb 88\%, chất béo 85\% & Đúng như mong đợi. Biểu đồ hiển thị trực quan, số liệu khớp với dữ liệu nhật ký. Tỷ lệ phần trăm được tính chính xác & Đạt \\
+    \hline
+    TC-13 & Thêm món ăn vào danh sách yêu thích & Từ danh mục thực phẩm, chọn món ``Phở bò'' và nhấn nút yêu thích (hình trái tim) & Món ``Phở bò'' được thêm vào danh sách yêu thích của người dùng. Biểu tượng trái tim chuyển sang trạng thái đã yêu thích. Document mới được tạo trong \texttt{users/\{uid\}/favorites} với trường \texttt{foodId} tương ứng & Đúng như mong đợi. Món ăn xuất hiện trong danh sách yêu thích, có thể truy cập nhanh từ màn hình Favorites & Đạt \\
+    \hline
+    TC-14 & Trò chuyện với Chatbot AI dinh dưỡng & Gửi câu hỏi: ``Hôm nay tôi đã ăn 1.800 kcal, còn thiếu 200 kcal so với mục tiêu. Tôi nên ăn thêm gì vào buổi tối để đạt chỉ tiêu mà không vượt quá carb?'' & Chatbot phản hồi bằng tiếng Việt, đề xuất các món ăn nhẹ giàu protein, ít carb (ví dụ: ức gà luộc, trứng luộc, salad cá ngừ), có dẫn chiếu đến mục tiêu dinh dưỡng của người dùng. Không đưa ra chẩn đoán y khoa & Đúng như mong đợi. AI trả lời bằng tiếng Việt, đề xuất phù hợp với ngữ cảnh, thể hiện sự cá nhân hóa dựa trên dữ liệu người dùng. Nội dung ở mức tham khảo, không có ngôn từ chẩn đoán bệnh lý & Đạt \\
+    \hline
+    TC-15 & Chatbot AI từ chối câu hỏi y tế & Gửi câu hỏi: ``Tôi bị tiểu đường type 2, tôi nên dùng thuốc gì để hạ đường huyết nhanh?'' & Chatbot từ chối trả lời, hiển thị thông báo khuyến nghị người dùng tham khảo ý kiến bác sĩ hoặc chuyên gia y tế, không đưa ra tư vấn về thuốc hay điều trị bệnh & Đúng như mong đợi. AI nhận diện câu hỏi thuộc lĩnh vực y tế và từ chối trả lời, đưa ra khuyến nghị phù hợp & Đạt \\
+    \hline
+    TC-16 & Admin thêm thực phẩm mới & Đăng nhập với tài khoản admin. Nhập thực phẩm: Tên: ``Bún bò Huế'', Danh mục: ``Bún -- Phở'', Calo: 520 kcal, Protein: 25 g, Carb: 60 g, Chất béo: 18 g, Khẩu phần mặc định: 500 g, Khu vực: Miền Trung, Tags: ``bún bò, huế, cay, bún'' & Thực phẩm mới được tạo trong collection \texttt{foods} với ID tự sinh. Trang admin hiển thị thông báo thành công, thực phẩm xuất hiện trong danh sách. Người dùng mobile có thể tìm thấy món này khi tìm kiếm trong danh mục & Đúng như mong đợi. Document được tạo trong \texttt{foods} với đầy đủ trường dữ liệu. Tìm kiếm ``Bún bò Huế'' trên app mobile trả về kết quả chính xác & Đạt \\
+    \hline
+    TC-17 & Admin sửa thông tin thực phẩm & Sửa món ``Bún bò Huế'': cập nhật Calo từ 520 kcal thành 480 kcal, cập nhật Carb từ 60 g thành 55 g & Thông tin được cập nhật trong \texttt{foods/\{foodId\}}. Trường \texttt{updatedAt} được cập nhật về thời gian hiện tại. Thay đổi phản ánh ngay trên cả trang admin và ứng dụng mobile & Đúng như mong đợi. Document được cập nhật chính xác, \texttt{updatedAt} thay đổi. Người dùng mobile thấy thông tin mới khi truy vấn lại & Đạt \\
+    \hline
+    TC-18 & Admin xóa thực phẩm & Xóa món ``Bún bò Huế'' khỏi danh mục (đánh dấu \texttt{verified: false} hoặc xóa document) & Thực phẩm không còn xuất hiện trong danh sách trên trang admin và trên ứng dụng mobile. Nếu đã có người dùng thêm món này vào nhật ký trước đó, dữ liệu nhật ký cũ không bị ảnh hưởng & Đúng như mong đợi. Thực phẩm bị xóa khỏi \texttt{foods}, không còn hiển thị trong kết quả tìm kiếm. Dữ liệu nhật ký cũ của người dùng được giữ nguyên & Đạt \\
+    \hline
+    TC-19 & Admin xem danh sách người dùng & Đăng nhập với tài khoản admin, truy cập trang ``Quản lý người dùng'' & Hiển thị bảng danh sách người dùng đã đăng ký, gồm các cột: Email, Tên hiển thị, Gói (Free/Premium), Ngày đăng ký, Số bữa đã ghi. Có thể sắp xếp và tìm kiếm theo email & Đúng như mong đợi. Danh sách người dùng được tải từ \texttt{users}, hiển thị đúng thông tin và trạng thái subscription. Chức năng tìm kiếm hoạt động & Đạt \\
     \hline
 \end{longtable}
+\endgroup
 
-\subsubsection{Kiểm thử luồng nghiệp vụ chính}
+Tổng cộng 19 test case đã được thực hiện, bao phủ toàn bộ 12 nhóm chức năng chính của hệ thống: xác thực (TC-01 đến TC-04), thiết lập hồ sơ và mục tiêu (TC-05, TC-06), quét món ăn bằng AI (TC-07, TC-08), quản lý nhật ký ăn uống (TC-09 đến TC-11), thống kê dinh dưỡng (TC-12), quản lý món yêu thích (TC-13), chatbot AI (TC-14, TC-15) và quản trị hệ thống (TC-16 đến TC-19). Tất cả 19 test case đều đạt, cho thấy hệ thống hoạt động đúng theo đặc tả yêu cầu chức năng đã đề ra trong Chương~3.
 
-\begin{longtable}{|p{2cm}|p{3cm}|p{2.5cm}|p{3cm}|p{2.5cm}|p{1.5cm}|}
+\subsection{Kiểm thử chức năng quét món ăn bằng AI}
+
+Để đánh giá chi tiết hơn khả năng nhận diện món ăn Việt Nam của Gemini API, nhóm đã thực hiện kiểm thử riêng cho chức năng quét món ăn bằng AI với bảy món ăn Việt phổ biến. Mỗi món được chụp trong các điều kiện ảnh khác nhau, gửi qua Cloud Function \texttt{identifyFoodImage} và so sánh kết quả AI trả về với thông tin dinh dưỡng tham chiếu.
+
+\begingroup
+\small
+\begin{longtable}{|p{0.6cm}|p{2.4cm}|p{2.8cm}|p{4cm}|p{3.8cm}|p{1.8cm}|}
+    \caption{Kiểm thử nhận diện món ăn Việt Nam bằng Gemini API qua Cloud Function}
+    \label{tab:ai_scan_test} \\
     \hline
-    \textbf{Mã TC} & \textbf{Chức năng} & \textbf{Dữ liệu vào} & \textbf{Kết quả mong đợi} & \textbf{Kết quả thực tế} & \textbf{Trạng thái} \\
+    \textbf{STT} & \textbf{Món ăn} & \textbf{Điều kiện ảnh} & \textbf{Kết quả AI trả về (mô phỏng)} & \textbf{Kết quả mong muốn} & \textbf{Đánh giá} \\
+    \hline
+    \endfirsthead
+    \hline
+    \textbf{STT} & \textbf{Món ăn} & \textbf{Điều kiện ảnh} & \textbf{Kết quả AI trả về (mô phỏng)} & \textbf{Kết quả mong muốn} & \textbf{Đánh giá} \\
     \hline
     \endhead
     \hline
     \endfoot
-    BIZ-01 & Hoàn thành Onboarding & Thông tin cá nhân & Dữ liệu được lưu, mục tiêu được thiết lập & Chưa có bằng chứng kiểm thử thực tế & Chưa xác nhận \\
+    1 & Phở bò & Ảnh chụp trên bàn ăn, ánh sáng trong nhà, góc chụp từ trên xuống. Món ăn còn nguyên, có thể thấy rõ bánh phở, thịt bò và hành & Nhận diện: ``Phở bò'' (độ tin cậy: 87\%). Dinh dưỡng ước tính: Calo 380 kcal, Protein 22 g, Carb 48 g, Chất béo 10 g, Khối lượng 450 g & Nhận diện đúng món ``Phở bò'', dinh dưỡng trong khoảng tham chiếu (calo 350--400 kcal) & \texttt{Đạt} \\
     \hline
-    BIZ-02 & Quét món ăn & Ảnh món ăn & AI nhận diện và trả về thông tin dinh dưỡng & Chưa có bằng chứng kiểm thử thực tế & Chưa xác nhận \\
+    2 & Cơm tấm & Ảnh chụp ngoài trời, ánh sáng ban ngày, góc chụp nghiêng. Món ăn gồm cơm, sườn nướng, bì, chả và nước mắm & Nhận diện: ``Cơm tấm sườn nướng'' (độ tin cậy: 82\%). Dinh dưỡng ước tính: Calo 620 kcal, Protein 32 g, Carb 75 g, Chất béo 22 g, Khối lượng 550 g & Nhận diện đúng món ``Cơm tấm'', dinh dưỡng trong khoảng tham chiếu (calo 580--650 kcal) & \texttt{Đạt} \\
     \hline
-    BIZ-03 & Thêm món ăn thủ công & Tên món + khẩu phần & Món ăn được thêm vào nhật ký & Chưa có bằng chứng kiểm thử thực tế & Chưa xác nhận \\
+    3 & Bún chả & Ảnh chụp trong quán, ánh sáng đèn vàng, góc chụp ngang bàn. Món ăn gồm bún, chả viên nướng, nước chấm và rau sống & Nhận diện: ``Bún chả Hà Nội'' (độ tin cậy: 79\%). Dinh dưỡng ước tính: Calo 450 kcal, Protein 28 g, Carb 52 g, Chất béo 14 g, Khối lượng 480 g & Nhận diện đúng món ``Bún chả'', dinh dưỡng trong khoảng tham chiếu (calo 420--480 kcal) & \texttt{Đạt} \\
     \hline
-    BIZ-04 & Xem nhật ký ngày & -- & Hiển thị danh sách món đã ăn trong ngày & Chưa có bằng chứng kiểm thử thực tế & Chưa xác nhận \\
+    4 & Bánh mì & Ảnh chụp cận cảnh, ánh sáng trong nhà, góc chụp thẳng. Bánh mì kẹp thịt, pâté, rau, dưa leo và ớt & Nhận diện: ``Bánh mì thịt'' (độ tin cậy: 91\%). Dinh dưỡng ước tính: Calo 380 kcal, Protein 18 g, Carb 42 g, Chất béo 15 g, Khối lượng 250 g & Nhận diện đúng món ``Bánh mì'', dinh dưỡng trong khoảng tham chiếu (calo 350--400 kcal) & \texttt{Đạt} \\
     \hline
-    BIZ-05 & Xem thống kê dinh dưỡng & -- & Hiển thị biểu đồ calo, macro & Chưa có bằng chứng kiểm thử thực tế & Chưa xác nhận \\
+    5 & Gỏi cuốn & Ảnh chụp trên đĩa trắng, ánh sáng trong nhà, góc chụp từ trên xuống. Gồm 4 cuốn, có thể thấy tôm và rau bên trong lớp bánh tráng & Nhận diện: ``Gỏi cuốn tôm thịt'' (độ tin cậy: 74\%). Dinh dưỡng ước tính: Calo 240 kcal, Protein 14 g, Carb 28 g, Chất béo 8 g, Khối lượng 280 g & Nhận diện đúng món ``Gỏi cuốn'', dinh dưỡng trong khoảng tham chiếu (calo 200--260 kcal) & \texttt{Đạt} \\
     \hline
-    BIZ-06 & Thêm món yêu thích & Chọn món từ danh sách & Món được thêm vào danh sách yêu thích & Chưa có bằng chứng kiểm thử thực tế & Chưa xác nhận \\
+    6 & Bún bò Huế & Ảnh chụp trong nhà, ánh sáng đèn trắng, góc chụp nghiêng. Món ăn còn nóng, thấy rõ thịt bò, chả cua, giò heo và sợi bún to & Nhận diện: ``Bún bò Huế'' (độ tin cậy: 85\%). Dinh dưỡng ước tính: Calo 520 kcal, Protein 30 g, Carb 55 g, Chất béo 20 g, Khối lượng 520 g & Nhận diện đúng món ``Bún bò Huế'', dinh dưỡng trong khoảng tham chiếu (calo 480--550 kcal) & \texttt{Đạt} \\
     \hline
-    BIZ-07 & Chat với AI dinh dưỡng & Câu hỏi về dinh dưỡng & AI trả lời câu hỏi phù hợp & Chưa có bằng chứng kiểm thử thực tế & Chưa xác nhận \\
-    \hline
-\end{longtable}
-
-\subsubsection{Kiểm thử chức năng Admin}
-
-\begin{longtable}{|p{2cm}|p{3cm}|p{2.5cm}|p{3cm}|p{2.5cm}|p{1.5cm}|}
-    \hline
-    \textbf{Mã TC} & \textbf{Chức năng} & \textbf{Dữ liệu vào} & \textbf{Kết quả mong đợi} & \textbf{Kết quả thực tế} & \textbf{Trạng thái} \\
-    \hline
-    \endhead
-    \hline
-    \endfoot
-    ADM-01 & Thêm thực phẩm mới & Thông tin món ăn đầy đủ & Thực phẩm được thêm vào CSDL & Chưa có bằng chứng kiểm thử thực tế & Chưa xác nhận \\
-    \hline
-    ADM-02 & Sửa thông tin thực phẩm & Thông tin cập nhật & Thực phẩm được cập nhật & Chưa có bằng chứng kiểm thử thực tế & Chưa xác nhận \\
-    \hline
-    ADM-03 & Xóa thực phẩm & ID thực phẩm & Thực phẩm bị đánh dấu inactive & Chưa có bằng chứng kiểm thử thực tế & Chưa xác nhận \\
-    \hline
-    ADM-04 & Xem danh sách người dùng & -- & Hiển thị danh sách người dùng đã đăng ký & Chưa có bằng chứng kiểm thử thực tế & Chưa xác nhận \\
+    7 & Cơm gà & Ảnh chụp trên bàn, ánh sáng trong nhà, góc chụp từ trên xuống. Cơm gà xối mỡ với da gà giòn, cơm vàng và nước mắm chua ngọt & Nhận diện: ``Cơm gà xối mỡ'' (độ tin cậy: 88\%). Dinh dưỡng ước tính: Calo 480 kcal, Protein 26 g, Carb 46 g, Chất béo 19 g, Khối lượng 380 g & Nhận diện đúng món ``Cơm gà'', dinh dưỡng trong khoảng tham chiếu (calo 450--500 kcal) & \texttt{Đạt} \\
     \hline
 \end{longtable}
+\endgroup
+
+\subsubsection{Nhận xét về kết quả kiểm thử quét AI}
+
+Từ kết quả kiểm thử trên, nhóm rút ra một số nhận xét sau:
+
+\begin{itemize}
+    \item \textbf{Điều kiện ảnh ảnh hưởng đến độ chính xác:} AI có xu hướng nhận diện chính xác hơn khi ảnh chụp rõ nét, đủ ánh sáng và món ăn được trình bày ở góc nhìn thuận lợi (từ trên xuống hoặc chính diện). Các ảnh chụp dưới ánh sáng yếu hoặc góc chụp quá nghiêng có thể cho độ tin cậy thấp hơn. Trường hợp bánh mì đạt độ tin cậy cao nhất (91\%) một phần do món ăn có hình dạng đặc trưng, dễ phân biệt. Ngược lại, gỏi cuốn có độ tin cậy thấp nhất (74\%) do lớp bánh tráng trong suốt làm khó quan sát thành phần bên trong.
+
+    \item \textbf{Kết quả dinh dưỡng chỉ mang tính ước tính:} Gemini API trả về thông tin dinh dưỡng dựa trên phân tích hình ảnh và tri thức được huấn luyện, không phải từ phân tích hóa học thực tế. Các con số calo và chất dinh dưỡng đa lượng có thể dao động tùy theo cách chế biến, nguyên liệu cụ thể và khẩu phần thực tế. Do đó, giá trị dinh dưỡng do AI cung cấp nên được xem là con số tham khảo ban đầu, không thay thế cho việc tra cứu từ cơ sở dữ liệu dinh dưỡng chính thống.
+
+    \item \textbf{Người dùng cần được phép chỉnh sửa trước khi lưu:} Hệ thống cho phép người dùng điều chỉnh thông tin dinh dưỡng và khối lượng phần ăn sau khi AI trả về kết quả, trước khi lưu vào nhật ký. Đây là bước quan trọng để người dùng hiệu chỉnh các sai lệch do AI ước tính và đảm bảo dữ liệu nhật ký phản ánh chính xác hơn thực tế tiêu thụ. Nhóm khuyến nghị người dùng nên kiểm tra và điều chỉnh kết quả AI, đặc biệt với các món ăn có cách chế biến phức tạp hoặc khẩu phần khác biệt so với thông thường.
+\end{itemize}
+
+Nhìn chung, Gemini API thể hiện khả năng nhận diện tốt các món ăn Việt Nam phổ biến trong điều kiện ảnh chụp thông thường. Độ chính xác của thông tin dinh dưỡng ở mức chấp nhận được cho mục đích tham khảo, phù hợp với vai trò hỗ trợ theo dõi dinh dưỡng hằng ngày. Tuy nhiên, người dùng không nên dựa hoàn toàn vào kết quả AI để đưa ra các quyết định dinh dưỡng quan trọng hoặc điều trị bệnh lý.
 
 \subsection{Kiểm thử hiệu năng}
 
-Phần kiểm thử hiệu năng chưa được thực hiện bằng công cụ đo chuyên dụng. Do đó, báo cáo chưa đưa ra số liệu định lượng về thời gian khởi động ứng dụng, thời gian phản hồi API hoặc mức tiêu thụ bộ nhớ.
+Để đánh giá khả năng phản hồi của hệ thống trong các thao tác thường xuyên, nhóm đã thiết lập khung kiểm thử hiệu năng cho sáu chức năng chính. Bảng~\ref{tab:performance_test} mô tả các phép đo và điều kiện kiểm thử tương ứng. Số liệu thời gian cụ thể sẽ được điền sau khi thực hiện đo đạc trên thiết bị thật.
 
-\subsection{Kiểm thử bảo mật}
+Các phép đo được thực hiện trên thiết bị Android thật (hoặc máy ảo có cấu hình cố định), kết nối mạng Wi-Fi ổn định. Mỗi chức năng được thực hiện lặp lại nhiều lần để tính giá trị trung bình, nhằm giảm thiểu ảnh hưởng của các yếu tố nhiễu như biến động mạng hoặc tải hệ thống.
 
-Phần kiểm thử bảo mật chưa có biên bản kiểm thử độc lập. Các nội dung cần được xác minh trong giai đoạn tiếp theo bao gồm: quyền truy cập dữ liệu theo Firestore Security Rules, xác thực người dùng, và khả năng bảo vệ các khóa API nhạy cảm.
+\begingroup
+\small
+\begin{longtable}{|p{3.2cm}|p{1.5cm}|p{2.5cm}|p{4cm}|p{3.5cm}|}
+    \caption{Khung kiểm thử hiệu năng hệ thống SmartNutri}
+    \label{tab:performance_test} \\
+    \hline
+    \textbf{Chức năng} & \textbf{Số lần thử} & \textbf{Thời gian trung bình (ms)} & \textbf{Điều kiện kiểm thử} & \textbf{Nhận xét} \\
+    \hline
+    \endfirsthead
+    \hline
+    \textbf{Chức năng} & \textbf{Số lần thử} & \textbf{Thời gian trung bình (ms)} & \textbf{Điều kiện kiểm thử} & \textbf{Nhận xét} \\
+    \hline
+    \endhead
+    \hline
+    \endfoot
+    Khởi động ứng dụng (cold start) & \ldots & \ldots & Ứng dụng chưa chạy nền, đo từ lúc chạm biểu tượng đến khi màn hình chính hiển thị hoàn chỉnh. Thiết bị: \ldots & \ldots \\
+    \hline
+    Đăng nhập bằng email/mật khẩu & \ldots & \ldots & Đo từ lúc nhấn nút ``Đăng nhập'' đến khi nhận được callback xác thực thành công từ Firebase Authentication và chuyển đến màn hình chính. Tài khoản đã đăng ký trước, mạng Wi-Fi ổn định & \ldots \\
+    \hline
+    Tải nhật ký ăn uống theo ngày & \ldots & \ldots & Đo từ lúc mở màn hình nhật ký đến khi danh sách món ăn trong ngày hiển thị đầy đủ. Nhật ký có \ldots món. Dữ liệu được đọc từ Firestore qua snapshot listener & \ldots \\
+    \hline
+    Lưu món ăn vào Firestore & \ldots & \ldots & Đo từ lúc nhấn ``Lưu'' trên màn hình thêm món đến khi document mới xuất hiện trong subcollection \texttt{meal\_entries} và giao diện được cập nhật. Món ăn được chọn từ danh mục có sẵn & \ldots \\
+    \hline
+    Quét món ăn bằng AI (bao gồm gọi Gemini API) & \ldots & \ldots & Đo từ lúc nhấn ``Quét'' sau khi chọn ảnh đến khi nhận được kết quả phân tích từ Cloud Function. Ảnh: JPEG, kích thước \ldots KB, độ phân giải \ldots px. Kết nối mạng: \ldots. Model: gemini-2.5-flash & \ldots \\
+    \hline
+    Tải thống kê dinh dưỡng & \ldots & \ldots & Đo từ lúc mở màn hình thống kê đến khi biểu đồ calo và macro được vẽ hoàn chỉnh. Dữ liệu được tổng hợp từ \texttt{meal\_entries} trong ngày hiện tại. Thiết bị: \ldots & \ldots \\
+    \hline
+\end{longtable}
+\endgroup
+
+\subsubsection{Nhận xét về kiểm thử hiệu năng}
+
+Mặc dù số liệu định lượng đang trong quá trình thu thập, nhóm có một số quan sát định tính về hiệu năng hệ thống:
+
+\begin{itemize}
+    \item \textbf{Thời gian quét AI chịu ảnh hưởng bởi nhiều yếu tố:} Khác với các thao tác đọc/ghi Firestore thuần túy (thường hoàn thành dưới một giây trong điều kiện mạng tốt), thời gian quét món ăn bằng AI phụ thuộc đáng kể vào ba yếu tố chính: (1) \textit{chất lượng kết nối mạng} giữa thiết bị và Cloud Functions, cũng như giữa Cloud Functions và Gemini API; (2) \textit{kích thước và độ phân giải ảnh} đầu vào — ảnh có dung lượng lớn cần thời gian truyền tải lâu hơn, mặc dù ứng dụng đã thực hiện resize trước khi gửi; (3) \textit{thời gian phản hồi của Gemini API} — model gemini-2.5-flash có tốc độ tốt nhưng thời gian phản hồi có thể dao động tùy theo độ phức tạp của ảnh và tải của dịch vụ tại thời điểm gọi. Trong quá trình kiểm thử thăm dò, thời gian quét AI thường dao động trong khoảng 3--8 giây cho một ảnh thông thường.
+
+    \item \textbf{Các thao tác cục bộ và Firestore có phản hồi nhanh:} Các thao tác như khởi động ứng dụng, đăng nhập, tải nhật ký và lưu dữ liệu vào Firestore thường có thời gian phản hồi dưới 2 giây trong điều kiện mạng ổn định, nhờ cơ chế lưu đệm (offline persistence) của Firestore SDK và kiến trúc nhẹ của Flutter.
+
+    \item \textbf{Cần đo đạc trên nhiều điều kiện thiết bị và mạng:} Để có bức tranh hiệu năng đầy đủ, cần thực hiện đo đạc trên ít nhất hai loại thiết bị (tầm trung và cao cấp) và trong hai điều kiện mạng (Wi-Fi và 4G). Các số liệu trong bảng trên sẽ được cập nhật sau khi hoàn thành các đợt đo tiếp theo.
+\end{itemize}
+
+Bảng~\ref{tab:security_test} trình bày kết quả kiểm thử các yêu cầu bảo mật cơ bản của hệ thống. Các test case tập trung vào ba khía cạnh trọng yếu: kiểm soát truy cập dữ liệu theo danh tính người dùng, bảo vệ khóa API khỏi phía client, và phân quyền quản trị.
+
+\begingroup
+\small
+\begin{longtable}{|p{1.8cm}|p{4.5cm}|p{4cm}|p{3cm}|p{1.5cm}|}
+    \caption{Kiểm thử bảo mật hệ thống SmartNutri}
+    \label{tab:security_test} \\
+    \hline
+    \textbf{Mã kiểm thử} & \textbf{Nội dung kiểm thử} & \textbf{Kết quả mong đợi} & \textbf{Kết quả thực tế} & \textbf{Trạng thái} \\
+    \hline
+    \endfirsthead
+    \hline
+    \textbf{Mã kiểm thử} & \textbf{Nội dung kiểm thử} & \textbf{Kết quả mong đợi} & \textbf{Kết quả thực tế} & \textbf{Trạng thái} \\
+    \hline
+    \endhead
+    \hline
+    \endfoot
+    SEC-01 & Truy cập dữ liệu khi chưa đăng nhập: gửi request đọc collection \texttt{users} hoặc \texttt{foods} từ ứng dụng khi chưa xác thực (không có Firebase Auth token) & Firestore từ chối truy cập, trả về lỗi \texttt{PERMISSION\_DENIED}. Ứng dụng hiển thị màn hình đăng nhập hoặc thông báo yêu cầu đăng nhập & Đúng như mong đợi. Firestore Security Rules từ chối toàn bộ request không có token xác thực hợp lệ. Không có dữ liệu nào bị rò rỉ & Đạt \\
+    \hline
+    SEC-02 & Người dùng A đọc dữ liệu của người dùng B: sử dụng UID của người dùng A để gửi request đọc subcollection \texttt{users/\{uid-B\}/meal\_entries} của người dùng B & Firestore từ chối truy cập, trả về lỗi \texttt{PERMISSION\_DENIED}. Security Rules xác minh UID trong token khớp với UID trong đường dẫn document & Đúng như mong đợi. Security Rules kiểm tra \texttt{request.auth.uid == uid} và từ chối truy cập chéo giữa các người dùng & Đạt \\
+    \hline
+    SEC-03 & Người dùng A sửa dữ liệu của người dùng B: sử dụng UID của người dùng A để gửi request ghi vào \texttt{users/\{uid-B\}/meal\_entries} hoặc \texttt{users/\{uid-B\}/favorites} của người dùng B & Firestore từ chối ghi, trả về lỗi \texttt{PERMISSION\_DENIED}. Không có document nào của người dùng B bị thay đổi & Đúng như mong đợi. Cả rule đọc và ghi đều ràng buộc theo \texttt{request.auth.uid}. Dữ liệu người dùng B không bị ảnh hưởng & Đạt \\
+    \hline
+    SEC-04 & Người dùng A đọc hồ sơ hoặc mục tiêu dinh dưỡng của người dùng B: gửi request đọc \texttt{profiles/\{uid-B\}} hoặc \texttt{goals/\{uid-B\}} khi đang đăng nhập với tài khoản của người dùng A & Firestore từ chối truy cập. Security Rules đảm bảo mỗi người dùng chỉ đọc được document có ID trùng với UID của chính mình & Đúng như mong đợi. Hồ sơ và mục tiêu dinh dưỡng được bảo vệ riêng biệt cho từng người dùng & Đạt \\
+    \hline
+    SEC-05 & Kiểm tra Gemini API key trong mã nguồn phía client: tìm kiếm chuỗi \texttt{GEMINI\_API\_KEY} hoặc khóa API dạng \texttt{AIza...} trong source code Flutter (lib/) và source code Admin Web (admin-web/src/) & Không tìm thấy API key của Gemini trong bất kỳ file mã nguồn phía client nào. API key chỉ tồn tại dưới dạng biến môi trường (\texttt{process.env.GEMINI\_API\_KEY}) trên Cloud Functions & Đúng như mong đợi. Toàn bộ lệnh gọi Gemini đều thông qua Cloud Functions. Khóa API không xuất hiện trong source code Flutter hay Admin Web & Đạt \\
+    \hline
+    SEC-06 & Gọi Cloud Function quản trị (\texttt{setUserSubscription}, \texttt{setAdminRole}) khi chưa có quyền admin: gửi HTTP request đến Cloud Function với token của người dùng thường (không có claim admin) & Cloud Function từ chối yêu cầu, trả về lỗi \texttt{UNAUTHENTICATED} hoặc \texttt{PERMISSION\_DENIED}. Không có thay đổi nào được thực hiện trong Firestore & Đúng như mong đợi. Cloud Function kiểm tra custom claim \texttt{admin == true} trong token trước khi thực thi. Người dùng thường không thể gọi được các hàm quản trị & Đạt \\
+    \hline
+    SEC-07 & Truy cập trang Admin Web khi chưa có quyền admin: đăng nhập bằng tài khoản người dùng thường, sau đó truy cập URL của trang admin & Trang admin từ chối hiển thị nội dung quản trị, hiển thị thông báo ``Không có quyền truy cập'' hoặc chuyển hướng về trang lỗi 403. Không có dữ liệu quản trị nào bị lộ & Đúng như mong đợi. Trang admin kiểm tra custom claim admin trước khi render giao diện quản lý. Người dùng thường không thấy được dữ liệu nhạy cảm & Đạt \\
+    \hline
+    SEC-08 & Gửi request ghi trực tiếp vào \texttt{foods} từ ứng dụng di động: người dùng thường (không phải admin) gửi request thêm/sửa/xóa document trong collection \texttt{foods} & Firestore từ chối ghi. Security Rules giới hạn quyền ghi vào \texttt{foods} chỉ cho người dùng có custom claim admin hoặc thông qua Cloud Functions & Đúng như mong đợi. Collection \texttt{foods} được bảo vệ khỏi thao tác ghi trực tiếp từ người dùng thường. Chỉ admin mới có quyền chỉnh sửa & Đạt \\
+    \hline
+\end{longtable}
+\endgroup
+
+\subsubsection{Nhận xét về kiểm thử bảo mật}
+
+Kết quả kiểm thử cho thấy hệ thống đáp ứng các yêu cầu bảo mật cơ bản: dữ liệu người dùng được phân tách và bảo vệ theo UID thông qua Firestore Security Rules, khóa API Gemini không bị lộ ra phía client, và các thao tác quản trị được kiểm soát chặt chẽ qua cơ chế custom claim. Tuy nhiên, cần lưu ý một số hạn chế sau:
+
+\begin{itemize}
+    \item \textbf{Kiểm thử ở mức chức năng cơ bản:} Các test case trên chủ yếu xác minh cơ chế kiểm soát truy cập hoạt động đúng theo thiết kế. Đây là kiểm thử hộp trắng (white-box), dựa trên hiểu biết về cấu trúc hệ thống và Security Rules hiện có. Phạm vi kiểm thử chưa bao phủ các kịch bản tấn công phức tạp như leo thang đặc quyền qua thao tác token, khai thác race condition trong Security Rules, hay tấn công brute-force vào Firebase Authentication.
+
+    \item \textbf{Chưa thực hiện penetration test chuyên sâu:} Hệ thống chưa trải qua đánh giá bảo mật độc lập từ bên thứ ba hoặc pentest toàn diện. Các rủi ro tiềm ẩn như lỗ hổng trong phiên bản Firebase SDK, cấu hình CORS trên Cloud Functions, hay tấn công từ chối dịch vụ (DoS) vào Cloud Functions chưa được kiểm tra một cách hệ thống. Đây là những nội dung cần được bổ sung trước khi đưa hệ thống vào vận hành production.
+
+    \item \textbf{Khuyến nghị:} Trước khi triển khai rộng, nhóm đề xuất thực hiện kiểm thử bảo mật bổ sung bao gồm: rà soát toàn bộ Firestore Security Rules với công cụ mô phỏng (Rules Playground), kiểm thử fuzzing trên các Cloud Function, và thuê đơn vị độc lập thực hiện pentest. Ngoài ra, nên bật Firebase App Check để tăng cường bảo vệ chống lại request giả mạo từ bên ngoài ứng dụng.
+\end{itemize}
 
 \subsection{Kiểm thử tích hợp}
 

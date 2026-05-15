@@ -24,6 +24,19 @@ SmartNutri là app theo dõi dinh dưỡng tiếng Việt gồm Flutter mobile a
 
 ## Recently completed
 
+- **Cải thiện UX ghi món hằng ngày** (2026-05-15):
+  - Fix bug recent foods không được ghi nhận khi thêm món từ quick-add/AI/barcode — thêm `RecentFoodsService.add()` trong `add_meal_bottom_sheet.dart`.
+  - Undo delete: thay dialog xác nhận xóa bằng SnackBar "Hoàn tác" (5 giây) ở cả `MealGroups` và `TodayMealsSection`.
+  - Portion presets: thêm `ChoiceChip` chọn nhanh 100g, 200g, 1 chén (250g), 1 tô (400g) trong `_buildPortionPresets()`.
+  - Sao chép bữa ăn: `CopyMealSheet` cho phép chọn và copy món từ ngày trước sang ngày hiện tại, có nút trên `MealLogPage` và `TodayMealsSection`.
+  - Polish `WeeklySummaryCard`: tăng chiều cao chart, dùng `AppColors` thay màu cứng, bọc text tránh overflow.
+  - Ẩn FAB scan khi đang ở tab Nhật ký.
+  - `flutter analyze` sạch, 86 tests pass.
+- **Weekly Review + Integration Test + Confirm Scan Sheet** (2026-05-15):
+  - Nâng cấp `StatisticsPage` → Weekly Review 6 sections: header+streak, calorie summary với progress bar + tuần trước trend, macro breakdown với stacked bar P/C/F, water card với X/7 ngày, daily bar chart 7 ngày, insights tiếng Việt (2-4 insight tùy dữ liệu).
+  - Thêm `ConfirmScanSheet`: màn hình xác nhận/chỉnh sửa sau AI photo scan và barcode scan, thay vì nhảy thẳng `addMealSheet`. Có edit tên món, confidence badge, portion presets, meal type, macro preview, lưu + ghi recent foods.
+  - Tạo `integration_test/app_test.dart` với 17 widget integration tests (SignInPage, OnboardingPage, MainShellPage, GoRouter redirect) không cần backend + 1 E2E test skip chờ emulator. Thêm `integration_test` SDK dependency.
+  - `flutter analyze` sạch, 86 unit/widget tests pass, integration test riêng.
 - Demo alignment: giữ Gemini trực tiếp trong Flutter cho đồ án/demo; thêm client-side record quota AI scan sau khi Gemini trả kết quả thành công; mở Firestore rules cho owner ghi `chat_history` và `usage/{yyyyMM}` có validate field; cập nhật docs backend/AI để phân biệt demo direct-client với production Cloud Functions. (2026-05-15)
 - Refactor Barcode service: chuyển từ Cloud Functions sang gọi trực tiếp Open Food Facts API (`BarcodeService` dùng `http.Client`, parse JSON product/nutriments). Test cập nhật dùng `_FakeHttpClient`. (2026-05-14)
 - Refactor AI Food service: chuyển từ Cloud Functions sang Gemini trực tiếp qua `AiService` interface. Thêm fuzzy match (Levenshtein + diacritics stripping) để map kết quả AI vào food catalog. Thêm `suggestMealsLocal` fallback offline với scoring macro. (2026-05-14)
@@ -58,7 +71,6 @@ SmartNutri là app theo dõi dinh dưỡng tiếng Việt gồm Flutter mobile a
 - Chạy manual release/test checklist đầy đủ cho core flows.
 - Integration tests cho auth → onboarding → dashboard và meal logging.
 - Food data verification workflow.
-- Daily logging UX nâng cao như copy meal, portion selector và undo delete meal.
 - Weekly review/insights.
 
 ## Known bugs / risks

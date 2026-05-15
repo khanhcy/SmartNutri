@@ -10,8 +10,8 @@ import 'package:smartnutri/src/core/services/auth_service.dart';
 import 'package:smartnutri/src/core/services/connectivity_service.dart';
 import 'package:smartnutri/src/core/services/subscription_service.dart';
 import 'package:smartnutri/src/core/ui/theme/app_spacing.dart';
-import 'package:smartnutri/src/features/meal_log/presentation/add_meal_bottom_sheet.dart';
 import 'package:smartnutri/src/features/home/presentation/widgets/ai_suggestions_card.dart';
+import 'package:smartnutri/src/features/scan/presentation/confirm_scan_sheet.dart';
 import 'package:smartnutri/src/features/scan/domain/scan_result.dart';
 
 class PhotoScanPage extends StatefulWidget {
@@ -111,9 +111,9 @@ class _PhotoScanPageState extends State<PhotoScanPage> {
   }
 
   void _selectCandidate(ScannedFoodItem item) {
-    showAddMealSheet(
+    showConfirmScanSheet(
       context,
-      preselectedFood: item.foodItem,
+      scannedItem: item,
       initialMealType: mealTypeForNow(),
     );
   }

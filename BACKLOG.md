@@ -17,16 +17,10 @@
 
 ## Medium priority
 
-- Cải thiện quick add từ recent foods.
-- Thêm copy meal từ hôm qua hoặc ngày khác.
-- Thêm portion selector theo gram, khẩu phần, chén, tô hoặc đơn vị phổ biến.
-- Thêm undo khi xóa meal entry.
-- Thêm confirm/edit screen tốt hơn sau AI scan/barcode.
 - Thêm unit/widget tests cho logic và flow quan trọng.
 
 ## Low priority
 
-- Weekly Review.
 - Personalized insights.
 - Calendar heatmap.
 - Goal adherence score.
@@ -73,6 +67,9 @@
 - Refactor AI Food service: Cloud Functions → Gemini trực tiếp qua `AiService` interface, thêm fuzzy match (Levenshtein + diacritics), `suggestMealsLocal` offline fallback. Tests migrate sang `_FakeGeminiService`. (2026-05-14, chưa commit)
 - Cập nhật test AI/barcode: error message assertions khớp code mới, thêm test case mới (identifyFood matches known foods, suggestMeals with gemini not configured). Tổng 86 tests pass. (2026-05-14, chưa commit)
 - Demo alignment: Firestore rules cho owner ghi `chat_history` và `usage/{yyyyMM}` có validate field; `SubscriptionService.recordAiScanUse` ghi usage client-side sau Gemini scan thành công; docs backend/AI cập nhật theo hướng Gemini trực tiếp cho demo. (2026-05-15, chưa commit)
+
+- Cải thiện UX ghi món hằng ngày (2026-05-15): fix recent foods tracking, undo delete với SnackBar "Hoàn tác", portion presets (100g/200g/1 chén/1 tô), sao chép bữa ăn từ ngày khác qua `CopyMealSheet`, polish `WeeklySummaryCard`, ẩn FAB scan ở tab Nhật ký. `flutter analyze` sạch, 86 tests pass.
+- Weekly Review + Confirm Scan + Integration Test (2026-05-15): nâng cấp `StatisticsPage` → Weekly Review 6 sections với insights, `ConfirmScanSheet` cho AI/barcode scan, `integration_test/app_test.dart` 17 widget integration tests + 1 E2E skip. `flutter analyze` sạch, 86 tests pass.
 
 ## Cancelled / not doing
 

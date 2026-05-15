@@ -5,6 +5,7 @@ import 'package:smartnutri/src/core/utils/firestore_write_message.dart';
 import 'package:smartnutri/src/core/services/auth_service.dart';
 import 'package:smartnutri/src/core/services/food_service.dart';
 import 'package:smartnutri/src/core/services/meal_service.dart';
+import 'package:smartnutri/src/core/services/recent_foods_service.dart';
 import 'package:smartnutri/src/core/ui/theme/app_spacing.dart';
 import 'package:smartnutri/src/core/utils/date_utils.dart';
 import 'package:smartnutri/src/features/meal_log/domain/meal_entry.dart';
@@ -274,6 +275,7 @@ class _AddMealSheetState extends State<_AddMealSheet> {
               setState(() => _selectedMealType = s.first),
         ),
         const SizedBox(height: AppSpacing.md),
+        _buildPortionPresets(),
         Text('Khẩu phần (gram)',
             style: Theme.of(context).textTheme.labelLarge),
         const SizedBox(height: AppSpacing.xs),
@@ -332,6 +334,35 @@ class _AddMealSheetState extends State<_AddMealSheet> {
     );
   }
 
+  Widget _buildPortionPresets() {
+    final presets = [
+      _PortionPreset('100g', 100),
+      _PortionPreset('200g', 200),
+      _PortionPreset('1 chén', 250),
+      _PortionPreset('1 tô', 400),
+    ];
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Wrap(
+        spacing: 8,
+        runSpacing: 4,
+        children: presets.map((p) {
+          final isActive = _portionController.text == p.grams.toString();
+          return ChoiceChip(
+            label: Text(p.label, style: const TextStyle(fontSize: 13)),
+            selected: isActive,
+            onSelected: (_) {
+              _portionController.text = p.grams.toString();
+              setState(() {}); // trigger nutrient preview update
+            },
+            visualDensity: VisualDensity.compact,
+          );
+        }).toList(),
+      ),
+    );
+  }
+
   Future<void> _save() async {
     final food = _selectedFood!;
     final portion = double.tryParse(_portionController.text);
@@ -348,6 +379,8 @@ class _AddMealSheetState extends State<_AddMealSheet> {
     final uid = context.read<AuthService>().currentUser!.uid;
     final now = DateTime.now();
     final dateStr = AppDateUtils.toDateStr(widget.logDate);
+    final mealService = context.read<MealService>();
+    final recentFoods = context.read<RecentFoodsService>();
 
     final entry = MealEntry(
       id: '',
@@ -364,7 +397,8 @@ class _AddMealSheetState extends State<_AddMealSheet> {
     );
 
     try {
-      await context.read<MealService>().addEntry(uid, entry);
+      await mealService.addEntry(uid, entry);
+      recentFoods.add(_selectedFood!);
       if (mounted) {
         HapticFeedback.lightImpact();
         Navigator.of(context).pop();
@@ -398,4 +432,10 @@ class _NutrientBadge extends StatelessWidget {
       ],
     );
   }
+}
+
+class _PortionPreset {
+  final String label;
+  final int grams;
+  const _PortionPreset(this.label, this.grams);
 }
